@@ -1,7 +1,6 @@
 <!-- 
-RayGamix Version: 1.5.2 (Manual Rotation Update)
-"RayGamix API. For playing RayGamix, please visit https://raygamix.github.io."
-Logic: Volumetric 3D Cuboids + VIP Badges + Dynamic Economy + Manual Rotation Toggle
+RayGamix Version: 1.0 (if backend exists)
+"Thanks for playing."
 "Never give up. You can do it." 
 - The RayGamix Team 
 -->
@@ -156,15 +155,20 @@ Logic: Volumetric 3D Cuboids + VIP Badges + Dynamic Economy + Manual Rotation To
 
     <header class="topbar">
         <img class="logo" src="https://raygamix.github.io/logo.png" alt="RayGamix Logo">
-        <div class="search"><input type="text" id="gSearch" placeholder="Search Games..." oninput="renderGames()"></div>
+        <div class="search"><input id="gSearch" placeholder="Search Games..." oninput="renderGames()"></div>
         <div class="nav-icons">
             <div class="dropdown" style="position:relative;">
                 <div class="nav-icon" onclick="toggleDD('userDD')" style="padding: 10px 15px; border: 1px solid var(--accent);">👤 Account</div>
                 <div id="userDD" class="dropdown-content">
                     <div id="loginFormArea">
                         <h4 style="margin: 0 0 10px 0; color: #fff;">Sign In / Register</h4> 
-                        <input type="text" id="accU" class="auth-input" placeholder="Username" style="margin-bottom:8px;">
-                        <input type="password" id="accP" class="auth-input" placeholder="Password" style="margin-bottom:8px;">
+<input type="text" id="accU" name="username" class="auth-input"
+       placeholder="Username" autocomplete="username"
+       style="margin-bottom:8px;">
+
+<input type="password" id="accP" name="password" class="auth-input"
+       placeholder="Password" autocomplete="current-password"
+       style="margin-bottom:8px;">
                         <div style="display:flex; gap:10px; margin-top:5px;">
                             <button class="btn" onclick="handleAuth('login')">Login</button>
                             <button class="btn" style="background:transparent; border: 1px solid var(--accent); color:#fff;" onclick="handleAuth('signup')">Sign Up</button>
