@@ -1,0 +1,163 @@
+<!--
+Cool Space Animation - RayGamix
+"Never give up."
+- The RayGamix Team
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RayGamix - Interactive Layout</title>
+<style>
+body {
+margin: 0;
+padding: 0;
+display: flex;
+justify-content: center;
+color: black;
+align-items: center;
+min-height: 100vh;
+/* Subtle background gradient for better aesthetics */
+background: radial-gradient(circle at 30% 20%,
+rgba(90, 20, 140, 0.15),
+transparent 40%),
+radial-gradient(circle at 70% 60%,
+rgba(20, 80, 180, 0.15),
+transparent 45%),
+radial-gradient(circle at 50% 90%,
+rgba(0, 255, 200, 0.02),
+transparent 50%),
+linear-gradient(
+to bottom,
+#05010f,
+#02030a,
+#000000
+);
+font-family: 'Segoe UI', Arial, sans-serif;
+overflow: hidden;
+position: relative;
+
+}
+
+body::before{
+z-index: 0;
+content: '';
+position: absolute;
+width: 100%;
+height: 100%;
+background-image: 
+radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 20px);
+background-size: 550px 550px, 350px 350px, 250px 250px;
+background-position: 0 0, 40px 60px, 130px 270px;
+opacity: 0.7;
+pointer-events: none;
+}
+
+/* 🔮 FLOATING ANIMATION */
+@keyframes floatTilt {
+0% {
+transform: translate(0px, 0px) rotate(-4deg);
+}
+25% {
+transform: translate(10px, -8px) rotate(-1deg);
+}
+50% {
+transform: translate(0px, -16px) rotate(4deg);
+}
+75% {
+transform: translate(-10px, -6px) rotate(1deg);
+}
+100% {
+transform: translate(0px, 0px) rotate(-4deg);
+}
+}
+
+/* 🌟 GLOW PULSE */
+@keyframes glowPulse {
+0%, 100% {
+filter: drop-shadow(0 0 8px rgba(0, 255, 200, 0.25))
+drop-shadow(0 0 18px rgba(120, 90, 255, 0.25));
+}
+50% {
+filter: drop-shadow(0 0 16px rgba(0, 255, 200, 0.25))
+drop-shadow(0 0 30px rgba(120, 90, 255, 0.25));
+}
+}
+
+
+/* LOGO */
+.logo-wrapper {
+position: absolute;
+top: 30%;
+left: 10%;
+animation: floatTilt 6s ease-in-out infinite;
+}
+
+.logo-img {
+width: 400px;
+animation: glowPulse 3s ease-in-out infinite;
+transform-origin: center;
+zoom: 1.25;
+}
+
+/* PLAY BUTTON */
+.play-button {
+position: absolute;
+right: 8%;
+top: 60%;
+
+width: 500px;
+height: 120px;
+
+background: radial-gradient(circle at top left, #00ffcc, #775bff);
+border-radius: 20px;
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+font-size: 52px;
+font-weight: 700;
+color: #111;
+
+cursor: pointer;
+border: none;
+text-decoration: none;
+
+/* glow */
+box-shadow:
+0 0 15px rgba(0, 255, 200, 0.4),
+0 0 40px rgba(119, 91, 255, 0.4);
+
+animation: floatTilt 7.5s ease-in-out infinite,
+ glowPulse 2.8s ease-in-out infinite;
+
+transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.play-button:hover {
+transform: scale(1.08) rotate(2deg);
+filter: brightness(1.2);
+box-shadow:
+0 0 25px rgba(0, 255, 200, 0.7),
+0 0 60px rgba(119, 91, 255, 0.7);
+}
+
+.play-button:active {
+transform: scale(0.98);
+}
+</style>
+</head>
+<body>
+<div class="logo-wrapper">
+<img src="https://raygamix.github.io/logo.png" alt="RayGamix" class="logo-img">
+</div>
+
+<button class="play-button" onclick="window.location.href='https://raygamix.github.io/'">
+Play Now!
+</button>
+</body>
+</html>
