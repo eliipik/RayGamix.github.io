@@ -52,6 +52,7 @@ justify-content: center;
 align-items: flex-start;
 background: radial-gradient(circle at top left, #1f2937, #020617);
 border-radius: 16px;
+
 }
 
 .hero1 {
@@ -61,11 +62,21 @@ margin-top: 30px;
 background: radial-gradient(circle at top left, #1f2937, #020617);
 border-radius: 16px;
 box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  position: relative;
 }
 
 .hero1-content {
 display: flex;
 gap: 40px;
+}
+#reqcont{
+width: 95%;
+padding: 60px 28px;
+margin-top: 30px;
+background: radial-gradient(circle at top left, #1f2937, #020617);
+border-radius: 16px;
+margin: 0 auto;
+box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
 }
 
 .hero1-left { flex: 1; }
@@ -122,6 +133,10 @@ font-size: 3.20rem;
 font-weight: 800;
 
 overflow: hidden;
+}
+
+#reqcont {
+  position: relative;
 }
 
 /* -------------------------------------- */
@@ -235,7 +250,7 @@ font-weight: 900;
 Download RayGamix now!
  </a>
 <button class="btn2" onclick="req()">Requirements</button>
- </div>
+ </div> 
 
  </div>
 
@@ -247,12 +262,15 @@ Download RayGamix now!
 </div> <!-- END PAGE1 -->
 
 
-<!-- PAGE 2 -->
+<!-- PAGE 2 --> 
 <div id="page2" style="display:none; text-align:center;">
 
 <div class="hero">
 <div class="hero1">
-<h1>Download Successful!</h1>
+      <button class="btn" onclick="back()" style="width: 150px; position: absolute; top: 20px; left: 20px;">
+    ⬅ Back
+  </button>
+  <h1>Download Successful!</h1>
 <p>Thank you for downloading RayGamix!</p>
 <p>Have fun exploring the universe!</p>
 <p>Here is more Info about the downloaded file:</p>
@@ -272,15 +290,18 @@ Download RayGamix now!
 
 </div>
 <div id="page3" style="display: none">
-<div class="hero">
-<h1>Requirements</h1>
+<div id="reqcont">
+      <button class="btn" onclick="back()" style="width: 150px; position: absolute; top: 20px; left: 20px;">
+    ⬅ Back
+  </button>
+  <h1 style="margin-top: 50px;">Requirements</h1>
 <ul>
 <li>Windows XP SP1 or newer</li>
 <li>768MB RAM or more (Recommended 2GB RAM+)</li>
 <li>A CPU with SSE2 / Pentium 4 or newer (Recommended: i5-8xxx+)</li>
 <li>250MB Disk Space or more</li>
-<li></li>
-<li></li>
+<li>An Internet Connection (Recommended: 100mbit/s and &lt;500MB Ping </li>
+
 </ul>
 </div>
 </div>
@@ -331,8 +352,14 @@ function req() {
 document.getElementById("page1").style.display = "none";
 document.getElementById("page2").style.display = "none";
 document.getElementById("page3").style.display = "block";
+document.getElementById("page3").style.flex = "0 0 auto";
 }
 </script>
-
-
+<script>
+function back() {
+document.getElementById("page1").style.display = "block";
+document.getElementById("page2").style.display = "none";
+document.getElementById("page3").style.display = "none";
+}
+</script>
 </body></html>
