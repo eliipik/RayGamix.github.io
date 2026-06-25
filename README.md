@@ -1,3 +1,5 @@
+# WARNING! DO NOT SYNC THIS REPO!
+
 # Welcome to RayGamix!
 We recently made a single-/multiplayer game. Check it out, it's fun!    
 @Raybod8765 is the developer!    
@@ -6,3 +8,4 @@ Downloads? You can just go to https://raygamix.com/download to download RayGamix
 <H6><small><small><small><small><small>*On devices other than Windows, just visit https://raygamix.com/launcher to play! It is the same thing as the EXE file!</small></small></small></small></small></H6>
 <H6><small><small><small><small><small><small>RayGamix Beta 0.9. Official release in June or July!</small><small></small></small></small></small></small></H6>
  <img src="https://raygamix.com/logo.png">
+<br><br><br>
