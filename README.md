@@ -1,5 +1,3 @@
-# WARNING! DO NOT SYNC THIS REPO!
-
 # RayGamix
 
 > **Imagine Anything.**
