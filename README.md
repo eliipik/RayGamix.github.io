@@ -1,10 +1,10 @@
 # RayGamix
 
-> **Imagine Anything.**
+> *Create, Play, Build. Have Fun.*
 
 **RayGamix** is a free and open-source platform where anyone can **create, play, and share games**. Our goal is to make game development as accessible as possible while giving creators the freedom to build almost anything they can imagine.
 
-> **Alternative slogan:** *Create, Play, Build. Have Fun.*
+> **Alternative slogan:** *Imagine Anything.*
 
 
 
@@ -33,30 +33,85 @@ RayGamix believes creativity should not be limited.
 We aim to provide a platform with very few restrictions while maintaining a safe community through effective moderation.
 
 
+# Website
 
-# System Requirements
+<table>
 
-## 🌐 Website
+<tr>
+<th>Component</th>
+<th>Minimum</th>
+<th>Recommended</th>
+</tr>
 
-| Requirement | Minimum |
-|-|-|
-| Operating System | Windows 10 or newer* |
-| Browser | Any modern browser |
+<tr>
+<td>Operating System</td>
+<td>* Windows XP SP1, macOS 10.4, Linux Kernel 2.4</td>
+<td>Windows 10/11, modern macOS, recent Linux</td>
+</tr>
 
-\* Older browsers such as Internet Explorer cannot properly load the website.
+<tr>
+<td>Browser</td>
+<td>Mypal, Supermium, Dillo or compatible</td>
+<td>Chrome, Firefox, Edge, Safari</td>
+</tr>
+
+<tr>
+<td>RAM</td>
+<td>768 MB</td>
+<td>4 GB+</td>
+</tr>
+
+<tr>
+<td>Internet</td>
+<td>Broadband</td>
+<td>Stable broadband</td>
+</tr>
+
+</table>
 
 
+# Desktop App
 
-## 💻 Desktop Application
+<table>
 
-| Component | Minimum |
-|-----------|---------|
-| Operating System | Windows XP Service Pack 1 (32-bit) |
-| RAM | 768 MB |
-| Storage | 512 MB free |
-| Processor | Intel Pentium or newer |
-| Graphics | OpenGL-compatible GPU |
+<tr>
+<th>Component</th>
+<th>Minimum</th>
+<th>Recommended</th>
+</tr>
 
+<tr>
+<td>Operating System</td>
+<td>Windows XP SP1 (32-bit)</td>
+<td>Windows 10/11 (64-bit)</td>
+</tr>
+
+<tr>
+<td>Processor</td>
+<td>Intel Pentium</td>
+<td>Intel Core i3 / Ryzen 3+</td>
+</tr>
+
+<tr>
+<td>RAM</td>
+<td>768 MB</td>
+<td>4 GB+</td>
+</tr>
+
+<tr>
+<td>Storage</td>
+<td>512 MB</td>
+<td>2 GB+</td>
+</tr>
+
+
+<tr>
+<td>Internet</td>
+<td>Broadband</td>
+<td>Stable broadband</td>
+</tr>
+
+</table>
 
 
 # Graphics
