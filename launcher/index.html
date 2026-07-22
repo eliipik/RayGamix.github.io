@@ -4,6 +4,7 @@ RayGamix Version: 1.0 (full game)
 "Never give up. You can do it." 
 - The RayGamix Team 
 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,8 +16,13 @@ RayGamix Version: 1.0 (full game)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+<style>
 
-    <style>
+@font-face {
+    font-family: "Normal";
+    src: url("https://raygamix.com/Normal.ttf") format("truetype"); 
+}
+
         :root {
             --bg: #03070b; --panel: #0a131c; --card: #111a24; --muted: #7d96b0;
             --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05);
@@ -24,7 +30,7 @@ RayGamix Version: 1.0 (full game)
         html, body { 
             height: 100%; width: 100%; margin: 0; 
             background: var(--bg); color: #fff; 
-            font-family: 'Inter', system-ui, sans-serif; 
+            font-family: 'Normal', system-ui, sans-serif !important; 
             overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
         .app {
@@ -39,7 +45,7 @@ RayGamix Version: 1.0 (full game)
         .avatar-viewport { width: 100%; height: 280px; background: #000; border-radius: 8px; border: 1px solid #142536; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,183,255,0.05);}
 
         .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
-        .logo { font-size: 28px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 20px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
+        .logo { height: 42.5px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
         .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; font-size: 15px;}
         
@@ -89,7 +95,7 @@ RayGamix Version: 1.0 (full game)
 <div class="app">
     <aside class="sidebar">
         <div class="avatar-viewport" id="avatarCanvas"></div>
-        <div style="font-weight:900; color:var(--accent); font-size:22px; display: flex; align-items: center; margin-top:10px; text-transform: uppercase;">
+        <div style="font-weight:900; color:var(--accent); font-size:20px; display: flex; align-items: center; margin-top:10px; text-transform: uppercase;">
             <span id="uDisp">Guest</span>
         </div>
         <div style="color:var(--muted); font-size:12px; font-weight: bold; margin-bottom:20px;">
@@ -100,8 +106,8 @@ RayGamix Version: 1.0 (full game)
     </aside>
 
     <header class="topbar">
-        <div class="logo">RAYGAMIX</div>
-        <div class="search"><input id="gSearch" placeholder="Search Cloud Games..." oninput="renderGames()"></div>
+        <img src="https://raygamix.com/logo.png" class="logo">
+        <div class="search"><input id="gSearch" placeholder="Search Games..." oninput="renderGames()"></div>
         <button class="btn-alt" style="width: auto; padding: 14px 25px;" onclick="openAuth()">👤 Account</button>
     </header>
 
@@ -111,7 +117,7 @@ RayGamix Version: 1.0 (full game)
             <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v1.0</span>
         </div>
         <div class="grid" id="gameGrid">
-            <div style="grid-column: 1/-1; text-align: center; color: var(--accent); padding: 50px; font-weight: bold; font-size: 18px;">Connecting to Cloudflare...</div>
+            <div style="grid-column: 1/-1; text-align: center; color: var(--accent); padding: 50px; font-weight: bold; font-size: 18px;">Connecting...</div>
         </div>
     </main>
 </div>
@@ -148,7 +154,7 @@ RayGamix Version: 1.0 (full game)
         <input type="text" id="equipItemUrl" class="prop-input" placeholder="3D Accessory URL (Image Texture)" style="margin-bottom:15px;" onchange="applyShopUpdates()">
         <button class="btn-alt" style="border-color: var(--accent); color: var(--accent);" onclick="applyShopUpdates()">Save Outfit</button>
 
-        <p style="font-size:11px; color:var(--muted); margin-top:15px; text-align:center;">Avatars sync automatically in Cloudflare multiplayer runtime.</p>
+        <p style="font-size:11px; color:var(--muted); margin-top:15px; text-align:center;">Avatars sync automatically in multiplayer runtime.</p>
     </div>
 </div>
 
@@ -159,7 +165,7 @@ RayGamix Version: 1.0 (full game)
             <div style="display:flex; gap:10px;">
                 <input type="text" id="gameTitle" class="prop-input" placeholder="Name your game..." style="width: 250px; font-size: 14px; padding: 8px 12px; border-radius: 6px;">
                 <button class="btn" style="background:#00e5ff; color:#000; width: auto;" onclick="testCurrentStudioGame(false)">🕹️ Test Demo (Local)</button>
-                <button class="btn" style="background:#cc66ff; color:#fff; width: auto;" onclick="publishGame()">🌐 Publish to Hub (Multiplayer)</button>
+                <button class="btn" style="background:#cc66ff; color:#fff; width: auto;" onclick="publishGame()">🌐 Publish to Hub (AI Moderated)</button>
                 <div style="width: 1px; height: 35px; background: #333; margin: 0 5px;"></div>
                 <button class="btn-alt" style="width: auto;" onclick="exportRGXFile()">📥 Export .RGX</button>
                 <button class="btn-alt" style="width: auto;" onclick="document.getElementById('rgxImportInput').click()">📤 Import .RGX</button>
@@ -273,13 +279,20 @@ RayGamix Version: 1.0 (full game)
     let selectedMesh = null;
     let games = [];
     
-    let currentUser = "Guest";
+    // User profile state
+    let currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
     let userColors = { head: 0xffdbac, torso: 0xffffff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
     let userFace = "";
     let userAccessory = "";
 
     try {
-        const u = localStorage.getItem('rgxUser'); if(u) currentUser = u;
+        const u = localStorage.getItem('rgxUser'); 
+        if(u && u.trim().length >= 3) {
+            currentUser = u;
+        } else {
+            localStorage.setItem('rgxUser', currentUser);
+        }
+
         const c = localStorage.getItem('rgxColors'); 
         if(c) {
             const p = JSON.parse(c);
@@ -307,8 +320,8 @@ RayGamix Version: 1.0 (full game)
         renderGames();
     }
     function handleLogout() {
-        currentUser = "Guest";
-        localStorage.setItem('rgxUser', "Guest");
+        currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
+        localStorage.setItem('rgxUser', currentUser);
         updateUI();
         document.getElementById('auth-panel').style.display = 'none';
         renderGames();
@@ -381,18 +394,13 @@ RayGamix Version: 1.0 (full game)
         const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat); head.position.y = 4.8;
         const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(c.torso)); torso.position.y = 3.1;
         
-        // Pivot arms at top/shoulder joint (translate geometry Y by -1)
         const armGeo = new THREE.BoxGeometry(0.7, 2, 0.7);
-        armGeo.translate(0, -1, 0);
-
-        const larm = new THREE.Mesh(armGeo, mat(c.larm)); larm.position.set(-1.4, 4.1, 0);
-        const rarm = new THREE.Mesh(armGeo.clone(), mat(c.rarm)); rarm.position.set(1.4, 4.1, 0);
+        const larm = new THREE.Mesh(armGeo, mat(c.larm)); larm.position.set(-1.4, 3.1, 0);
+        const rarm = new THREE.Mesh(armGeo.clone(), mat(c.rarm)); rarm.position.set(1.4, 3.1, 0);
 
         const legGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
-        legGeo.translate(0, -1, 0);
-
-        const lleg = new THREE.Mesh(legGeo, mat(c.lleg)); lleg.position.set(-0.5, 2.0, 0);
-        const rleg = new THREE.Mesh(legGeo.clone(), mat(c.rleg)); rleg.position.set(0.5, 2.0, 0);
+        const lleg = new THREE.Mesh(legGeo, mat(c.lleg)); lleg.position.set(-0.5, 1.0, 0);
+        const rleg = new THREE.Mesh(legGeo.clone(), mat(c.rleg)); rleg.position.set(0.5, 1.0, 0);
         
         if(accUrl) {
             const accGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
@@ -404,7 +412,7 @@ RayGamix Version: 1.0 (full game)
         }
 
         group.add(head, torso, larm, rarm, lleg, rleg);
-        group.userData = { head, larm, rarm, lleg, rleg };
+        group.userData = { head, torso, larm, rarm, lleg, rleg };
         return group;
     }
 
@@ -414,11 +422,7 @@ RayGamix Version: 1.0 (full game)
             if(response.ok) {
                 const text = await response.text();
                 let fetched = [];
-                try {
-                    fetched = text ? JSON.parse(text) : [];
-                } catch(err) {
-                    fetched = [];
-                }
+                try { fetched = text ? JSON.parse(text) : []; } catch(err) { fetched = []; }
                 games = Array.isArray(fetched) ? fetched : [];
             } else throw new Error(await response.text());
         } catch(e) {
@@ -437,12 +441,20 @@ RayGamix Version: 1.0 (full game)
         const filtered = games.filter(ga => ga && ga.name && ga.name.toLowerCase().includes(search));
 
         g.innerHTML = filtered.map(ga => {
-            const isOwner = currentUser !== "Guest" && ga.creator === currentUser;
+            const isOwner = currentUser.startsWith("Guest") ? false : ga.creator === currentUser;
             return `
             <div class='card'>
                 <div style="height:140px; background:#071018; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; font-size:50px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); border: 1px solid #142536;">🎮</div>
                 <h3 style="margin:0 0 5px 0; font-size:18px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; color:#fff;">${ga.name}</h3>
-                <p style="margin:0 0 15px 0; font-size:12px; color:var(--accent); font-weight:bold;">By The RayGamix Team <span style="color:var(--muted)">(${ga.creator || 'Unknown'})</span></p>
+                <p style="margin:0 0 15px 0; font-size:12px; color:var(--accent); font-weight:bold;">
+  <span style="color:var(--muted)">
+    by ${
+      !ga.creator ? "Unknown" :
+      ga.creator.startsWith("Guest_") ? "Guest" :
+      "@" + ga.creator
+    }
+  </span>
+</p>
                 <div class="card-actions">
                     <button class='btn' style="flex:1;" onclick='playGame("${ga.url}", "${ga.name.replace(/'/g,"")}")'>▶ Play</button>
                     ${isOwner ? `<button class='btn-alt' style="width:auto;" onclick='editGame("${ga.url}")'>Edit</button>` : ''}
@@ -495,7 +507,6 @@ RayGamix Version: 1.0 (full game)
         dl.position.set(100, 200, 100);
         scene.add(dl);
         
-        // Default 4096 x 4096 Grid Helper
         scene.add(new THREE.GridHelper(4096, 128, 0x142536, 0x0a1520));
 
         orbit = new THREE.OrbitControls(camera, renderer.domElement);
@@ -517,7 +528,6 @@ RayGamix Version: 1.0 (full game)
             else selectObject(null);
         });
 
-        // Default Baseplate: 4096 x 4096 Rays
         if(studioObjects.length === 0) createObject('Baseplate', { scale: [4096, 1, 4096], pos: [0, -0.5, 0], mat: 'Grass', color: 0x1e3612 });
         animateStudio();
     }
@@ -729,7 +739,7 @@ RayGamix Version: 1.0 (full game)
     }
 
     async function publishGame() {
-        if(currentUser === "Guest") return showAlert("Error", "You must be logged in to publish to Cloudflare.");
+
         const title = document.getElementById('gameTitle').value.trim();
         if(!title) return showAlert("Error", "Please enter a Game Title in the Studio header.");
         
@@ -746,16 +756,16 @@ RayGamix Version: 1.0 (full game)
             const data = await res.json();
             if(res.ok && data.ok) {
                 if(data.storage === 'd1') {
-                    showAlert("Success (Cloudflare D1)", "Game permanently saved to Cloudflare D1 SQL database! Multiplayer is live.");
+                    showAlert("Success (AI)", "Game AI-moderated and permanently saved to database!");
                 } else {
-                    showAlert("Published to Cloudflare", "Game published to Cloudflare Worker memory! To make games persist permanently across Worker restarts, attach a D1 Database binding named 'db' in your Cloudflare dashboard.");
+                    showAlert("Published", "Game AI-moderated and published to memory!");
                 }
                 fetchGames();
             } else {
                 throw new Error(data.error || "Unknown error during publish.");
             }
         } catch(e) {
-            showAlert("Publish Error", "Failed to communicate with Cloudflare Worker: " + e.message);
+            showAlert("Publish Error / AI Flag", "Failed to publish: " + e.message);
         }
     }
 
@@ -772,16 +782,43 @@ RayGamix Version: 1.0 (full game)
         body{margin:0; overflow:hidden; background:#87CEEB;} 
         canvas{display:block;} 
         #crosshair { position:fixed; top:50%; left:50%; width:12px; height:12px; background:rgba(255,255,255,0.9); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100; mix-blend-mode: difference;}
-        #ui { position:fixed; bottom:25px; left:25px; color:#fff; font-family:sans-serif; background:rgba(0,0,0,0.8); padding:20px; border-radius:12px; font-size:13px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+        #ui { position:fixed; bottom:25px; left:25px; color:#fff; font-family:sans-serif; background:rgba(0,0,0,0.8); padding:20px; border-radius:12px; font-size:13px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.5); max-width: 280px;}
         #interactPrompt { position:fixed; top:60%; left:50%; transform:translateX(-50%); background:#00b7ff; color:#000; padding:12px 25px; border-radius:8px; font-weight:900; font-family:sans-serif; display:none; pointer-events:none; box-shadow:0 5px 20px rgba(0,183,255,0.5); text-transform:uppercase; letter-spacing:1px;}
         #leaveBtn { position:fixed; top:20px; right:20px; background:#ff4444; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; font-family:sans-serif; z-index:1000; text-transform:uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
         #leaveBtn:hover { background: #ff2222; }
+
+        /* Real-Time Live Chat UI */
+        #chatBox { position: fixed; top: 20px; left: 20px; width: 320px; height: 260px; background: rgba(0,0,0,0.75); border: 1px solid rgba(0,183,255,0.3); border-radius: 10px; display: flex; flex-direction: column; z-index: 1000; backdrop-filter: blur(8px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        #chatHeader { padding: 8px 12px; background: rgba(0,183,255,0.15); border-bottom: 1px solid rgba(0,183,255,0.2); font-family: sans-serif; font-size: 11px; font-weight: 800; color: #00b7ff; display: flex; justify-content: space-between; align-items: center; border-radius: 9px 9px 0 0; }
+        #chatLog { flex: 1; overflow-y: auto; padding: 10px; font-family: sans-serif; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .chatMsg { color: #fff; word-break: break-word; line-height: 1.3; }
+        .chatUser { color: #00b7ff; font-weight: bold; }
+        .chatSystem { color: #ffbb00; font-style: italic; }
+        .chatError { color: #ff4444; font-weight: bold; }
+        #chatForm { display: flex; padding: 6px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); border-radius: 0 0 9px 9px; }
+        #chatInput { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-family: sans-serif; font-size: 12px; padding: 6px 8px; }
+        #chatSendBtn { background: #00b7ff; color: #000; border: none; border-radius: 5px; font-size: 11px; font-weight: 800; cursor: pointer; padding: 6px 12px; }
     </style>
     \x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"\x3E\x3C/script\x3E
 </head>
 <body>
     <button id="leaveBtn" onclick="window.parent.closeGame()">Leave Game</button>
     <div id="crosshair"></div>
+    
+    <div id="chatBox">
+        <div id="chatHeader">
+            <span>💬 LIVE CHAT</span>
+            <span style="color:#a8ffb2; font-size:10px;">🛡️ Llama 3.1 AI Moderated</span>
+        </div>
+        <div id="chatLog">
+            <div class="chatMsg chatSystem">[System]: Welcome to RayGamix Multiplayer! Chat is moderated by Llama 3.1 AI.</div>
+        </div>
+        <form id="chatForm" onsubmit="sendChatMessage(event)">
+            <input type="text" id="chatInput" placeholder="Press Enter or type to chat..." autocomplete="off">
+            <button type="submit" id="chatSendBtn">Send</button>
+        </form>
+    </div>
+
     <div id="ui">
         <button onclick="document.getElementById('ui').style.display='none'" style="float:right; background:#ff4444; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:10px; font-weight:bold; line-height:1;">X</button>
         <b style="color:#00b7ff; font-size:15px; text-transform:uppercase;">Controls</b><br><br>
@@ -799,8 +836,71 @@ RayGamix Version: 1.0 (full game)
         const gameId = "${gameId}";
         const backendUrl = "${CF_BACKEND_URL}";
         
-        const userId = "user_" + Math.random().toString(36).substr(2, 9);
+        const currentUsername = "${currentUser}";
+        const userId = "${currentUser}_" + Math.random().toString(36).substr(2, 6);
         let otherPlayers = {};
+
+        // Chat System Integration
+        window.sendChatMessage = async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+
+            try {
+                const res = await fetch(backendUrl + "/chat/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        gameId: gameId,
+                        playerId: userId,
+                        username: currentUsername,
+                        message: msg
+                    })
+                });
+                const data = await res.json();
+                if (data.flagged) {
+                    appendChatMsg("System AI", "Your message was blocked by RayGamix AI Moderation (" + data.reason + ")", "chatError");
+                } else if (data.ok) {
+                    fetchChatHistory();
+                } else if (data.error) {
+                    appendChatMsg("System AI", data.error, "chatError");
+                }
+            } catch(err) {
+                appendChatMsg("System", "Could not connect to chat server.", "chatSystem");
+            }
+        };
+
+        function appendChatMsg(user, text, styleClass = "chatMsg") {
+            const log = document.getElementById('chatLog');
+            const div = document.createElement('div');
+            div.className = styleClass;
+            div.innerHTML = "<span class='chatUser'>" + user + ":</span> " + text;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        let seenMsgIds = new Set();
+        async function fetchChatHistory() {
+            try {
+                const res = await fetch(backendUrl + "/chat/messages?gameId=" + gameId);
+                if (res.ok) {
+                    const messages = await res.json();
+                    messages.forEach(m => {
+                        if (!seenMsgIds.has(m.id)) {
+                            seenMsgIds.add(m.id);
+                            appendChatMsg(m.username, m.message);
+                        }
+                    });
+                }
+            } catch(e){}
+        }
+
+        if (isMultiplayer) {
+            setInterval(fetchChatHistory, 2500);
+            fetchChatHistory();
+        }
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87CEEB);
@@ -896,18 +996,15 @@ RayGamix Version: 1.0 (full game)
             const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat); head.position.y = 4.8;
             const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(colors.torso)); torso.position.y = 3.1;
             
-            // Pivot arms at shoulder joint (bottom pivot point when raised)
             const armGeo = new THREE.BoxGeometry(0.7, 2, 0.7);
-            armGeo.translate(0, -1, 0);
 
-            const larm = new THREE.Mesh(armGeo, mat(colors.larm)); larm.position.set(-1.4, 4.1, 0);
-            const rarm = new THREE.Mesh(armGeo.clone(), mat(colors.rarm)); rarm.position.set(1.4, 4.1, 0);
+            const larm = new THREE.Mesh(armGeo, mat(colors.larm)); larm.position.set(-1.4, 3.1, 0);
+            const rarm = new THREE.Mesh(armGeo.clone(), mat(colors.rarm)); rarm.position.set(1.4, 3.1, 0);
 
             const legGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
-            legGeo.translate(0, -1, 0);
 
-            const lleg = new THREE.Mesh(legGeo, mat(colors.lleg)); lleg.position.set(-0.5, 2.0, 0);
-            const rleg = new THREE.Mesh(legGeo.clone(), mat(colors.rleg)); rleg.position.set(0.5, 2.0, 0);
+            const lleg = new THREE.Mesh(legGeo, mat(colors.lleg)); lleg.position.set(-0.5, 1.0, 0);
+            const rleg = new THREE.Mesh(legGeo.clone(), mat(colors.rleg)); rleg.position.set(0.5, 1.0, 0);
             
             if(accUrl) {
                 const acc = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), new THREE.MeshStandardMaterial({color: 0xffd700}));
@@ -917,7 +1014,7 @@ RayGamix Version: 1.0 (full game)
             }
 
             group.add(head, torso, larm, rarm, lleg, rleg);
-            group.userData = { larm, rarm, lleg, rleg };
+            group.userData = { head, torso, larm, rarm, lleg, rleg };
             return group;
         }
 
@@ -933,6 +1030,7 @@ RayGamix Version: 1.0 (full game)
         let activeEmote = null;
 
         window.addEventListener('keydown', e => { 
+            if (document.activeElement === document.getElementById('chatInput')) return;
             let k = e.key.toLowerCase(); 
             if(k === ' ') keys.space = true; else keys[k] = true; 
             if(k === 'e') triggerInteract();
@@ -941,11 +1039,11 @@ RayGamix Version: 1.0 (full game)
             if(k === '3') activeEmote = 'point';
         });
         window.addEventListener('keyup', e => { 
+            if (document.activeElement === document.getElementById('chatInput')) return;
             let k = e.key.toLowerCase(); 
             if(k === ' ') keys.space = false; else keys[k] = false; 
         });
 
-        // Inverted Camera Pitch Control
         let isRDragging = false, camYaw = 0, camPitch = 0.3;
         window.addEventListener('mousedown', e => { 
             if(e.button === 2) { isRDragging = true; document.body.requestPointerLock(); }
@@ -955,7 +1053,7 @@ RayGamix Version: 1.0 (full game)
         window.addEventListener('mousemove', e => {
             if (isRDragging) {
                 camYaw -= e.movementX * 0.005;
-                camPitch += e.movementY * 0.005; // Reversed Pitch (Up drag moves pitch up)
+                camPitch += e.movementY * 0.005;
                 camPitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, camPitch));
             }
         });
@@ -990,8 +1088,6 @@ RayGamix Version: 1.0 (full game)
             document.getElementById('interactPrompt').style.display = (intHits.length > 0 && intHits[0].distance < 15) ? 'block' : 'none';
 
             let moving = false, dx = 0, dz = 0;
-            
-            // Slower Walk Speed
             const speed = 0.15;
             if(keys.w) { dx -= Math.sin(camYaw)*speed; dz -= Math.cos(camYaw)*speed; moving=true; }
             if(keys.s) { dx += Math.sin(camYaw)*speed; dz += Math.cos(camYaw)*speed; moving=true; }
@@ -1025,7 +1121,6 @@ RayGamix Version: 1.0 (full game)
                 }
             }
 
-            // 1.33x Lower Gravity (0.0188) & Jump Impulse (0.526)
             if(onLadder) {
                 if(keys.w) velocityY = 0.3; else if(keys.s) velocityY = -0.3; else velocityY = 0;
             } else {
@@ -1036,29 +1131,33 @@ RayGamix Version: 1.0 (full game)
 
             const {larm, rarm, lleg, rleg} = playerGroup.userData;
             if(!isGrounded && !onLadder) {
-                const wobble = Math.sin(time * 0.01) * 0.15;
-                larm.rotation.x = wobble; rarm.rotation.x = wobble;
+                const wobble = Math.sin(time * 0.01) * 0.4;
+                larm.rotation.x = Math.PI / 2 + wobble; 
+                rarm.rotation.x = Math.PI / 2 + wobble;
+                larm.rotation.z = 0; rarm.rotation.z = 0;
                 lleg.rotation.x = 0; rleg.rotation.x = 0;
             } else if(moving || (onLadder && (keys.w || keys.s))) {
                 walkTime += 0.225;
                 larm.rotation.x = Math.sin(walkTime) * 0.8; rarm.rotation.x = -Math.sin(walkTime) * 0.8;
+                larm.rotation.z = 0; rarm.rotation.z = 0;
                 lleg.rotation.x = -Math.sin(walkTime) * 0.8; rleg.rotation.x = Math.sin(walkTime) * 0.8;
                 playerGroup.rotation.y = Math.atan2(dx, dz);
             } else if(activeEmote) {
-                // 1.33x Slower Dance Emote Speed (0.075)
                 emoteTime += 0.075;
                 if (activeEmote === 'wave') {
-                    // Uses shoulder bottom-pivot point
-                    rarm.rotation.x = Math.PI; 
-                    rarm.rotation.z = Math.sin(emoteTime * 1.33) * 0.3 - 0.2;
-                    larm.rotation.x = 0; lleg.rotation.x = 0; rleg.rotation.x = 0;
+                    rarm.rotation.x = 0; 
+                    rarm.rotation.z = Math.PI / 2 + Math.sin(emoteTime * 1.5) * 0.3;
+                    larm.rotation.x = 0; larm.rotation.z = 0;
+                    lleg.rotation.x = 0; rleg.rotation.x = 0;
                 } else if (activeEmote === 'dance') {
-                    larm.rotation.x = Math.sin(emoteTime) * 1.5; rarm.rotation.x = Math.cos(emoteTime) * 1.5;
+                    larm.rotation.x = Math.sin(emoteTime) * 1.2; rarm.rotation.x = Math.cos(emoteTime) * 1.2;
+                    larm.rotation.z = 0; rarm.rotation.z = 0;
                     lleg.rotation.x = Math.sin(emoteTime) * 0.4; rleg.rotation.x = Math.cos(emoteTime) * 0.4;
                     playerGroup.rotation.y += 0.0375;
                 } else if (activeEmote === 'point') {
-                    rarm.rotation.x = Math.PI/2; rarm.rotation.z = -Math.PI/2;
-                    larm.rotation.x = 0; lleg.rotation.x = 0; rleg.rotation.x = 0;
+                    rarm.rotation.x = Math.PI / 2; rarm.rotation.z = 0;
+                    larm.rotation.x = 0; larm.rotation.z = 0;
+                    lleg.rotation.x = 0; rleg.rotation.x = 0;
                 }
             } else {
                 walkTime = 0; emoteTime = 0;
@@ -1084,6 +1183,36 @@ RayGamix Version: 1.0 (full game)
                     if(p.age > 1) { scene.remove(p.m); em.particles.splice(idx, 1); }
                 });
             });
+
+            // Smooth Lerp Remote Multiplayer Players
+            for (const id in otherPlayers) {
+                const remoteP = otherPlayers[id];
+                if (remoteP.userData && remoteP.userData.targetPos) {
+                    const distToTarget = remoteP.position.distanceTo(remoteP.userData.targetPos);
+                    
+                    remoteP.position.lerp(remoteP.userData.targetPos, 0.2);
+                    
+                    let rotDiff = remoteP.userData.targetRotY - remoteP.rotation.y;
+                    while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                    while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                    remoteP.rotation.y += rotDiff * 0.2;
+                    
+                    const { larm: remLA, rarm: remRA, lleg: remLL, rleg: remRL } = remoteP.userData;
+                    if (remLA && remRA && remLL && remRL) {
+                        if (distToTarget > 0.08) {
+                            remoteP.userData.walkTime = (remoteP.userData.walkTime || 0) + 0.225;
+                            remLA.rotation.x = Math.sin(remoteP.userData.walkTime) * 0.8;
+                            remRA.rotation.x = -Math.sin(remoteP.userData.walkTime) * 0.8;
+                            remLL.rotation.x = -Math.sin(remoteP.userData.walkTime) * 0.8;
+                            remRL.rotation.x = Math.sin(remoteP.userData.walkTime) * 0.8;
+                        } else {
+                            remoteP.userData.walkTime = 0;
+                            remLA.rotation.x = 0; remRA.rotation.x = 0;
+                            remLL.rotation.x = 0; remRL.rotation.x = 0;
+                        }
+                    }
+                }
+            }
 
             const camDist = 18;
             camera.position.x = playerGroup.position.x + camDist * Math.sin(camYaw) * Math.cos(camPitch);
@@ -1123,16 +1252,23 @@ RayGamix Version: 1.0 (full game)
                         if (p.player_id === userId) return;
                         activeIds.add(p.player_id);
                         
-                        const pState = JSON.parse(p.state);
+                        let pState = {};
+                        try { pState = typeof p.state === 'string' ? JSON.parse(p.state) : p.state; } catch(e){}
                         
                         if (!otherPlayers[p.player_id]) {
                             const newPlayer = buildPlayerRig(pState.colors || myColors, pState.face || "", pState.acc || "");
+                            newPlayer.position.set(pState.x || 0, pState.y || 0, pState.z || 0);
+                            newPlayer.rotation.y = pState.ry || 0;
+                            newPlayer.userData.targetPos = new THREE.Vector3(pState.x || 0, pState.y || 0, pState.z || 0);
+                            newPlayer.userData.targetRotY = pState.ry || 0;
+                            newPlayer.userData.walkTime = 0;
                             scene.add(newPlayer);
                             otherPlayers[p.player_id] = newPlayer;
+                        } else {
+                            const remoteP = otherPlayers[p.player_id];
+                            remoteP.userData.targetPos.set(pState.x || 0, pState.y || 0, pState.z || 0);
+                            remoteP.userData.targetRotY = pState.ry || 0;
                         }
-                        
-                        otherPlayers[p.player_id].position.set(pState.x, pState.y, pState.z);
-                        otherPlayers[p.player_id].rotation.y = pState.ry;
                     });
                     
                     for (const id in otherPlayers) {
