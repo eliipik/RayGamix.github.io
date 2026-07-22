@@ -1,5 +1,5 @@
 <!-- 
-RayGamix Version: 1.0 (if backend exists)
+RayGamix Version: 1.0 (full game)
 "Thanks for playing."
 "Never give up. You can do it." 
 - The RayGamix Team 
@@ -8,377 +8,1154 @@ RayGamix Version: 1.0 (if backend exists)
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="RayGamix - Imagine Anything! Welcome to RayGamix! Here, you can Create, Play, Have fun, and do anything you want! It feels like there aren't any rules! The limit is the sky.">
-    <title>RayGamix Launcher</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RayGamix Launcher & Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+
     <style>
         :root {
-            --bg: #000; --panel: #071018; --card: #111; --muted: #9aa;
-            --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.03);
-            /* Character 3D Volume Colors */
-            --head-c: #ffdbac; --torso-c: #fff; 
-            --larm-c: #ffdbac; --rarm-c: #ffdbac;
-            --lleg-c: #fff; --rleg-c: #fff;
-            --face-url: url('https://raw.githubusercontent.com/RayGamix/hardcodedassets/main/face.png');
+            --bg: #03070b; --panel: #0a131c; --card: #111a24; --muted: #7d96b0;
+            --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05);
         }
-
-        .tokenIcon{
-            width:16px;
-            height:16px;
-            margin-right:3px;
-            image-rendering: pixelated;
-        }
-
         html, body { 
             height: 100%; width: 100%; margin: 0; 
             background: var(--bg); color: #fff; 
             font-family: 'Inter', system-ui, sans-serif; 
-            overflow: hidden;
-            display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
-        
         .app {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            grid-template-rows: 80px 1fr;
-            gap: 16px; 
-            height: 100vh; 
-            width: 100vw;
-            padding: 18px; 
-            box-sizing: border-box;
-            transition: transform 0.4s ease, width 0.4s ease, height 0.4s ease;
-            transform-origin: center center;
+            display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 80px 1fr;
+            gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box;
         }
 
-        /* Rotation Classes */
-        .rot-90 { transform: rotate(90deg); width: 100vh !important; height: 100vw !important; }
-        .rot-180 { transform: rotate(180deg); }
-        .rot-270 { transform: rotate(270deg); width: 100vh !important; height: 100vw !important; }
-
-        /* --- 3D VOLUME RIG --- */
         .sidebar {
-            grid-row: 1 / span 2;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
-            border-radius: 12px; padding: 18px; display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; flex-direction: column;
-            gap: 10px; align-items: center; border-right: 1px solid rgba(255,255,255,0.05);
-            overflow-y: auto;
+            grid-row: 1 / span 2; background: linear-gradient(180deg, var(--panel), transparent);
+            border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; border-right: 1px solid rgba(0,183,255,0.1); overflow-y: auto;
         }
+        .avatar-viewport { width: 100%; height: 280px; background: #000; border-radius: 8px; border: 1px solid #142536; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,183,255,0.05);}
+
+        .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
+        .logo { font-size: 28px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 20px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
+        .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; font-size: 15px;}
         
-        .claimbox{width:230px;height:180px;background-color:#ffff00;border:2px solid #000;display:none;flex-direction:column;justify-content:space-between;padding-top:30px;padding-bottom:30px;box-sizing:border-box;align-items:center;border-radius:12px;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:999999;box-shadow:0 0 30px rgba(0,0,0,.5)}
-        .claimbox button{width:180px;height:30px;background-color:#eeee00;border:2px solid #000;cursor:pointer}
-        .claimbox button:hover{background-color:#dddd00}
-        .claimbox button:active{background-color:#aaaa00}
-        .claimbox h2,.claimbox h4{margin:0;font-family:comic sans ms;color:#000;text-align:center}
-
-        .viewport { width: 180px; height: 240px; perspective: 1000px; display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; align-items: center; justify-content: center; }
-        .scene { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: rotate3D 12s linear infinite; }
-        .cuboid { position: absolute; transform-style: preserve-3d; background: inherit; }
-        .side { position: absolute; box-sizing: border-box; background: inherit; border: 1px solid rgba(0,0,0,0.3); background-size: cover; background-position: center; }
-
-        .front { transform: rotateY(0deg) translateZ(calc(var(--depth) / 2)); width: var(--width); height: var(--height); }
-        .back  { transform: rotateY(180deg) translateZ(calc(var(--depth) / 2)); width: var(--width); height: var(--height); }
-        .right { transform: rotateY(90deg) translateZ(calc(var(--width) / 2)); width: var(--depth); height: var(--height); }
-        .left  { transform: rotateY(-90deg) translateZ(calc(var(--width) / 2)); width: var(--depth); height: var(--height); }
-        .top   { transform: rotateX(90deg) translateZ(calc(var(--depth) / 2)); width: var(--width); height: var(--depth); }
-        .bottom { transform: rotateX(-90deg) translateZ(calc(var(--height) - (var(--depth) / 2))); width: var(--width); height: var(--depth); }
-
-        .head { --width: 40px; --height: 40px; --depth: 40px; top: 0; left: 70px; background: var(--head-c); }
-        .torso { --width: 60px; --height: 80px; --depth: 40px; top: 45px; left: 60px; background: var(--torso-c); }
-        .arm-l { --width: 20px; --height: 75px; --depth: 20px; top: 45px; left: 35px; background: var(--larm-c); }
-        .arm-r { --width: 20px; --height: 75px; --depth: 20px; top: 45px; left: 125px; background: var(--rarm-c); }
-        .leg-l { --width: 25px; --height: 65px; --depth: 20px; top: 122px; left: 62px; background: var(--lleg-c); }
-        .leg-r { --width: 25px; --height: 65px; --depth: 20px; top: 122px; left: 93px; background: var(--rleg-c); }
-
-        .accessory-item { position: absolute; width: 40px; height: 40px; background-size: contain; background-repeat: no-repeat; background-position: center; transform-style: preserve-3d; transition: transform 0.1s; }
-
-        @keyframes rotate3D { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
-
-        /* --- UI & FORMS --- */
-        .topbar { grid-column: 2; display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; align-items: center; gap: 12px; }
-        .logo { width: 250px; }
-        .search { flex: 1; display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; align-items: center; background: var(--glass); padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.15s; text-align: center; box-sizing: border-box; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;}
+        .btn:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,183,255,0.3); }
+        .btn-alt { background: var(--glass); border: 1px solid #2a3d52; color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 13px; font-weight: bold; transition: 0.2s;}
+        .btn-alt:hover { background: #111a24; border-color: var(--accent); }
         
-        .dropdown-content { display: none; position: absolute; top: 45px; right: 0; background: var(--panel); border-radius: 10px; padding: 15px; min-width: 240px; z-index: 1000; border: 1px solid var(--accent); flex-direction: column; gap: 10px; }
-        .dropdown-content.show { display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; }
+        .btn-tool { background: #1a2b3d; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-tool:hover { background: var(--accent); color: #000; }
+        .tool-active { background: var(--accent) !important; color: #000 !important; }
 
-        .btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.1s; }
-        .btn:hover { filter: brightness(1.1); }
-        .btn-alt { background: var(--glass); border: 1px solid #333; color: #fff; padding: 8px; border-radius: 6px; cursor: pointer; width: 100%; margin-bottom: 5px; font-size: 13px; }
-        .auth-input { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #333; border-radius: 6px; box-sizing: border-box; }
+        .main { grid-column: 2; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 25px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.02);}
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid #1a2b3d; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column;}
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .card-actions { display: flex; gap: 8px; margin-top: 15px; }
 
-        .main { grid-column: 2; background: rgba(255, 255, 255, 0.01); border-radius: 12px; padding: 20px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-        .card { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid #222; position: relative; }
-
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .panel { background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 450px; max-height: 90vh; overflow-y: auto; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .panel { background: var(--panel); padding: 35px; border-radius: 20px; border: 1px solid var(--accent); width: 480px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 50px rgba(0,183,255,0.1);}
+        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: #ff4444; font-weight: bold; transition: 0.2s;}
+        .close-btn:hover { transform: scale(1.2); }
         
-        .badge { background: #ffd700; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; vertical-align: middle; margin-left: 5px; display: none; }
+        .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
+        .studio-header { display:flex; justify-content:space-between; align-items: center; padding: 12px 25px; background: #071018; border-bottom: 1px solid #142536; }
+        .studio-toolbar { background: #0a1520; padding: 12px 25px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap;}
+        .studio-body { display: flex; flex: 1; min-height: 0; }
+        .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; }
+        .studio-sidebar { width: 340px; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; }
         
-        .slider-group { display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .slider-group input { flex: 1; }
-        .slider-group label { width: 15px; font-weight: bold; color: var(--accent); }
+        .prop-section { padding: 15px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1;}
+        .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color:var(--muted); font-weight: bold;}
+        .prop-input { flex: 1; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px 8px; font-size: 12px; border-radius: 4px; width: 100%; box-sizing: border-box; transition: 0.2s;}
+        .prop-input:focus { border-color: var(--accent); outline: none; }
+        .prop-vec3 { display: flex; gap: 6px; flex: 1; }
+        .prop-vec3 input { width: 33%; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px; font-size: 12px; text-align: center; border-radius: 4px;}
+        select.prop-input { -webkit-appearance: none; appearance: none; cursor: pointer; }
+
+        #game-player { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; padding: 0; margin: 0; flex-direction: column;}
+        .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; z-index: 10001; pointer-events: none;}
+        .player-header * { pointer-events: auto; }
+        #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
     </style>
 </head>
 <body>
 
-<div class="app" id="mainApp">
+<div class="app">
     <aside class="sidebar">
-        <div class="viewport">
-            <div class="scene" id="3d-scene">
-                <div class="cuboid head"><div class="side front" id="char-face" style="background-image:var(--face-url)"></div><div class="side back"></div><div class="side top"></div><div class="side bottom"></div><div class="side left"></div><div class="side right"></div></div>
-                <div class="cuboid torso" id="char-torso"><div class="side front"></div><div class="side back"></div><div class="side left"></div><div class="side right"></div><div class="side top"></div><div class="side bottom"></div></div>
-                <div class="cuboid arm-l"><div class="side front"></div><div class="side back"></div><div class="side top"></div><div class="side bottom"></div><div class="side right"></div><div class="side left"></div></div>
-                <div class="cuboid arm-r"><div class="side front"></div><div class="side back"></div><div class="side top"></div><div class="side bottom"></div><div class="side right"></div><div class="side left"></div></div>
-                <div class="cuboid leg-l"><div class="side front"></div><div class="side back"></div></div>
-                <div class="cuboid leg-r"><div class="side front"></div><div class="side back"></div></div>
-            </div>
-        </div>
-        
-        <div style="font-weight:700; color:var(--accent); font-size:18px; display: -webkit-box;   display: -webkit-flex;   display: -ms-flexbox; display: flex; align-items: center;">
+        <div class="avatar-viewport" id="avatarCanvas"></div>
+        <div style="font-weight:900; color:var(--accent); font-size:22px; display: flex; align-items: center; margin-top:10px; text-transform: uppercase;">
             <span id="uDisp">Guest</span>
-            <span id="vBadge" class="badge" title="Verified User">VERIFIED</span>
         </div>
-        <div style="color:#ffd700; font-size:14px; margin-bottom:5px;"><img src="https://raw.githubusercontent.com/RayGamix/RayGamix.com/b88491d1aa9d8c6e66f889313342f045f59e6290/token.svg" class="tokenIcon"><span id="tVal">0</span> Tokens</div>
-        <div id="streakDisp" style="color:var(--muted); font-size:11px; margin-bottom:15px; display:none;">🔥 Streak: <span id="streakNum">0</span> days</div>
-
-        <button class="btn" onclick="openOverlay('avatar-panel')">Customize Color</button>
-        <button class="btn" style="background:#cc66ff; color:#fff; margin-top:5px;" onclick="openAccessoryPanel()">🎒 Equip 3D Items</button>
-        <button class="btn-alt" style="margin-top:5px;" onclick="openOverlay('face-panel')">Customize face</button>
-        <button class="btn-alt" onclick="renewAvatar()">Renew avatar</button>
-        <button class="btn" onclick="window.location.href='https://raygamix.com/create'">Game Maker</button>
-        <button class="btn" style="margin-top:15px;" onclick="openOverlay('maker-panel')">Publish a Game</button>
+        <div style="color:var(--muted); font-size:12px; font-weight: bold; margin-bottom:20px;">
+            The RayGamix Team
+        </div>
+        <button class="btn-alt" onclick="openShop()">🛒 Avatar Shop & 3D Items</button>
+        <button class="btn" style="background:#00e5ff; color:#000; margin-top: 10px;" onclick="openStudio()">🛠️ Launch Studio</button>
     </aside>
 
     <header class="topbar">
-        <img class="logo" src="https://raygamix.com/logo.png" alt="RayGamix Logo">
-        <div class="search"><input id="gSearch" placeholder="Search Games..." oninput="renderGames()"></div>
-        <div class="nav-icons">
-            <div class="dropdown" style="position:relative;">
-                <div class="nav-icon" onclick="toggleDD('userDD')" style="padding: 10px 15px; border: 1px solid var(--accent);">👤 Account</div>
-                <div id="userDD" class="dropdown-content">
-                    <div id="loginFormArea">
-                        <h4 style="margin: 0 0 10px 0; color: #fff;">Sign In / Register</h4> 
-<input type="text" id="accU" name="username" class="auth-input"
-       placeholder="Username" autocomplete="username"
-       style="margin-bottom:8px;">
+        <div class="logo">RAYGAMIX</div>
+        <div class="search"><input id="gSearch" placeholder="Search Cloud Games..." oninput="renderGames()"></div>
+        <button class="btn-alt" style="width: auto; padding: 14px 25px;" onclick="openAuth()">👤 Account</button>
+    </header>
 
-<input type="password" id="accP" name="password" class="auth-input"
-       placeholder="Password" autocomplete="current-password"
-       style="margin-bottom:8px;">
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <button class="btn" onclick="handleAuth('login')">Login</button>
-                            <button class="btn" style="background:transparent; border: 1px solid var(--accent); color:#fff;" onclick="handleAuth('signup')">Sign Up</button>
+    <main class="main">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a2b3d; padding-bottom: 15px; margin-bottom: 20px;">
+            <h2 style="margin:0; color:#fff; font-size: 20px;">Multiplayer Cloud Hub</h2>
+            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v1.0</span>
+        </div>
+        <div class="grid" id="gameGrid">
+            <div style="grid-column: 1/-1; text-align: center; color: var(--accent); padding: 50px; font-weight: bold; font-size: 18px;">Connecting to Cloudflare...</div>
+        </div>
+    </main>
+</div>
+
+<div class="overlay" id="auth-panel">
+    <div class="panel">
+        <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
+        <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
+        <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Login to publish multiplayer games.</p>
+        <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;">
+        <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;">
+        <button class="btn" onclick="handleAuth()">Login / Register</button>
+        <button class="btn-alt" style="margin-top:12px;" onclick="handleLogout()">Play as Guest</button>
+    </div>
+</div>
+
+<div class="overlay" id="shop-panel">
+    <div class="panel">
+        <div class="close-btn" onclick="document.getElementById('shop-panel').style.display='none'">×</div>
+        <h2 style="color:var(--accent); margin-top:0;">🛒 Avatar Shop</h2>
+        
+        <h4 style="margin-bottom:10px; color:#fff; border-bottom: 1px solid #333; padding-bottom:5px;">Body Colors</h4>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+            <div class="prop-row">Head: <input type="color" id="col-head" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+            <div class="prop-row">Torso: <input type="color" id="col-torso" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+            <div class="prop-row">L-Arm: <input type="color" id="col-larm" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+            <div class="prop-row">R-Arm: <input type="color" id="col-rarm" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+            <div class="prop-row">L-Leg: <input type="color" id="col-lleg" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+            <div class="prop-row">R-Leg: <input type="color" id="col-rleg" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+        </div>
+
+        <h4 style="margin-bottom:10px; color:#fff; border-bottom: 1px solid #333; padding-bottom:5px;">Equip 3D Items & Textures</h4>
+        <input type="text" id="equipFaceUrl" class="prop-input" placeholder="Face Image URL (Texture)" style="margin-bottom:10px;" onchange="applyShopUpdates()">
+        <input type="text" id="equipItemUrl" class="prop-input" placeholder="3D Accessory URL (Image Texture)" style="margin-bottom:15px;" onchange="applyShopUpdates()">
+        <button class="btn-alt" style="border-color: var(--accent); color: var(--accent);" onclick="applyShopUpdates()">Save Outfit</button>
+
+        <p style="font-size:11px; color:var(--muted); margin-top:15px; text-align:center;">Avatars sync automatically in Cloudflare multiplayer runtime.</p>
+    </div>
+</div>
+
+<div class="overlay" id="studio-panel" style="background:#000;">
+    <div class="studio-layout">
+        <div class="studio-header">
+            <h2 style="color:var(--accent); margin:0; font-weight:900;">RAYGAMIX STUDIO</h2>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="gameTitle" class="prop-input" placeholder="Name your game..." style="width: 250px; font-size: 14px; padding: 8px 12px; border-radius: 6px;">
+                <button class="btn" style="background:#00e5ff; color:#000; width: auto;" onclick="testCurrentStudioGame(false)">🕹️ Test Demo (Local)</button>
+                <button class="btn" style="background:#cc66ff; color:#fff; width: auto;" onclick="publishGame()">🌐 Publish to Hub (Multiplayer)</button>
+                <div style="width: 1px; height: 35px; background: #333; margin: 0 5px;"></div>
+                <button class="btn-alt" style="width: auto;" onclick="exportRGXFile()">📥 Export .RGX</button>
+                <button class="btn-alt" style="width: auto;" onclick="document.getElementById('rgxImportInput').click()">📤 Import .RGX</button>
+                <input type="file" id="rgxImportInput" accept=".rgx" style="display:none;" onchange="importRGXFile(event)">
+                <button class="btn" style="background:#ff4444; color:#fff; width: auto; margin-left: 10px;" onclick="closeStudio()">Exit</button>
+            </div>
+        </div>
+        <div class="studio-toolbar">
+            <button id="tool-select" class="btn-tool tool-active" onclick="setTransformMode('select')">🖱️ Select</button>
+            <button id="tool-translate" class="btn-tool" onclick="setTransformMode('translate')">☩ Move</button>
+            <button id="tool-scale" class="btn-tool" onclick="setTransformMode('scale')">⤡ Scale</button>
+            <button id="tool-rotate" class="btn-tool" onclick="setTransformMode('rotate')">↻ Rotate</button>
+            <div style="width: 1px; height: 20px; background: #333; margin: 0 10px;"></div>
+            
+            <select id="addPartType" class="prop-input" style="width: auto; padding: 6px; font-weight:bold;">
+                <option value="cube">🧱 Block</option>
+                <option value="sphere">⚽ Sphere</option>
+                <option value="triangle">🔺 Triangle</option>
+                <option value="pentagon">⬟ Pentagon</option>
+                <option value="ladder">🪜 Ladder</option>
+                <option value="spawn">🏁 Spawn</option>
+                <option value="checkpoint">🚩 Checkpoint</option>
+                <option value="npc">🧍 NPC</option>
+                <option value="sign">🪧 Sign (Text)</option>
+                <option value="clickdtct">🖱️ Click Detector</option>
+            </select>
+            <button class="btn" style="background: var(--accent); color:#000; width:auto; padding: 6px 15px;" onclick="addSelectedPart()">➕ Insert</button>
+        </div>
+        
+        <div class="studio-body">
+            <div id="studio-viewport" class="studio-viewport"></div>
+            <div class="studio-sidebar">
+                <div style="background: #050a0f; padding: 12px 15px; font-size: 13px; font-weight: 800; color: #fff; border-bottom: 1px solid #142536; text-transform:uppercase;">Properties & Scripts</div>
+                <div class="prop-section" id="studioPropertiesPanel">
+                    <div id="prop-empty" style="color:var(--muted); text-align:center; margin-top:30px; font-weight:bold;">Select an object to edit properties</div>
+                    <div id="prop-content" style="display:none;">
+                        <div class="prop-row"><span style="width:80px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
+                        <div class="prop-row"><span style="width:80px;">Type</span><input type="text" id="prop-type" class="prop-input" disabled style="background:#020406; color:#555;"></div>
+                        <div class="prop-row"><span style="width:80px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px; border:none;" onchange="applyPropertyChanges()"></div>
+                        
+                        <div class="prop-row">
+                            <span style="width:80px;">Material</span>
+                            <select id="prop-material" class="prop-input" onchange="applyPropertyChanges()">
+                                <option value="Plastic">Plastic</option><option value="Grass">Grass</option>
+                                <option value="Stone">Stone</option><option value="Dirt">Dirt</option>
+                                <option value="Glass">Glass</option><option value="Ice">Ice</option>
+                                <option value="Water">Water</option><option value="Lava">Lava</option>
+                                <option value="Obsidian">Obsidian</option>
+                            </select>
                         </div>
-                        <hr style="width: 100%; border: 1px solid #333; margin: 10px 0;">
-                        <button class="btn" onclick="guestLogin()" style="background:#222; color:#fff;">Guest Mode</button>
-                    </div>
-                    <div id="profileArea" style="display: none;">
-                        <h4 style="margin: 0 0 10px 0; color: var(--accent);">Welcome Back!</h4>
-                        <button class="btn" style="background:#cc3333; color:#fff;" onclick="handleLogout()">Logout</button>
+                        
+                        <div class="prop-row">
+                            <span style="width:80px;">Texture URL</span>
+                            <input type="text" id="prop-texture" class="prop-input" onchange="applyPropertyChanges()" placeholder="https://...">
+                        </div>
+                        
+                        <div class="prop-row">
+                            <span style="width:80px;">Effect</span>
+                            <select id="prop-effect" class="prop-input" onchange="applyPropertyChanges()">
+                                <option value="None">None</option>
+                                <option value="Fire">🔥 Fire</option>
+                                <option value="Smoke">💨 Smoke</option>
+                                <option value="Sparkles">✨ Sparkles</option>
+                            </select>
+                        </div>
+                        
+                        <div class="prop-row" id="row-text" style="display:none;">
+                            <span style="width:80px;">Sign Text</span>
+                            <input type="text" id="prop-text" class="prop-input" onchange="applyPropertyChanges()" placeholder="Enter text...">
+                        </div>
+
+                        <div style="border-top: 1px solid #1a2b3d; margin: 15px 0; padding-top: 15px;"></div>
+
+                        <div class="prop-row"><span style="width:40px;">Pos</span><div class="prop-vec3"><input type="number" id="prop-pos-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
+                        <div class="prop-row"><span style="width:40px;">Scale</span><div class="prop-vec3"><input type="number" id="prop-scale-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
+                        <div class="prop-row"><span style="width:40px;">Rot</span><div class="prop-vec3"><input type="number" id="prop-rot-x" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-y" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-z" step="15" onchange="applyPropertyChanges()"></div></div>
+                        
+                        <div style="margin-top:20px; margin-bottom:8px; font-weight:bold; color:var(--accent);">Interaction Script (Click / E)</div>
+                        <textarea id="prop-script" class="prop-input" style="height:80px; resize:vertical; font-family:monospace; background:#000;" onchange="applyPropertyChanges()" placeholder="player.position.y += 10;"></textarea>
+                        
+                        <button class="btn-alt" style="border-color:#ff4444; color:#ff4444; margin-top:20px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
                     </div>
                 </div>
             </div>
         </div>
-    </header>
-
-    <main class="main"><div class="grid" id="gameGrid"></div></main>
-</div>
-
-<!-- OVERLAYS (MODALS) -->
-<div class="overlay" id="acc-panel">
-    <div class="panel">
-        <h3 style="color:#cc66ff;">🎒 3D Accessories</h3>
-        <p style="color:var(--muted); font-size:12px;">Equip up to 5 3D objects anywhere on your character.</p>
-        <div id="accInventory" style="background:#050a0f; padding:10px; border-radius:8px; margin-bottom:15px; min-height:40px;"></div>
-        <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-        <h4 style="margin-top:0;">Upload New 3D Item</h4>
-        <div style="background:#111; padding:10px; border-radius:8px; border:1px solid #222;">
-            <p style="margin:0 0 10px 0; color:#ffd700; font-weight:bold;">Next Item Cost: <span id="accCostDisp">1</span> Token(s)</p>
-            <input type="text" id="accInput" class="auth-input" placeholder="Image/Item URL..." oninput="previewAcc()" style="margin-bottom:10px;">
-            <div class="slider-group"><label>X</label><input type="range" id="accX" min="-100" max="250" value="70" oninput="previewAcc()"></div>
-            <div class="slider-group"><label>Y</label><input type="range" id="accY" min="-100" max="250" value="0" oninput="previewAcc()"></div>
-            <div class="slider-group"><label>Z</label><input type="range" id="accZ" min="-100" max="150" value="45" oninput="previewAcc()"></div>
-            <button class="btn" style="margin-top:10px; background:#cc66ff;" onclick="buyAccessory()">Buy & Equip</button>
-        </div>
-        <button class="btn-alt" style="margin-top:15px;" onclick="closeOverlays()">Close</button>
     </div>
 </div>
 
-<div class="overlay" id="maker-panel">
-    <div class="panel">
-        <h3 style="color:var(--accent);">RayGamix Game Maker</h3>
-        <input type="text" id="makerName" class="auth-input" placeholder="Game Name" style="margin-bottom:10px;">
-        <input type="text" id="makerUrl" class="auth-input" placeholder="Iframe/Source URL">
-        <button class="btn" style="margin-top:15px;" onclick="publishGame()">Publish Game</button>
-        <button class="btn-alt" style="margin-top:10px;" onclick="closeOverlays()">Close</button>
+<div id="game-player">
+    <div class="player-header">
+        <h2 id="player-title" style="color:var(--accent); margin:0; font-weight:900; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,183,255,0.5);">RayGamix Engine</h2>
+        <button class="btn" style="width: auto; background: #ff4444; color: #fff; padding: 8px 25px;" onclick="closeGame()">Exit Hub Layer</button>
     </div>
+    <iframe id="game-frame" allow="pointer-lock"></iframe>
 </div>
 
-<div class="overlay" id="avatar-panel">
-    <div class="panel">
-        <h3 style="color:var(--accent);">Customize Colors</h3>
-        <div style="display:grid; gap:8px;">
-            Skin color: <input type="color" onchange="setGlobalSkin(this.value)">
-            Head color: <input type="color" onchange="setPartColor('--head-c', this.value)">
-            Torso color: <input type="color" onchange="setPartColor('--torso-c', this.value)">
-            Left arm: <input type="color" onchange="setPartColor('--larm-c', this.value)">
-            Right arm: <input type="color" onchange="setPartColor('--rarm-c', this.value)">
-            Left leg: <input type="color" onchange="setPartColor('--lleg-c', this.value)">
-            Right leg: <input type="color" onchange="setPartColor('--rleg-c', this.value)">
-        </div>
-        <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-        <label>Standard Decal URL:</label>
-        <input type="text" id="shUrl" class="auth-input" placeholder="https://..." style="margin-bottom:5px;">
-        <select id="shSide" class="auth-input">
-            <option value="front">front</option><option value="back">back</option>
-            <option value="left">left</option><option value="right">right</option>
-            <option value="top">top</option><option value="bottom">bottom</option>
-        </select>
-        <button class="btn" style="margin-top:10px;" onclick="applyDecal()">Apply Custom Image</button>
-        <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-        <button class="btn" style="background:#ffd700; color:#000;" onclick="equipVerifiedShirt()">⭐ Equip Verified Shirt</button>
-        <button class="btn-alt" style="margin-top:15px;" onclick="closeOverlays()">Close</button>
+<div class="overlay" id="msg-panel" style="z-index: 99999;">
+    <div class="panel" style="width: 380px; text-align: center; padding: 40px;">
+        <div class="close-btn" onclick="document.getElementById('msg-panel').style.display='none'">×</div>
+        <h3 id="msg-title" style="color:var(--accent); margin-top:0; font-size:22px;">Notice</h3>
+        <p id="msg-body" style="color: var(--muted); margin-bottom: 25px; line-height:1.5;"></p>
+        <button class="btn" onclick="document.getElementById('msg-panel').style.display='none'">Acknowledge</button>
     </div>
-</div>
-
-<div class="overlay" id="face-panel">
-    <div class="panel">
-        <h3 style="color:var(--accent);">Customize face</h3>
-        <input type="text" id="fcInput" class="auth-input" placeholder="Face Image URL...">
-        <button class="btn" style="margin-top:15px;" onclick="applyFace()">Set Face</button>
-        <button class="btn-alt" style="margin-top:10px;" onclick="closeOverlays()">Cancel</button>
-    </div>
-</div>
-
-<div class="claimbox" id="claimBox">
-    <h2>Claim your tokens!</h2>
-    <h4>You have earned <span id="earnedTokens">0</span> tokens.</h4>
-    <button onclick="claimTkn()">Claim</button>
 </div>
 
 <script>
-    // --- CORE VARIABLES ---
-    const VIP_USERS = ["admin", "StoicalRaybod9", "Test", "RayGamix"];
+    const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
+
+    let scene, camera, renderer, orbit, transform;
+    let studioObjects = [];
+    let selectedMesh = null;
+    let games = [];
+    
     let currentUser = "Guest";
-    let rgDB = { users: {}, games: [{ name: "RayGamix Hub", creator: "The RayGamix Team", url: "https://raygamix.com" }] };
-    let currentRotation = 0;
+    let userColors = { head: 0xffdbac, torso: 0xffffff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
+    let userFace = "";
+    let userAccessory = "";
 
-    // --- INITIALIZATION ---
     try {
-        if (localStorage.getItem('rg_active_user')) currentUser = localStorage.getItem('rg_active_user');
-        if (localStorage.getItem('rg_database')) rgDB = JSON.parse(localStorage.getItem('rg_database'));
-    } catch (e) { console.warn("Storage restricted."); }
+        const u = localStorage.getItem('rgxUser'); if(u) currentUser = u;
+        const c = localStorage.getItem('rgxColors'); 
+        if(c) {
+            const p = JSON.parse(c);
+            if(p && typeof p === 'object') userColors = p;
+        }
+        const f = localStorage.getItem('rgxFace'); if(f) userFace = f;
+        const a = localStorage.getItem('rgxAccessory'); if(a) userAccessory = a;
+    } catch(e) { console.warn("Storage reset due to corruption"); }
 
-    function saveDB() {
-        try {
-            localStorage.setItem('rg_active_user', currentUser);
-            localStorage.setItem('rg_database', JSON.stringify(rgDB));
-        } catch (e) {} 
+    function showAlert(title, msg) {
+        document.getElementById('msg-title').innerText = title;
+        document.getElementById('msg-body').innerText = msg;
+        document.getElementById('msg-panel').style.display = 'flex';
     }
 
-    // --- MANUAL ROTATION LOGIC ---
-    function toggleManualRotate() {
-        const app = document.getElementById('mainApp');
-        currentRotation = (currentRotation + 90) % 360;
+    function openAuth() { document.getElementById('auth-panel').style.display = 'flex'; }
+    function handleAuth() {
+        const u = document.getElementById('authUsername').value.trim();
+        if(u.length < 3) return showAlert("Error", "Username must be at least 3 characters.");
+        currentUser = u;
+        localStorage.setItem('rgxUser', u);
+        updateUI();
+        document.getElementById('auth-panel').style.display = 'none';
+        showAlert("Welcome", `Logged in successfully as ${u}!`);
+        renderGames();
+    }
+    function handleLogout() {
+        currentUser = "Guest";
+        localStorage.setItem('rgxUser', "Guest");
+        updateUI();
+        document.getElementById('auth-panel').style.display = 'none';
+        renderGames();
+    }
+    function updateUI() { document.getElementById('uDisp').innerText = currentUser; }
+
+    function openShop() {
+        document.getElementById('shop-panel').style.display = 'flex';
+        Object.keys(userColors).forEach(k => {
+            document.getElementById('col-'+k).value = "#" + userColors[k].toString(16).padStart(6, '0');
+        });
+        document.getElementById('equipFaceUrl').value = userFace;
+        document.getElementById('equipItemUrl').value = userAccessory;
+    }
+
+    function applyShopUpdates() {
+        Object.keys(userColors).forEach(k => {
+            userColors[k] = parseInt(document.getElementById('col-'+k).value.replace('#',''), 16);
+        });
+        userFace = document.getElementById('equipFaceUrl').value.trim();
+        userAccessory = document.getElementById('equipItemUrl').value.trim();
         
-        // Remove all rotation classes
-        app.classList.remove('rot-90', 'rot-180', 'rot-270');
+        localStorage.setItem('rgxColors', JSON.stringify(userColors));
+        localStorage.setItem('rgxFace', userFace);
+        localStorage.setItem('rgxAccessory', userAccessory);
+        rebuildAvatar();
+        showAlert("Outfit Saved", "Your avatar will sync automatically in multiplayer!");
+    }
+
+    let avatarGroup, avatarRenderer, avatarScene, avatarCamera;
+    const globalTextureLoader = new THREE.TextureLoader();
+
+    function initAvatar() {
+        const cont = document.getElementById('avatarCanvas');
+        avatarScene = new THREE.Scene();
+        avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth/cont.clientHeight, 0.1, 1000);
+        avatarRenderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
+        avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
+        cont.appendChild(avatarRenderer.domElement);
         
-        // Add current rotation class
-        if (currentRotation !== 0) {
-            app.classList.add(`rot-${currentRotation}`);
+        avatarScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        dirLight.position.set(2, 5, 5);
+        avatarScene.add(dirLight);
+
+        rebuildAvatar();
+        avatarCamera.position.set(0, 3, 10);
+
+        function anim(){ 
+            requestAnimationFrame(anim); 
+            if(avatarGroup) avatarGroup.rotation.y += 0.01; 
+            avatarRenderer.render(avatarScene, avatarCamera); 
+        }
+        anim();
+    }
+
+    function rebuildAvatar() {
+        if(avatarGroup) avatarScene.remove(avatarGroup);
+        avatarGroup = buildAvatarRig(userColors, userFace, userAccessory);
+        avatarScene.add(avatarGroup);
+    }
+
+    function buildAvatarRig(c, faceUrl, accUrl) {
+        const group = new THREE.Group();
+        const mat = (col) => new THREE.MeshStandardMaterial({color: col, roughness: 0.7});
+        const headMat = mat(c.head);
+        
+        if (faceUrl) globalTextureLoader.load(faceUrl, (tex) => { headMat.map = tex; headMat.needsUpdate = true; }, undefined, () => {});
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat); head.position.y = 4.8;
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(c.torso)); torso.position.y = 3.1;
+        
+        // Pivot arms at top/shoulder joint (translate geometry Y by -1)
+        const armGeo = new THREE.BoxGeometry(0.7, 2, 0.7);
+        armGeo.translate(0, -1, 0);
+
+        const larm = new THREE.Mesh(armGeo, mat(c.larm)); larm.position.set(-1.4, 4.1, 0);
+        const rarm = new THREE.Mesh(armGeo.clone(), mat(c.rarm)); rarm.position.set(1.4, 4.1, 0);
+
+        const legGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
+        legGeo.translate(0, -1, 0);
+
+        const lleg = new THREE.Mesh(legGeo, mat(c.lleg)); lleg.position.set(-0.5, 2.0, 0);
+        const rleg = new THREE.Mesh(legGeo.clone(), mat(c.rleg)); rleg.position.set(0.5, 2.0, 0);
+        
+        if(accUrl) {
+            const accGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+            const accMat = new THREE.MeshStandardMaterial({color: 0xffd700});
+            globalTextureLoader.load(accUrl, tex => { accMat.map = tex; accMat.needsUpdate = true; });
+            const acc = new THREE.Mesh(accGeo, accMat);
+            acc.position.y = 5.6; 
+            group.add(acc);
+        }
+
+        group.add(head, torso, larm, rarm, lleg, rleg);
+        group.userData = { head, larm, rarm, lleg, rleg };
+        return group;
+    }
+
+    async function fetchGames() {
+        try {
+            const response = await fetch(`${CF_BACKEND_URL}/games`);
+            if(response.ok) {
+                const text = await response.text();
+                let fetched = [];
+                try {
+                    fetched = text ? JSON.parse(text) : [];
+                } catch(err) {
+                    fetched = [];
+                }
+                games = Array.isArray(fetched) ? fetched : [];
+            } else throw new Error(await response.text());
+        } catch(e) {
+            console.warn("Could not fetch games from Backend:", e);
+            document.getElementById('gameGrid').innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#ff4444;">Backend Notice: ${e.message || "Connecting..."}</p>`;
+            return;
+        }
+        renderGames();
+    }
+
+    function renderGames() {
+        const g = document.getElementById('gameGrid');
+        if (games.length === 0) { g.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:var(--muted);'>No games found on the network. Be the first to publish one!</p>"; return; }
+        
+        const search = document.getElementById('gSearch').value.toLowerCase();
+        const filtered = games.filter(ga => ga && ga.name && ga.name.toLowerCase().includes(search));
+
+        g.innerHTML = filtered.map(ga => {
+            const isOwner = currentUser !== "Guest" && ga.creator === currentUser;
+            return `
+            <div class='card'>
+                <div style="height:140px; background:#071018; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; font-size:50px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); border: 1px solid #142536;">🎮</div>
+                <h3 style="margin:0 0 5px 0; font-size:18px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; color:#fff;">${ga.name}</h3>
+                <p style="margin:0 0 15px 0; font-size:12px; color:var(--accent); font-weight:bold;">By The RayGamix Team <span style="color:var(--muted)">(${ga.creator || 'Unknown'})</span></p>
+                <div class="card-actions">
+                    <button class='btn' style="flex:1;" onclick='playGame("${ga.url}", "${ga.name.replace(/'/g,"")}")'>▶ Play</button>
+                    ${isOwner ? `<button class='btn-alt' style="width:auto;" onclick='editGame("${ga.url}")'>Edit</button>` : ''}
+                    <button class='btn-alt' style="width:auto; border-color:#ff4444; color:#ff4444;" onclick='reportGame()'>⚠</button>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    window.closeGame = function() { 
+        document.getElementById('game-frame').src = "about:blank"; 
+        document.getElementById('game-player').style.display = 'none'; 
+    };
+
+    function playGame(url, gameName) {
+        if(gameName) document.getElementById('player-title').innerText = gameName;
+        document.getElementById('game-frame').src = url;
+        document.getElementById('game-player').style.display = 'flex';
+    }
+
+    async function reportGame() {
+        try { await fetch(`${CF_BACKEND_URL}/report`, { method: 'POST' }); } catch(e) {}
+        showAlert("Game Reported", "A report has been sent to The RayGamix Team moderators.");
+    }
+
+    let studioInitialized = false;
+    function openStudio() {
+        document.getElementById('studio-panel').style.display = 'flex';
+        if(!studioInitialized) { initStudio(); studioInitialized = true; }
+    }
+    function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
+
+    function initStudio() {
+        const cont = document.getElementById('studio-viewport');
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020406);
+        scene.fog = new THREE.Fog(0x020406, 500, 10000);
+        
+        camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(cont.clientWidth, cont.clientHeight);
+        cont.appendChild(renderer.domElement);
+        
+        camera.position.set(0, 50, 100);
+        camera.lookAt(0,0,0);
+        
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+        dl.position.set(100, 200, 100);
+        scene.add(dl);
+        
+        // Default 4096 x 4096 Grid Helper
+        scene.add(new THREE.GridHelper(4096, 128, 0x142536, 0x0a1520));
+
+        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+        transform = new THREE.TransformControls(camera, renderer.domElement);
+        transform.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
+        transform.addEventListener('change', () => { if(selectedMesh) syncProperties(); });
+        scene.add(transform);
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        renderer.domElement.addEventListener('pointerdown', (e) => {
+            if(transform.dragging) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(studioObjects);
+            if(intersects.length > 0) selectObject(intersects[0].object);
+            else selectObject(null);
+        });
+
+        // Default Baseplate: 4096 x 4096 Rays
+        if(studioObjects.length === 0) createObject('Baseplate', { scale: [4096, 1, 4096], pos: [0, -0.5, 0], mat: 'Grass', color: 0x1e3612 });
+        animateStudio();
+    }
+
+    function setTransformMode(mode) {
+        ['select','translate','scale','rotate'].forEach(m => document.getElementById(`tool-${m}`).classList.remove('tool-active'));
+        document.getElementById(`tool-${mode}`).classList.add('tool-active');
+        if(mode === 'select') transform.detach();
+        else {
+            transform.setMode(mode);
+            if(selectedMesh) transform.attach(selectedMesh);
         }
     }
 
-    // --- ECONOMY & AUTH ---
-    function updateUI() {
-        document.getElementById('uDisp').innerText = currentUser;
-        if (currentUser === "Guest") {
-            document.getElementById('loginFormArea').style.display = 'block';
-            document.getElementById('profileArea').style.display = 'none';
-            document.getElementById('vBadge').style.display = 'none';
-            document.getElementById('streakDisp').style.display = 'none';
-            document.getElementById('tVal').innerText = "0";
+    function addSelectedPart() {
+        createObject(document.getElementById('addPartType').value, { pos: [0, 5, 0] });
+    }
+
+    function createObject(type, override = {}) {
+        let geo, matCol = override.color || 0xdddddd;
+        switch(type) {
+            case 'Baseplate': geo = new THREE.BoxGeometry(1, 1, 1); break;
+            case 'cube': case 'ladder': case 'spawn': case 'checkpoint': case 'clickdtct': geo = new THREE.BoxGeometry(4, 4, 4); break;
+            case 'sphere': geo = new THREE.SphereGeometry(2, 32, 16); break;
+            case 'triangle': geo = new THREE.ConeGeometry(2.5, 5, 4); break;
+            case 'pentagon': geo = new THREE.CylinderGeometry(2.5, 2.5, 5, 5); break;
+            case 'npc': geo = new THREE.CylinderGeometry(1.5, 1.5, 5, 16); matCol = 0xffcc00; break;
+            case 'sign': geo = new THREE.PlaneGeometry(6, 3); matCol = 0xffffff; break;
+            default: geo = new THREE.BoxGeometry(4,4,4);
+        }
+
+        const mat = new THREE.MeshStandardMaterial({color: matCol, roughness: 0.7});
+        const mesh = new THREE.Mesh(geo, mat);
+        if(override.pos) mesh.position.set(...override.pos);
+        if(override.scale) mesh.scale.set(...override.scale);
+        if(override.rot) mesh.rotation.set(...override.rot);
+        
+        mesh.userData = {
+            id: THREE.MathUtils.generateUUID(),
+            type: type,
+            name: override.name || type + "_" + Math.floor(Math.random()*1000),
+            materialType: override.matType || 'Plastic',
+            textureUrl: override.texture || '',
+            effectType: override.effect || 'None',
+            interactScript: override.script || '',
+            textValue: override.text || (type === 'sign' ? 'Text' : '')
+        };
+        
+        if (mesh.userData.textureUrl) {
+            globalTextureLoader.load(mesh.userData.textureUrl, tex => { mesh.material.map = tex; mesh.material.needsUpdate = true; });
+        }
+
+        scene.add(mesh);
+        studioObjects.push(mesh);
+        selectObject(mesh);
+    }
+
+    function selectObject(mesh) {
+        selectedMesh = mesh;
+        if(mesh) {
+            if(!document.getElementById('tool-select').classList.contains('tool-active')) transform.attach(mesh);
+            document.getElementById('prop-empty').style.display = 'none';
+            document.getElementById('prop-content').style.display = 'block';
+            document.getElementById('row-text').style.display = mesh.userData.type === 'sign' ? 'flex' : 'none';
+            syncProperties();
         } else {
-            document.getElementById('loginFormArea').style.display = 'none';
-            document.getElementById('profileArea').style.display = 'block';
-            let stats = rgDB.users[currentUser].stats;
-            if (stats) {
-                document.getElementById('vBadge').style.display = stats.verified ? 'inline-block' : 'none';
-                document.getElementById('streakDisp').style.display = 'block';
-                document.getElementById('streakNum').innerText = stats.streak;
-                document.getElementById('tVal').innerText = stats.tokens || 0;
+            transform.detach();
+            document.getElementById('prop-empty').style.display = 'block';
+            document.getElementById('prop-content').style.display = 'none';
+        }
+    }
+
+    function syncProperties() {
+        if(!selectedMesh) return;
+        const u = selectedMesh.userData, p = selectedMesh.position, s = selectedMesh.scale, r = selectedMesh.rotation;
+        
+        document.getElementById('prop-name').value = u.name;
+        document.getElementById('prop-type').value = u.type;
+        document.getElementById('prop-color').value = '#' + selectedMesh.material.color.getHexString();
+        document.getElementById('prop-material').value = u.materialType;
+        document.getElementById('prop-texture').value = u.textureUrl;
+        document.getElementById('prop-effect').value = u.effectType;
+        document.getElementById('prop-script').value = u.interactScript;
+        document.getElementById('prop-text').value = u.textValue;
+        
+        const setV = (prefix, vec) => {
+            document.getElementById(`prop-${prefix}-x`).value = vec.x.toFixed(2);
+            document.getElementById(`prop-${prefix}-y`).value = vec.y.toFixed(2);
+            document.getElementById(`prop-${prefix}-z`).value = vec.z.toFixed(2);
+        };
+        setV('pos', p); setV('scale', s);
+        
+        document.getElementById('prop-rot-x').value = THREE.MathUtils.radToDeg(r.x).toFixed(0);
+        document.getElementById('prop-rot-y').value = THREE.MathUtils.radToDeg(r.y).toFixed(0);
+        document.getElementById('prop-rot-z').value = THREE.MathUtils.radToDeg(r.z).toFixed(0);
+    }
+
+    function applyPropertyChanges() {
+        if(!selectedMesh) return;
+        const u = selectedMesh.userData;
+        u.name = document.getElementById('prop-name').value;
+        u.materialType = document.getElementById('prop-material').value;
+        
+        const newTex = document.getElementById('prop-texture').value.trim();
+        if (newTex !== u.textureUrl) {
+            u.textureUrl = newTex;
+            if(newTex) globalTextureLoader.load(newTex, tex => { selectedMesh.material.map = tex; selectedMesh.material.needsUpdate = true; });
+            else { selectedMesh.material.map = null; selectedMesh.material.needsUpdate = true; }
+        }
+
+        u.effectType = document.getElementById('prop-effect').value;
+        u.interactScript = document.getElementById('prop-script').value;
+        u.textValue = document.getElementById('prop-text').value;
+        selectedMesh.material.color.set(document.getElementById('prop-color').value);
+        
+        const getV = (prefix) => [
+            parseFloat(document.getElementById(`prop-${prefix}-x`).value)||0,
+            parseFloat(document.getElementById(`prop-${prefix}-y`).value)||0,
+            parseFloat(document.getElementById(`prop-${prefix}-z`).value)||0
+        ];
+        selectedMesh.position.set(...getV('pos'));
+        selectedMesh.scale.set(...getV('scale'));
+        const r = getV('rot');
+        selectedMesh.rotation.set(THREE.MathUtils.degToRad(r[0]), THREE.MathUtils.degToRad(r[1]), THREE.MathUtils.degToRad(r[2]));
+    }
+
+    function deleteSelectedObject() {
+        if(!selectedMesh) return;
+        transform.detach();
+        scene.remove(selectedMesh);
+        studioObjects = studioObjects.filter(o => o !== selectedMesh);
+        selectObject(null);
+    }
+
+    function animateStudio() { 
+        requestAnimationFrame(animateStudio); 
+        if(orbit) orbit.update();
+        if(renderer && scene && camera) renderer.render(scene, camera); 
+    }
+
+    function encodeRGX() {
+        let out = "<!DOCTYPE RGX>\n<world>\n";
+        studioObjects.forEach(obj => {
+            const u = obj.userData; const p = obj.position; const s = obj.scale; const r = obj.rotation;
+            const c = obj.material.color.getHexString();
+            out += `  <part type="${u.type}" name="${u.name.replace(/"/g,"'")}" mat="${u.materialType}" color="${c}" `;
+            out += `texture="${u.textureUrl.replace(/"/g,"'")}" effect="${u.effectType}" `;
+            out += `pos="${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}" `;
+            out += `scale="${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)}" `;
+            out += `rot="${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)}" `;
+            out += `text="${u.textValue.replace(/"/g,"&quot;")}">\n`;
+            if(u.interactScript) out += `    <![CDATA[${u.interactScript}]]>\n`;
+            out += `  </part>\n`;
+        });
+        out += "</world>\n<-DOCTYPE RGX>";
+        return out;
+    }
+
+    function parseRGXToStudio(rgxStr) {
+        studioObjects.forEach(o => scene.remove(o));
+        studioObjects = [];
+        selectObject(null);
+
+        const partRegex = /<part\s+type="([^"]+)"\s+name="([^"]+)"\s+mat="([^"]+)"\s+color="([^"]+)"\s+texture="([^"]*)"\s+effect="([^"]*)"\s+pos="([^"]+)"\s+scale="([^"]+)"\s+rot="([^"]+)"\s+text="([^"]*)">([\s\S]*?)<\/part>/g;
+        const scriptRegex = /<!\[CDATA\[([\s\S]*?)\]\]>/;
+        
+        let match;
+        while((match = partRegex.exec(rgxStr)) !== null) {
+            const [_, type, name, mat, color, tex, eff, posStr, scaleStr, rotStr, textStr, inner] = match;
+            const parseVec = (str) => str.split(',').map(parseFloat);
+            
+            let script = "";
+            const scriptMatch = inner.match(scriptRegex);
+            if(scriptMatch) script = scriptMatch[1];
+
+            createObject(type, {
+                name: name, matType: mat, color: parseInt(color, 16), texture: tex, effect: eff,
+                pos: parseVec(posStr), scale: parseVec(scaleStr), rot: parseVec(rotStr),
+                text: textStr.replace(/&quot;/g, '"'), script: script
+            });
+        }
+    }
+
+    function exportRGXFile() {
+        const data = encodeRGX();
+        const blob = new Blob([data], {type: "text/plain"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "RayGamixWorld.rgx";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function importRGXFile(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            parseRGXToStudio(e.target.result);
+            showAlert("Success", "RGX World Imported!");
+        };
+        reader.readAsText(file);
+    }
+
+    function testCurrentStudioGame() {
+        transform.detach();
+        const url = buildGameURL(false, "local-test");
+        const title = document.getElementById('gameTitle').value || "Studio Demo (Singleplayer)";
+        playGame(url, title);
+    }
+
+    async function publishGame() {
+        if(currentUser === "Guest") return showAlert("Error", "You must be logged in to publish to Cloudflare.");
+        const title = document.getElementById('gameTitle').value.trim();
+        if(!title) return showAlert("Error", "Please enter a Game Title in the Studio header.");
+        
+        const gameId = crypto.randomUUID();
+        const url = buildGameURL(true, gameId); 
+        const payload = { id: gameId, name: title, creator: currentUser, url: url };
+        
+        try {
+            const res = await fetch(`${CF_BACKEND_URL}/upload`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(res.ok && data.ok) {
+                if(data.storage === 'd1') {
+                    showAlert("Success (Cloudflare D1)", "Game permanently saved to Cloudflare D1 SQL database! Multiplayer is live.");
+                } else {
+                    showAlert("Published to Cloudflare", "Game published to Cloudflare Worker memory! To make games persist permanently across Worker restarts, attach a D1 Database binding named 'db' in your Cloudflare dashboard.");
+                }
+                fetchGames();
+            } else {
+                throw new Error(data.error || "Unknown error during publish.");
+            }
+        } catch(e) {
+            showAlert("Publish Error", "Failed to communicate with Cloudflare Worker: " + e.message);
+        }
+    }
+
+    function buildGameURL(isMultiplayer, gameId) {
+        const rgxCode = encodeRGX();
+        const b64Rgx = btoa(unescape(encodeURIComponent(rgxCode)));
+
+        const engineHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RayGamix Runtime Engine</title>
+    <style>
+        body{margin:0; overflow:hidden; background:#87CEEB;} 
+        canvas{display:block;} 
+        #crosshair { position:fixed; top:50%; left:50%; width:12px; height:12px; background:rgba(255,255,255,0.9); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100; mix-blend-mode: difference;}
+        #ui { position:fixed; bottom:25px; left:25px; color:#fff; font-family:sans-serif; background:rgba(0,0,0,0.8); padding:20px; border-radius:12px; font-size:13px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+        #interactPrompt { position:fixed; top:60%; left:50%; transform:translateX(-50%); background:#00b7ff; color:#000; padding:12px 25px; border-radius:8px; font-weight:900; font-family:sans-serif; display:none; pointer-events:none; box-shadow:0 5px 20px rgba(0,183,255,0.5); text-transform:uppercase; letter-spacing:1px;}
+        #leaveBtn { position:fixed; top:20px; right:20px; background:#ff4444; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; font-family:sans-serif; z-index:1000; text-transform:uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+        #leaveBtn:hover { background: #ff2222; }
+    </style>
+    \x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"\x3E\x3C/script\x3E
+</head>
+<body>
+    <button id="leaveBtn" onclick="window.parent.closeGame()">Leave Game</button>
+    <div id="crosshair"></div>
+    <div id="ui">
+        <button onclick="document.getElementById('ui').style.display='none'" style="float:right; background:#ff4444; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:10px; font-weight:bold; line-height:1;">X</button>
+        <b style="color:#00b7ff; font-size:15px; text-transform:uppercase;">Controls</b><br><br>
+        WASD - Move<br>
+        SPACE - Jump<br>
+        R-Click Drag - Rotate Camera<br>
+        E / L-Click - Interact<br><br>
+        <b style="color:#00b7ff; font-size:15px; text-transform:uppercase;">Emotes</b><br><br>
+        1 - Wave<br>2 - Dance<br>3 - Point
+    </div>
+    <div id="interactPrompt">Press 'E' to Interact</div>
+
+    \x3Cscript type="module"\x3E
+        const isMultiplayer = ${isMultiplayer};
+        const gameId = "${gameId}";
+        const backendUrl = "${CF_BACKEND_URL}";
+        
+        const userId = "user_" + Math.random().toString(36).substr(2, 9);
+        let otherPlayers = {};
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        scene.fog = new THREE.Fog(0x87CEEB, 500, 10000);
+        
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 20000);
+        const renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(100, 200, 100);
+        scene.add(dirLight);
+
+        const matLibrary = {
+            'Stone': { roughness: 0.9, metalness: 0.1 },
+            'Glass': { transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.8 },
+            'Ice': { transparent: true, opacity: 0.7, roughness: 0.1 },
+            'Lava': { emissive: 0xff3300, emissiveIntensity: 0.8 },
+            'Water': { transparent: true, opacity: 0.6 },
+            'Obsidian': { roughness: 0.1, metalness: 0.8 },
+            'Grass': { roughness: 1.0 },
+            'Dirt': { roughness: 1.0 },
+            'Plastic': { roughness: 0.3 }
+        };
+
+        function createTextTexture(text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,512,256);
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 48px sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, 256, 128);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const textureLoader = new THREE.TextureLoader();
+
+        let worldColliders = [], interactables = [], particleEmitters = [], spawnPos = new THREE.Vector3(0, 5, 0);
+        const rgxStr = decodeURIComponent(escape(atob("${b64Rgx}")));
+        
+        const partRegex = /<part\\s+type="([^"]+)"\\s+name="([^"]+)"\\s+mat="([^"]+)"\\s+color="([^"]+)"\\s+texture="([^"]*)"\\s+effect="([^"]*)"\\s+pos="([^"]+)"\\s+scale="([^"]+)"\\s+rot="([^"]+)"\\s+text="([^"]*)">([\\s\\S]*?)<\\/part>/g;
+        const scriptRegex = /<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/;
+        
+        let match;
+        while((match = partRegex.exec(rgxStr)) !== null) {
+            const [_, type, name, matStr, color, tex, eff, posStr, scaleStr, rotStr, textStr, inner] = match;
+            const p = posStr.split(',').map(parseFloat);
+            const s = scaleStr.split(',').map(parseFloat);
+            const r = rotStr.split(',').map(parseFloat);
+            let script = "";
+            const scriptMatch = inner.match(scriptRegex);
+            if(scriptMatch) script = scriptMatch[1];
+
+            let geo;
+            switch(type) {
+                case 'Baseplate': geo = new THREE.BoxGeometry(1,1,1); break;
+                case 'cube': case 'ladder': case 'spawn': case 'checkpoint': case 'clickdtct': geo = new THREE.BoxGeometry(4,4,4); break;
+                case 'sphere': geo = new THREE.SphereGeometry(2, 32, 16); break;
+                case 'triangle': geo = new THREE.ConeGeometry(2.5, 5, 4); break;
+                case 'pentagon': geo = new THREE.CylinderGeometry(2.5, 2.5, 5, 5); break;
+                case 'npc': geo = new THREE.CylinderGeometry(1.5, 1.5, 5, 16); break;
+                case 'sign': geo = new THREE.PlaneGeometry(6, 3); break;
+                default: geo = new THREE.BoxGeometry(4,4,4);
+            }
+
+            let matProps = matLibrary[matStr] || matLibrary['Plastic'];
+            let meshMat = new THREE.MeshStandardMaterial({ color: parseInt(color,16), ...matProps });
+            
+            if(tex) textureLoader.load(tex, t => { meshMat.map = t; meshMat.needsUpdate = true; });
+            if(type === 'sign') { meshMat.map = createTextTexture(textStr.replace(/&quot;/g, '"')); meshMat.color.set(0xffffff); }
+            if(type === 'spawn') { spawnPos.set(p[0], p[1] + 3, p[2]); meshMat.visible = false; }
+            
+            let mesh = new THREE.Mesh(geo, meshMat);
+            mesh.position.set(...p); mesh.scale.set(...s); mesh.rotation.set(...r);
+            mesh.userData = { type, script };
+            
+            scene.add(mesh);
+            if(type !== 'spawn' && type !== 'sign') worldColliders.push(mesh);
+            if(script) interactables.push(mesh);
+            
+            if(eff !== 'None' && eff !== '') particleEmitters.push({ mesh: mesh, type: eff, particles: [] });
+        }
+
+        function buildPlayerRig(colors, faceUrl, accUrl) {
+            const group = new THREE.Group();
+            const mat = (col) => new THREE.MeshStandardMaterial({color: col});
+            const headMat = mat(colors.head);
+            if(faceUrl) textureLoader.load(faceUrl, tex => { headMat.map = tex; headMat.needsUpdate = true; });
+
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat); head.position.y = 4.8;
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(colors.torso)); torso.position.y = 3.1;
+            
+            // Pivot arms at shoulder joint (bottom pivot point when raised)
+            const armGeo = new THREE.BoxGeometry(0.7, 2, 0.7);
+            armGeo.translate(0, -1, 0);
+
+            const larm = new THREE.Mesh(armGeo, mat(colors.larm)); larm.position.set(-1.4, 4.1, 0);
+            const rarm = new THREE.Mesh(armGeo.clone(), mat(colors.rarm)); rarm.position.set(1.4, 4.1, 0);
+
+            const legGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
+            legGeo.translate(0, -1, 0);
+
+            const lleg = new THREE.Mesh(legGeo, mat(colors.lleg)); lleg.position.set(-0.5, 2.0, 0);
+            const rleg = new THREE.Mesh(legGeo.clone(), mat(colors.rleg)); rleg.position.set(0.5, 2.0, 0);
+            
+            if(accUrl) {
+                const acc = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), new THREE.MeshStandardMaterial({color: 0xffd700}));
+                textureLoader.load(accUrl, tex => { acc.material.map = tex; acc.material.needsUpdate = true; });
+                acc.position.y = 5.6;
+                group.add(acc);
+            }
+
+            group.add(head, torso, larm, rarm, lleg, rleg);
+            group.userData = { larm, rarm, lleg, rleg };
+            return group;
+        }
+
+        const myColors = ${JSON.stringify(userColors)};
+        const myFace = ${JSON.stringify(userFace)};
+        const myAcc = ${JSON.stringify(userAccessory)};
+        
+        const playerGroup = buildPlayerRig(myColors, myFace, myAcc);
+        playerGroup.position.copy(spawnPos);
+        scene.add(playerGroup);
+
+        const keys = { w:false, a:false, s:false, d:false, space:false };
+        let activeEmote = null;
+
+        window.addEventListener('keydown', e => { 
+            let k = e.key.toLowerCase(); 
+            if(k === ' ') keys.space = true; else keys[k] = true; 
+            if(k === 'e') triggerInteract();
+            if(k === '1') activeEmote = 'wave';
+            if(k === '2') activeEmote = 'dance';
+            if(k === '3') activeEmote = 'point';
+        });
+        window.addEventListener('keyup', e => { 
+            let k = e.key.toLowerCase(); 
+            if(k === ' ') keys.space = false; else keys[k] = false; 
+        });
+
+        // Inverted Camera Pitch Control
+        let isRDragging = false, camYaw = 0, camPitch = 0.3;
+        window.addEventListener('mousedown', e => { 
+            if(e.button === 2) { isRDragging = true; document.body.requestPointerLock(); }
+            if(e.button === 0) triggerInteract();
+        });
+        window.addEventListener('mouseup', e => { if(e.button === 2) { isRDragging = false; document.exitPointerLock(); }});
+        window.addEventListener('mousemove', e => {
+            if (isRDragging) {
+                camYaw -= e.movementX * 0.005;
+                camPitch += e.movementY * 0.005; // Reversed Pitch (Up drag moves pitch up)
+                camPitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, camPitch));
+            }
+        });
+        window.addEventListener('contextmenu', e => e.preventDefault());
+
+        const raycaster = new THREE.Raycaster();
+        function triggerInteract() {
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const hits = raycaster.intersectObjects(interactables, false);
+            if(hits.length > 0 && hits[0].distance < 15) {
+                const scriptStr = hits[0].object.userData.script;
+                if(scriptStr) {
+                    try { new Function('player', 'scene', scriptStr)(playerGroup, scene); } 
+                    catch(err) { console.error("Interaction Error:", err); }
+                }
             }
         }
-    }
 
-    function handleAuth(type) {
-        const u = document.getElementById('accU').value.trim();
-        const p = document.getElementById('accP').value;
-        if (!u || !p) return alert("Enter credentials.");
-        if (type === 'signup') {
-            if (rgDB.users[u]) return alert("Taken!");
-            rgDB.users[u] = { password: p, avatar: { accessories: [] }, colors: {}, stats: { tokens: 0, streak: 0, verified: false } };
-            showTokenClaim(50);
-        } else if (type === 'login') {
-            if (!rgDB.users[u] || rgDB.users[u].password !== p) return alert("Invalid!");
-        }
-        currentUser = u;
-        saveDB(); loadUserProfile(); updateUI(); toggleDD('userDD');
-    }
-
-    function guestLogin() { currentUser = "Guest"; saveDB(); renewAvatar(); updateUI(); toggleDD('userDD'); }
-    function handleLogout() { currentUser = "Guest"; saveDB(); renewAvatar(); updateUI(); toggleDD('userDD'); }
-
-    // --- AVATAR & 3D ---
-    function setPartColor(v, val, save = true) { 
-        document.documentElement.style.setProperty(v, val); 
-        if (save && currentUser !== "Guest") { rgDB.users[currentUser].colors[v] = val; saveDB(); }
-    }
-    function setGlobalSkin(v) { ['--head-c','--torso-c','--larm-c','--rarm-c','--lleg-c','--rleg-c'].forEach(p => setPartColor(p, v)); }
-
-    function applyFace() {
-        const u = document.getElementById('fcInput').value;
-        if(u) { document.getElementById('char-face').style.backgroundImage = `url('${u}')`; if (currentUser !== "Guest") { rgDB.users[currentUser].avatar.face = u; saveDB(); } closeOverlays(); }
-    }
-
-    function renewAvatar() {
-        setGlobalSkin('#ffdbac');
-        document.getElementById('char-face').style.backgroundImage = "var(--face-url)";
-        document.querySelectorAll('#char-torso .side').forEach(s => s.style.backgroundImage = 'none');
-        if (currentUser !== "Guest") { rgDB.users[currentUser].colors = {}; rgDB.users[currentUser].avatar.decals = {}; rgDB.users[currentUser].avatar.accessories = []; saveDB(); }
-    }
-
-    function loadUserProfile() {
-        if (currentUser === "Guest") return;
-        const profile = rgDB.users[currentUser];
-        Object.entries(profile.colors || {}).forEach(([k, v]) => setPartColor(k, v, false));
-        if (profile.avatar.face) document.getElementById('char-face').style.backgroundImage = `url('${profile.avatar.face}')`;
-    }
-
-    // --- GAMES ---
-    function renderGames() {
-        const grid = document.getElementById('gameGrid');
-        const search = document.getElementById('gSearch').value.toLowerCase();
-        grid.innerHTML = "";
-        rgDB.games.filter(g => g.name.toLowerCase().includes(search)).forEach(g => {
-            grid.innerHTML += `<div class="card"><div style="height:120px; background:#050a0f; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:30px;">🎮</div><div style="font-weight:700; margin-top:10px;">${g.name}</div><div style="font-size:12px; color:var(--muted);">By ${g.creator}</div><button class="btn" style="margin-top:10px;" onclick="window.open('${g.url}', '_blank')">Play</button></div>`;
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        let velocityY = 0, walkTime = 0, emoteTime = 0;
+
+        function loop(time) {
+            requestAnimationFrame(loop);
+            
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const intHits = raycaster.intersectObjects(interactables, false);
+            document.getElementById('interactPrompt').style.display = (intHits.length > 0 && intHits[0].distance < 15) ? 'block' : 'none';
+
+            let moving = false, dx = 0, dz = 0;
+            
+            // Slower Walk Speed
+            const speed = 0.15;
+            if(keys.w) { dx -= Math.sin(camYaw)*speed; dz -= Math.cos(camYaw)*speed; moving=true; }
+            if(keys.s) { dx += Math.sin(camYaw)*speed; dz += Math.cos(camYaw)*speed; moving=true; }
+            if(keys.a) { dx -= Math.cos(camYaw)*speed; dz += Math.sin(camYaw)*speed; moving=true; }
+            if(keys.d) { dx += Math.cos(camYaw)*speed; dz -= Math.sin(camYaw)*speed; moving=true; }
+
+            if (moving) activeEmote = null;
+
+            if(moving) {
+                const dir = new THREE.Vector3(dx, 0, dz).normalize();
+                raycaster.set(new THREE.Vector3(playerGroup.position.x, playerGroup.position.y + 3, playerGroup.position.z), dir);
+                const wallHits = raycaster.intersectObjects(worldColliders, false);
+                if(wallHits.length > 0 && wallHits[0].distance < 1.5) { dx = 0; dz = 0; }
+            }
+
+            playerGroup.position.x += dx; playerGroup.position.z += dz;
+
+            const feetPos = new THREE.Vector3(playerGroup.position.x, playerGroup.position.y + 0.5, playerGroup.position.z);
+            raycaster.set(feetPos, new THREE.Vector3(0,-1,0));
+            const floorHits = raycaster.intersectObjects(worldColliders, false);
+            
+            let isGrounded = false, onLadder = false;
+            if (floorHits.length > 0) {
+                const hit = floorHits[0];
+                if(hit.object.userData.type === 'ladder') onLadder = true;
+                if(hit.object.userData.type === 'checkpoint') spawnPos.copy(hit.object.position).setY(spawnPos.y + 3);
+
+                if(hit.distance < 0.6 && velocityY <= 0) {
+                    isGrounded = true; velocityY = 0;
+                    playerGroup.position.y = hit.point.y; 
+                }
+            }
+
+            // 1.33x Lower Gravity (0.0188) & Jump Impulse (0.526)
+            if(onLadder) {
+                if(keys.w) velocityY = 0.3; else if(keys.s) velocityY = -0.3; else velocityY = 0;
+            } else {
+                if(!isGrounded) velocityY -= 0.0075; 
+                if(keys.space && isGrounded) velocityY = 0.526; 
+            }
+            playerGroup.position.y += velocityY;
+
+            const {larm, rarm, lleg, rleg} = playerGroup.userData;
+            if(!isGrounded && !onLadder) {
+                const wobble = Math.sin(time * 0.01) * 0.15;
+                larm.rotation.x = wobble; rarm.rotation.x = wobble;
+                lleg.rotation.x = 0; rleg.rotation.x = 0;
+            } else if(moving || (onLadder && (keys.w || keys.s))) {
+                walkTime += 0.225;
+                larm.rotation.x = Math.sin(walkTime) * 0.8; rarm.rotation.x = -Math.sin(walkTime) * 0.8;
+                lleg.rotation.x = -Math.sin(walkTime) * 0.8; rleg.rotation.x = Math.sin(walkTime) * 0.8;
+                playerGroup.rotation.y = Math.atan2(dx, dz);
+            } else if(activeEmote) {
+                // 1.33x Slower Dance Emote Speed (0.075)
+                emoteTime += 0.075;
+                if (activeEmote === 'wave') {
+                    // Uses shoulder bottom-pivot point
+                    rarm.rotation.x = Math.PI; 
+                    rarm.rotation.z = Math.sin(emoteTime * 1.33) * 0.3 - 0.2;
+                    larm.rotation.x = 0; lleg.rotation.x = 0; rleg.rotation.x = 0;
+                } else if (activeEmote === 'dance') {
+                    larm.rotation.x = Math.sin(emoteTime) * 1.5; rarm.rotation.x = Math.cos(emoteTime) * 1.5;
+                    lleg.rotation.x = Math.sin(emoteTime) * 0.4; rleg.rotation.x = Math.cos(emoteTime) * 0.4;
+                    playerGroup.rotation.y += 0.0375;
+                } else if (activeEmote === 'point') {
+                    rarm.rotation.x = Math.PI/2; rarm.rotation.z = -Math.PI/2;
+                    larm.rotation.x = 0; lleg.rotation.x = 0; rleg.rotation.x = 0;
+                }
+            } else {
+                walkTime = 0; emoteTime = 0;
+                larm.rotation.x = 0; rarm.rotation.x = 0; lleg.rotation.x = 0; rleg.rotation.x = 0; larm.rotation.z = 0; rarm.rotation.z = 0;
+            }
+
+            if(playerGroup.position.y < -100) playerGroup.position.copy(spawnPos);
+
+            particleEmitters.forEach(em => {
+                if(Math.random() < 0.25) {
+                    const c = em.type === 'Fire' ? 0xff4400 : (em.type === 'Sparkles' ? 0xffff00 : 0xaaaaaa);
+                    const p = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,0.5), new THREE.MeshBasicMaterial({color: c}));
+                    p.position.copy(em.mesh.position);
+                    p.position.x += (Math.random()-0.5)*em.mesh.scale.x*2;
+                    p.position.z += (Math.random()-0.5)*em.mesh.scale.z*2;
+                    scene.add(p);
+                    em.particles.push({m: p, age: 0});
+                }
+                em.particles.forEach((p, idx) => {
+                    p.age += 0.02;
+                    p.m.position.y += (em.type === 'Smoke' ? 0.05 : 0.15);
+                    p.m.scale.setScalar(Math.max(0, 1 - p.age));
+                    if(p.age > 1) { scene.remove(p.m); em.particles.splice(idx, 1); }
+                });
+            });
+
+            const camDist = 18;
+            camera.position.x = playerGroup.position.x + camDist * Math.sin(camYaw) * Math.cos(camPitch);
+            camera.position.y = playerGroup.position.y + 5 + camDist * Math.sin(camPitch);
+            camera.position.z = playerGroup.position.z + camDist * Math.cos(camYaw) * Math.cos(camPitch);
+            camera.lookAt(playerGroup.position.x, playerGroup.position.y + 4, playerGroup.position.z);
+
+            renderer.render(scene, camera);
+        }
+        
+        requestAnimationFrame(loop);
+
+        if (isMultiplayer) {
+            setInterval(async () => {
+                try {
+                    const res = await fetch(backendUrl + "/sync", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            gameId: gameId,
+                            playerId: userId,
+                            state: {
+                                x: playerGroup.position.x,
+                                y: playerGroup.position.y,
+                                z: playerGroup.position.z,
+                                ry: playerGroup.rotation.y,
+                                colors: myColors,
+                                face: myFace,
+                                acc: myAcc
+                            }
+                        })
+                    });
+                    const players = await res.json();
+                    
+                    const activeIds = new Set();
+                    players.forEach(p => {
+                        if (p.player_id === userId) return;
+                        activeIds.add(p.player_id);
+                        
+                        const pState = JSON.parse(p.state);
+                        
+                        if (!otherPlayers[p.player_id]) {
+                            const newPlayer = buildPlayerRig(pState.colors || myColors, pState.face || "", pState.acc || "");
+                            scene.add(newPlayer);
+                            otherPlayers[p.player_id] = newPlayer;
+                        }
+                        
+                        otherPlayers[p.player_id].position.set(pState.x, pState.y, pState.z);
+                        otherPlayers[p.player_id].rotation.y = pState.ry;
+                    });
+                    
+                    for (const id in otherPlayers) {
+                        if (!activeIds.has(id)) {
+                            scene.remove(otherPlayers[id]);
+                            delete otherPlayers[id];
+                        }
+                    }
+                } catch(e) {}
+            }, 200);
+        }
+    \x3C/script\x3E
+</body>
+</html>`;
+        
+        return "data:text/html;base64," + btoa(unescape(encodeURIComponent(engineHtml)));
     }
 
-    // --- UI HELPERS ---
-    function toggleDD(id) { document.getElementById(id).classList.toggle('show'); }
-    function openOverlay(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeOverlays() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
-
-    // Start
-    updateUI(); renderGames();
+    window.onload = () => { 
+        updateUI();
+        fetchGames(); 
+        initAvatar(); 
+    };
 </script>
-        <button class="btn" style="WIDTH: 200PX; Bottom: 0; position: fixed; RIGHT:0;" onclick="toggleManualRotate()">🔄 Flip Screen</button>
 </body>
 </html>
