@@ -4,1294 +4,2865 @@ RayGamix Version: 1.0 (full game)
 "Never give up. You can do it." 
 - The RayGamix Team 
 -->
-
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>RayGamix Launcher & Studio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
-<style>
 
-@font-face {
-    font-family: "Normal";
-    src: url("https://raygamix.com/Normal.ttf") format("truetype"); 
-}
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>RayGamix Launcher & Studio</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
+
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+
+
+
+    <style>
 
         :root {
+
             --bg: #03070b; --panel: #0a131c; --card: #111a24; --muted: #7d96b0;
+
             --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05);
+
         }
+
         html, body { 
+
             height: 100%; width: 100%; margin: 0; 
+
             background: var(--bg); color: #fff; 
-            font-family: 'Normal', system-ui, sans-serif !important; 
+
+            font-family: 'Inter', system-ui, sans-serif; 
+
             overflow: hidden; display: flex; align-items: center; justify-content: center;
+
         }
+
         .app {
+
             display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 80px 1fr;
+
             gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box;
+
         }
+
+
 
         .sidebar {
+
             grid-row: 1 / span 2; background: linear-gradient(180deg, var(--panel), transparent);
+
             border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; border-right: 1px solid rgba(0,183,255,0.1); overflow-y: auto;
+
         }
+
         .avatar-viewport { width: 100%; height: 280px; background: #000; border-radius: 8px; border: 1px solid #142536; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,183,255,0.05);}
 
+
+
         .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
+
         .logo { height: 42.5px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
+
         .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
+
         .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; font-size: 15px;}
+
         
+
         .btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.15s; text-align: center; box-sizing: border-box; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;}
+
         .btn:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,183,255,0.3); }
+
         .btn-alt { background: var(--glass); border: 1px solid #2a3d52; color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 13px; font-weight: bold; transition: 0.2s;}
+
         .btn-alt:hover { background: #111a24; border-color: var(--accent); }
+
         
+
         .btn-tool { background: #1a2b3d; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+
         .btn-tool:hover { background: var(--accent); color: #000; }
+
         .tool-active { background: var(--accent) !important; color: #000 !important; }
 
+
+
         .main { grid-column: 2; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 25px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.02);}
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
         .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid #1a2b3d; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column;}
+
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+
         .card-actions { display: flex; gap: 8px; margin-top: 15px; }
 
+
+
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+
         .panel { background: var(--panel); padding: 35px; border-radius: 20px; border: 1px solid var(--accent); width: 480px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 50px rgba(0,183,255,0.1);}
+
         .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: #ff4444; font-weight: bold; transition: 0.2s;}
+
         .close-btn:hover { transform: scale(1.2); }
+
         
+
         .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
+
         .studio-header { display:flex; justify-content:space-between; align-items: center; padding: 12px 25px; background: #071018; border-bottom: 1px solid #142536; }
+
         .studio-toolbar { background: #0a1520; padding: 12px 25px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap;}
+
         .studio-body { display: flex; flex: 1; min-height: 0; }
+
         .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; }
+
         .studio-sidebar { width: 340px; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; }
+
         
+
         .prop-section { padding: 15px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1;}
+
         .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color:var(--muted); font-weight: bold;}
+
         .prop-input { flex: 1; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px 8px; font-size: 12px; border-radius: 4px; width: 100%; box-sizing: border-box; transition: 0.2s;}
+
         .prop-input:focus { border-color: var(--accent); outline: none; }
+
         .prop-vec3 { display: flex; gap: 6px; flex: 1; }
+
         .prop-vec3 input { width: 33%; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px; font-size: 12px; text-align: center; border-radius: 4px;}
+
         select.prop-input { -webkit-appearance: none; appearance: none; cursor: pointer; }
 
+
+
         #game-player { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; padding: 0; margin: 0; flex-direction: column;}
+
         .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; z-index: 10001; pointer-events: none;}
+
         .player-header * { pointer-events: auto; }
+
         #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
+
     </style>
+
 </head>
+
 <body>
 
+
+
 <div class="app">
+
     <aside class="sidebar">
+
         <div class="avatar-viewport" id="avatarCanvas"></div>
+
         <div style="font-weight:900; color:var(--accent); font-size:20px; display: flex; align-items: center; margin-top:10px; text-transform: uppercase;">
+
             <span id="uDisp">Guest</span>
+
         </div>
+
         <div style="color:var(--muted); font-size:12px; font-weight: bold; margin-bottom:20px;">
+
             The RayGamix Team
+
         </div>
+
         <button class="btn-alt" onclick="openShop()">🛒 Avatar Shop & 3D Items</button>
+
         <button class="btn" style="background:#00e5ff; color:#000; margin-top: 10px;" onclick="openStudio()">🛠️ Launch Studio</button>
+
     </aside>
 
+
+
     <header class="topbar">
-        <img src="https://raygamix.com/logo.png" class="logo">
+
+        <img src="https://raygamix.com/logo.png" class="logo" onerror="this.src='https://placehold.co/150x42/03070b/00b7ff?text=RayGamix'">
+
         <div class="search"><input id="gSearch" placeholder="Search Games..." oninput="renderGames()"></div>
+
         <button class="btn-alt" style="width: auto; padding: 14px 25px;" onclick="openAuth()">👤 Account</button>
+
     </header>
 
+
+
     <main class="main">
+
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a2b3d; padding-bottom: 15px; margin-bottom: 20px;">
+
             <h2 style="margin:0; color:#fff; font-size: 20px;">Multiplayer Cloud Hub</h2>
-            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v1.0</span>
+
+            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v6.2 RGX</span>
+
         </div>
+
         <div class="grid" id="gameGrid">
+
             <div style="grid-column: 1/-1; text-align: center; color: var(--accent); padding: 50px; font-weight: bold; font-size: 18px;">Connecting...</div>
+
         </div>
+
     </main>
+
 </div>
+
+
 
 <div class="overlay" id="auth-panel">
+
     <div class="panel">
+
         <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
+
         <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
+
         <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Login to publish multiplayer games.</p>
+
         <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;">
+
         <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;">
+
         <button class="btn" onclick="handleAuth()">Login / Register</button>
+
         <button class="btn-alt" style="margin-top:12px;" onclick="handleLogout()">Play as Guest</button>
+
     </div>
+
 </div>
+
+
 
 <div class="overlay" id="shop-panel">
+
     <div class="panel">
+
         <div class="close-btn" onclick="document.getElementById('shop-panel').style.display='none'">×</div>
+
         <h2 style="color:var(--accent); margin-top:0;">🛒 Avatar Shop</h2>
+
         
+
         <h4 style="margin-bottom:10px; color:#fff; border-bottom: 1px solid #333; padding-bottom:5px;">Body Colors</h4>
+
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+
             <div class="prop-row">Head: <input type="color" id="col-head" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+
             <div class="prop-row">Torso: <input type="color" id="col-torso" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+
             <div class="prop-row">L-Arm: <input type="color" id="col-larm" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+
             <div class="prop-row">R-Arm: <input type="color" id="col-rarm" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+
             <div class="prop-row">L-Leg: <input type="color" id="col-lleg" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+
             <div class="prop-row">R-Leg: <input type="color" id="col-rleg" onchange="applyShopUpdates()" style="height:25px; padding:0; border:none;"></div>
+
         </div>
+
+
 
         <h4 style="margin-bottom:10px; color:#fff; border-bottom: 1px solid #333; padding-bottom:5px;">Equip 3D Items & Textures</h4>
+
         <input type="text" id="equipFaceUrl" class="prop-input" placeholder="Face Image URL (Texture)" style="margin-bottom:10px;" onchange="applyShopUpdates()">
+
         <input type="text" id="equipItemUrl" class="prop-input" placeholder="3D Accessory URL (Image Texture)" style="margin-bottom:15px;" onchange="applyShopUpdates()">
+
         <button class="btn-alt" style="border-color: var(--accent); color: var(--accent);" onclick="applyShopUpdates()">Save Outfit</button>
 
+
+
         <p style="font-size:11px; color:var(--muted); margin-top:15px; text-align:center;">Avatars sync automatically in multiplayer runtime.</p>
+
     </div>
+
 </div>
 
+
+
 <div class="overlay" id="studio-panel" style="background:#000;">
+
     <div class="studio-layout">
+
         <div class="studio-header">
+
             <h2 style="color:var(--accent); margin:0; font-weight:900;">RAYGAMIX STUDIO</h2>
+
             <div style="display:flex; gap:10px;">
+
                 <input type="text" id="gameTitle" class="prop-input" placeholder="Name your game..." style="width: 250px; font-size: 14px; padding: 8px 12px; border-radius: 6px;">
+
                 <button class="btn" style="background:#00e5ff; color:#000; width: auto;" onclick="testCurrentStudioGame(false)">🕹️ Test Demo (Local)</button>
+
                 <button class="btn" style="background:#cc66ff; color:#fff; width: auto;" onclick="publishGame()">🌐 Publish to Hub (AI Moderated)</button>
+
                 <div style="width: 1px; height: 35px; background: #333; margin: 0 5px;"></div>
+
                 <button class="btn-alt" style="width: auto;" onclick="exportRGXFile()">📥 Export .RGX</button>
+
                 <button class="btn-alt" style="width: auto;" onclick="document.getElementById('rgxImportInput').click()">📤 Import .RGX</button>
+
                 <input type="file" id="rgxImportInput" accept=".rgx" style="display:none;" onchange="importRGXFile(event)">
+
                 <button class="btn" style="background:#ff4444; color:#fff; width: auto; margin-left: 10px;" onclick="closeStudio()">Exit</button>
+
             </div>
+
         </div>
+
         <div class="studio-toolbar">
+
             <button id="tool-select" class="btn-tool tool-active" onclick="setTransformMode('select')">🖱️ Select</button>
+
             <button id="tool-translate" class="btn-tool" onclick="setTransformMode('translate')">☩ Move</button>
+
             <button id="tool-scale" class="btn-tool" onclick="setTransformMode('scale')">⤡ Scale</button>
+
             <button id="tool-rotate" class="btn-tool" onclick="setTransformMode('rotate')">↻ Rotate</button>
+
             <div style="width: 1px; height: 20px; background: #333; margin: 0 10px;"></div>
+
             
+
             <select id="addPartType" class="prop-input" style="width: auto; padding: 6px; font-weight:bold;">
+
                 <option value="cube">🧱 Block</option>
+
                 <option value="sphere">⚽ Sphere</option>
+
                 <option value="triangle">🔺 Triangle</option>
+
                 <option value="pentagon">⬟ Pentagon</option>
+
                 <option value="ladder">🪜 Ladder</option>
+
                 <option value="spawn">🏁 Spawn</option>
+
                 <option value="checkpoint">🚩 Checkpoint</option>
+
                 <option value="npc">🧍 NPC</option>
+
                 <option value="sign">🪧 Sign (Text)</option>
+
                 <option value="clickdtct">🖱️ Click Detector</option>
+
             </select>
+
             <button class="btn" style="background: var(--accent); color:#000; width:auto; padding: 6px 15px;" onclick="addSelectedPart()">➕ Insert</button>
+
         </div>
+
         
+
         <div class="studio-body">
+
             <div id="studio-viewport" class="studio-viewport"></div>
+
             <div class="studio-sidebar">
+
                 <div style="background: #050a0f; padding: 12px 15px; font-size: 13px; font-weight: 800; color: #fff; border-bottom: 1px solid #142536; text-transform:uppercase;">Properties & Scripts</div>
+
                 <div class="prop-section" id="studioPropertiesPanel">
+
                     <div id="prop-empty" style="color:var(--muted); text-align:center; margin-top:30px; font-weight:bold;">Select an object to edit properties</div>
+
                     <div id="prop-content" style="display:none;">
+
                         <div class="prop-row"><span style="width:80px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
+
                         <div class="prop-row"><span style="width:80px;">Type</span><input type="text" id="prop-type" class="prop-input" disabled style="background:#020406; color:#555;"></div>
+
                         <div class="prop-row"><span style="width:80px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px; border:none;" onchange="applyPropertyChanges()"></div>
+
                         
+
                         <div class="prop-row">
+
                             <span style="width:80px;">Material</span>
+
                             <select id="prop-material" class="prop-input" onchange="applyPropertyChanges()">
+
                                 <option value="Plastic">Plastic</option><option value="Grass">Grass</option>
+
                                 <option value="Stone">Stone</option><option value="Dirt">Dirt</option>
+
                                 <option value="Glass">Glass</option><option value="Ice">Ice</option>
+
                                 <option value="Water">Water</option><option value="Lava">Lava</option>
+
                                 <option value="Obsidian">Obsidian</option>
+
                             </select>
+
                         </div>
+
                         
+
                         <div class="prop-row">
+
                             <span style="width:80px;">Texture URL</span>
+
                             <input type="text" id="prop-texture" class="prop-input" onchange="applyPropertyChanges()" placeholder="https://...">
+
                         </div>
+
                         
+
                         <div class="prop-row">
+
                             <span style="width:80px;">Effect</span>
+
                             <select id="prop-effect" class="prop-input" onchange="applyPropertyChanges()">
+
                                 <option value="None">None</option>
+
                                 <option value="Fire">🔥 Fire</option>
+
                                 <option value="Smoke">💨 Smoke</option>
+
                                 <option value="Sparkles">✨ Sparkles</option>
+
                             </select>
+
                         </div>
+
                         
+
                         <div class="prop-row" id="row-text" style="display:none;">
+
                             <span style="width:80px;">Sign Text</span>
+
                             <input type="text" id="prop-text" class="prop-input" onchange="applyPropertyChanges()" placeholder="Enter text...">
+
                         </div>
+
+
 
                         <div style="border-top: 1px solid #1a2b3d; margin: 15px 0; padding-top: 15px;"></div>
 
+
+
                         <div class="prop-row"><span style="width:40px;">Pos</span><div class="prop-vec3"><input type="number" id="prop-pos-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
+
                         <div class="prop-row"><span style="width:40px;">Scale</span><div class="prop-vec3"><input type="number" id="prop-scale-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
+
                         <div class="prop-row"><span style="width:40px;">Rot</span><div class="prop-vec3"><input type="number" id="prop-rot-x" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-y" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-z" step="15" onchange="applyPropertyChanges()"></div></div>
+
                         
+
                         <div style="margin-top:20px; margin-bottom:8px; font-weight:bold; color:var(--accent);">Interaction Script (Click / E)</div>
+
                         <textarea id="prop-script" class="prop-input" style="height:80px; resize:vertical; font-family:monospace; background:#000;" onchange="applyPropertyChanges()" placeholder="player.position.y += 10;"></textarea>
+
                         
+
                         <button class="btn-alt" style="border-color:#ff4444; color:#ff4444; margin-top:20px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
+
 
 <div id="game-player">
+
     <div class="player-header">
-        <h2 id="player-title" style="color:var(--accent); margin:0; font-weight:900; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,183,255,0.5);">RayGamix Engine</h2>
-        <button class="btn" style="width: auto; background: #ff4444; color: #fff; padding: 8px 25px;" onclick="closeGame()">Exit Hub Layer</button>
+
+        <div style="width: 120px;"></div>
+
+        <h2 id="player-title" style="color:var(--accent); margin:0; font-weight:900; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,183,255,0.5); position: absolute; left: 50%; transform: translateX(-50%);">RayGamix Engine</h2>
+
+        <button class="btn" style="width: auto; background: #ff4444; color: #fff; padding: 8px 25px;" onclick="closeGame()">Leave Game</button>
+
     </div>
+
     <iframe id="game-frame" allow="pointer-lock"></iframe>
+
 </div>
+
+
 
 <div class="overlay" id="msg-panel" style="z-index: 99999;">
+
     <div class="panel" style="width: 380px; text-align: center; padding: 40px;">
+
         <div class="close-btn" onclick="document.getElementById('msg-panel').style.display='none'">×</div>
+
         <h3 id="msg-title" style="color:var(--accent); margin-top:0; font-size:22px;">Notice</h3>
+
         <p id="msg-body" style="color: var(--muted); margin-bottom: 25px; line-height:1.5;"></p>
+
         <button class="btn" onclick="document.getElementById('msg-panel').style.display='none'">Acknowledge</button>
+
     </div>
+
 </div>
 
+
+
 <script>
+
     const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
 
+
+
     let scene, camera, renderer, orbit, transform;
+
     let studioObjects = [];
+
     let selectedMesh = null;
+
     let games = [];
+
     
+
     // User profile state
+
     let currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
+
     let userColors = { head: 0xffdbac, torso: 0xffffff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
+
     let userFace = "";
+
     let userAccessory = "";
 
+
+
     try {
+
         const u = localStorage.getItem('rgxUser'); 
+
         if(u && u.trim().length >= 3) {
+
             currentUser = u;
+
         } else {
+
             localStorage.setItem('rgxUser', currentUser);
+
         }
+
+
 
         const c = localStorage.getItem('rgxColors'); 
+
         if(c) {
+
             const p = JSON.parse(c);
+
             if(p && typeof p === 'object') userColors = p;
+
         }
+
         const f = localStorage.getItem('rgxFace'); if(f) userFace = f;
+
         const a = localStorage.getItem('rgxAccessory'); if(a) userAccessory = a;
+
     } catch(e) { console.warn("Storage reset due to corruption"); }
 
+
+
     function showAlert(title, msg) {
+
         document.getElementById('msg-title').innerText = title;
+
         document.getElementById('msg-body').innerText = msg;
+
         document.getElementById('msg-panel').style.display = 'flex';
+
     }
+
+
 
     function openAuth() { document.getElementById('auth-panel').style.display = 'flex'; }
+
     function handleAuth() {
+
         const u = document.getElementById('authUsername').value.trim();
+
         if(u.length < 3) return showAlert("Error", "Username must be at least 3 characters.");
+
         currentUser = u;
+
         localStorage.setItem('rgxUser', u);
+
         updateUI();
+
         document.getElementById('auth-panel').style.display = 'none';
+
         showAlert("Welcome", `Logged in successfully as ${u}!`);
+
         renderGames();
+
     }
+
     function handleLogout() {
+
         currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
+
         localStorage.setItem('rgxUser', currentUser);
+
         updateUI();
+
         document.getElementById('auth-panel').style.display = 'none';
+
         renderGames();
+
     }
+
     function updateUI() { document.getElementById('uDisp').innerText = currentUser; }
 
+
+
     function openShop() {
+
         document.getElementById('shop-panel').style.display = 'flex';
+
         Object.keys(userColors).forEach(k => {
+
             document.getElementById('col-'+k).value = "#" + userColors[k].toString(16).padStart(6, '0');
+
         });
+
         document.getElementById('equipFaceUrl').value = userFace;
+
         document.getElementById('equipItemUrl').value = userAccessory;
+
     }
+
+
 
     function applyShopUpdates() {
+
         Object.keys(userColors).forEach(k => {
+
             userColors[k] = parseInt(document.getElementById('col-'+k).value.replace('#',''), 16);
+
         });
+
         userFace = document.getElementById('equipFaceUrl').value.trim();
+
         userAccessory = document.getElementById('equipItemUrl').value.trim();
+
         
+
         localStorage.setItem('rgxColors', JSON.stringify(userColors));
+
         localStorage.setItem('rgxFace', userFace);
+
         localStorage.setItem('rgxAccessory', userAccessory);
+
         rebuildAvatar();
+
         showAlert("Outfit Saved", "Your avatar will sync automatically in multiplayer!");
+
     }
+
+
 
     let avatarGroup, avatarRenderer, avatarScene, avatarCamera;
+
     const globalTextureLoader = new THREE.TextureLoader();
 
+
+
     function initAvatar() {
+
         const cont = document.getElementById('avatarCanvas');
+
         avatarScene = new THREE.Scene();
+
         avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth/cont.clientHeight, 0.1, 1000);
+
         avatarRenderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
+
         avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
+
         cont.appendChild(avatarRenderer.domElement);
+
         
+
         avatarScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+
         dirLight.position.set(2, 5, 5);
+
         avatarScene.add(dirLight);
 
+
+
         rebuildAvatar();
+
         avatarCamera.position.set(0, 3, 10);
 
-        function anim(){ 
-            requestAnimationFrame(anim); 
-            if(avatarGroup) avatarGroup.rotation.y += 0.01; 
+
+
+        let lastAvatarTime = 0;
+
+        const avatarInterval = 1000 / 24; // 24 FPS lock
+
+        function anim(time){ 
+
+            requestAnimationFrame(anim);
+
+            if (time - lastAvatarTime < avatarInterval) return;
+
+            lastAvatarTime = time;
+
+
+
+            if(avatarGroup) avatarGroup.rotation.y += 0.04; // 2x spin speed
+
             avatarRenderer.render(avatarScene, avatarCamera); 
+
         }
+
         anim();
+
     }
+
+
 
     function rebuildAvatar() {
-        if(avatarGroup) avatarScene.remove(avatarGroup);
-        avatarGroup = buildAvatarRig(userColors, userFace, userAccessory);
-        avatarScene.add(avatarGroup);
-    }
 
-    function buildAvatarRig(c, faceUrl, accUrl) {
-        const group = new THREE.Group();
-        const mat = (col) => new THREE.MeshStandardMaterial({color: col, roughness: 0.7});
-        const headMat = mat(c.head);
+        if(avatarGroup) avatarScene.remove(avatarGroup);
+
         
-        if (faceUrl) globalTextureLoader.load(faceUrl, (tex) => { headMat.map = tex; headMat.needsUpdate = true; }, undefined, () => {});
+
+        const c = userColors;
+
+        const group = new THREE.Group();
+
+        const mat = (col) => new THREE.MeshStandardMaterial({color: col, roughness: 0.7});
+
+        const headMat = mat(c.head);
+
+        if (userFace) globalTextureLoader.load(userFace, (tex) => { headMat.map = tex; headMat.needsUpdate = true; }, undefined, () => {});
+
+
 
         const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat); head.position.y = 4.8;
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(c.torso)); torso.position.y = 3.1;
-        
-        const armGeo = new THREE.BoxGeometry(0.7, 2, 0.7);
-        const larm = new THREE.Mesh(armGeo, mat(c.larm)); larm.position.set(-1.4, 3.1, 0);
-        const rarm = new THREE.Mesh(armGeo.clone(), mat(c.rarm)); rarm.position.set(1.4, 3.1, 0);
 
-        const legGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
-        const lleg = new THREE.Mesh(legGeo, mat(c.lleg)); lleg.position.set(-0.5, 1.0, 0);
-        const rleg = new THREE.Mesh(legGeo.clone(), mat(c.rleg)); rleg.position.set(0.5, 1.0, 0);
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(c.torso)); torso.position.y = 3.1;
+
         
-        if(accUrl) {
-            const accGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-            const accMat = new THREE.MeshStandardMaterial({color: 0xffd700});
-            globalTextureLoader.load(accUrl, tex => { accMat.map = tex; accMat.needsUpdate = true; });
-            const acc = new THREE.Mesh(accGeo, accMat);
-            acc.position.y = 5.6; 
-            group.add(acc);
+
+        function buildLimb(color, x, y, isLeg) {
+
+            const g = new THREE.Group(); g.position.set(x, y, 0);
+
+            const m = new THREE.Mesh(new THREE.BoxGeometry(isLeg?0.8:0.7, 2, isLeg?0.8:0.7), mat(color));
+
+            m.position.set(0, -1, 0); g.add(m);
+
+            return g;
+
         }
+
+
+
+        const larm = buildLimb(c.larm, -1.4, 4.1, false);
+
+        const rarm = buildLimb(c.rarm, 1.4, 4.1, false);
+
+        const lleg = buildLimb(c.lleg, -0.5, 2.0, true);
+
+        const rleg = buildLimb(c.rleg, 0.5, 2.0, true);
+
+        
+
+        if(userAccessory) {
+
+            const accGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+
+            const accMat = new THREE.MeshStandardMaterial({color: 0xffd700});
+
+            globalTextureLoader.load(userAccessory, tex => { accMat.map = tex; accMat.needsUpdate = true; });
+
+            const acc = new THREE.Mesh(accGeo, accMat); acc.position.y = 5.6; group.add(acc);
+
+        }
+
+
 
         group.add(head, torso, larm, rarm, lleg, rleg);
-        group.userData = { head, torso, larm, rarm, lleg, rleg };
-        return group;
+
+        avatarGroup = group;
+
+        avatarScene.add(avatarGroup);
+
     }
+
+
 
     async function fetchGames() {
+
         try {
+
             const response = await fetch(`${CF_BACKEND_URL}/games`);
+
             if(response.ok) {
+
                 const text = await response.text();
+
                 let fetched = [];
+
                 try { fetched = text ? JSON.parse(text) : []; } catch(err) { fetched = []; }
+
                 games = Array.isArray(fetched) ? fetched : [];
+
             } else throw new Error(await response.text());
+
         } catch(e) {
+
             console.warn("Could not fetch games from Backend:", e);
+
             document.getElementById('gameGrid').innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#ff4444;">Backend Notice: ${e.message || "Connecting..."}</p>`;
+
             return;
+
         }
+
         renderGames();
+
     }
+
+
 
     function renderGames() {
+
         const g = document.getElementById('gameGrid');
+
         if (games.length === 0) { g.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:var(--muted);'>No games found on the network. Be the first to publish one!</p>"; return; }
+
         
+
         const search = document.getElementById('gSearch').value.toLowerCase();
+
         const filtered = games.filter(ga => ga && ga.name && ga.name.toLowerCase().includes(search));
 
+
+
         g.innerHTML = filtered.map(ga => {
+
             const isOwner = currentUser.startsWith("Guest") ? false : ga.creator === currentUser;
+
+            const safeName = ga.name ? ga.name.replace(/'/g, "") : "Untitled";
+
             return `
+
             <div class='card'>
+
                 <div style="height:140px; background:#071018; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; font-size:50px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); border: 1px solid #142536;">🎮</div>
+
                 <h3 style="margin:0 0 5px 0; font-size:18px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; color:#fff;">${ga.name}</h3>
+
                 <p style="margin:0 0 15px 0; font-size:12px; color:var(--accent); font-weight:bold;">
-  <span style="color:var(--muted)">
-    by ${
-      !ga.creator ? "Unknown" :
-      ga.creator.startsWith("Guest_") ? "Guest" :
-      "@" + ga.creator
-    }
-  </span>
-</p>
+
+                  <span style="color:var(--muted)">
+
+                    by ${
+
+                      !ga.creator ? "Unknown" :
+
+                      ga.creator.startsWith("Guest_") ? "Guest" :
+
+                      "@" + ga.creator
+
+                    }
+
+                  </span>
+
+                </p>
+
                 <div class="card-actions">
-                    <button class='btn' style="flex:1;" onclick='playGame("${ga.url}", "${ga.name.replace(/'/g,"")}")'>▶ Play</button>
-                    ${isOwner ? `<button class='btn-alt' style="width:auto;" onclick='editGame("${ga.url}")'>Edit</button>` : ''}
+
+                    <button class='btn' style="flex:1;" onclick="playGame('${ga.url}', '${safeName}')">▶ Play</button>
+
+                    ${isOwner ? `<button class='btn-alt' style="width:auto;" onclick="editGame('${ga.url}')">Edit</button>` : ''}
+
                     <button class='btn-alt' style="width:auto; border-color:#ff4444; color:#ff4444;" onclick='reportGame()'>⚠</button>
+
                 </div>
+
             </div>
+
             `;
+
         }).join('');
+
     }
+
+
 
     window.closeGame = function() { 
+
         document.getElementById('game-frame').src = "about:blank"; 
+
         document.getElementById('game-player').style.display = 'none'; 
+
     };
 
-    function playGame(url, gameName) {
-        if(gameName) document.getElementById('player-title').innerText = gameName;
-        document.getElementById('game-frame').src = url;
-        document.getElementById('game-player').style.display = 'flex';
+
+
+    function extractRGXFromDataUrl(rawUrl) {
+
+        if (!rawUrl) return "";
+
+        if (rawUrl.startsWith("data:text/rgx;base64,") || rawUrl.startsWith("data:application/rgx;base64,")) {
+
+            const b64 = rawUrl.split(',')[1];
+
+            return decodeURIComponent(escape(atob(b64)));
+
+        } else if (rawUrl.startsWith("<")) {
+
+            return rawUrl;
+
+        } else {
+
+            try { return decodeURIComponent(escape(atob(rawUrl))); } catch(e) { return rawUrl; }
+
+        }
+
+        return "";
+
     }
+
+
+
+    function playGame(rawUrl, gameName) {
+
+        if(gameName) document.getElementById('player-title').innerText = gameName;
+
+        
+
+        let rgxStr = extractRGXFromDataUrl(rawUrl);
+
+        let engineUrl = "";
+
+        
+
+        if (rgxStr) {
+
+            engineUrl = buildGameBlobUrl(rgxStr, true, "game-" + Math.floor(Math.random()*10000));
+
+        } else {
+
+            engineUrl = rawUrl;
+
+        }
+
+
+
+        document.getElementById('game-frame').src = engineUrl;
+
+        document.getElementById('game-player').style.display = 'flex';
+
+    }
+
+
+
+    function editGame(rawUrl) {
+
+        const rgxStr = extractRGXFromDataUrl(rawUrl);
+
+        if (rgxStr) {
+
+            openStudio();
+
+            parseRGXToStudio(rgxStr);
+
+            showAlert("Studio", "Loaded RGX world into Studio editor!");
+
+        } else {
+
+            showAlert("Error", "Could not parse RGX data to edit.");
+
+        }
+
+    }
+
+
 
     async function reportGame() {
+
         try { await fetch(`${CF_BACKEND_URL}/report`, { method: 'POST' }); } catch(e) {}
+
         showAlert("Game Reported", "A report has been sent to The RayGamix Team moderators.");
+
     }
+
+
 
     let studioInitialized = false;
+
     function openStudio() {
+
         document.getElementById('studio-panel').style.display = 'flex';
+
         if(!studioInitialized) { initStudio(); studioInitialized = true; }
+
     }
+
     function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
 
+
+
     function initStudio() {
+
         const cont = document.getElementById('studio-viewport');
+
         scene = new THREE.Scene();
+
         scene.background = new THREE.Color(0x020406);
+
         scene.fog = new THREE.Fog(0x020406, 500, 10000);
+
         
+
         camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
+
         renderer = new THREE.WebGLRenderer({antialias: true});
+
         renderer.setSize(cont.clientWidth, cont.clientHeight);
+
         cont.appendChild(renderer.domElement);
+
         
+
         camera.position.set(0, 50, 100);
+
         camera.lookAt(0,0,0);
+
         
+
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
         const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+
         dl.position.set(100, 200, 100);
+
         scene.add(dl);
+
         
+
         scene.add(new THREE.GridHelper(4096, 128, 0x142536, 0x0a1520));
 
+
+
         orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
         transform = new THREE.TransformControls(camera, renderer.domElement);
+
         transform.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
+
         transform.addEventListener('change', () => { if(selectedMesh) syncProperties(); });
+
         scene.add(transform);
 
+
+
         const raycaster = new THREE.Raycaster();
+
         const mouse = new THREE.Vector2();
+
         renderer.domElement.addEventListener('pointerdown', (e) => {
+
             if(transform.dragging) return;
+
             const rect = renderer.domElement.getBoundingClientRect();
+
             mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+
             mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
             raycaster.setFromCamera(mouse, camera);
+
             const intersects = raycaster.intersectObjects(studioObjects);
+
             if(intersects.length > 0) selectObject(intersects[0].object);
+
             else selectObject(null);
+
         });
+
+
 
         if(studioObjects.length === 0) createObject('Baseplate', { scale: [4096, 1, 4096], pos: [0, -0.5, 0], mat: 'Grass', color: 0x1e3612 });
+
         animateStudio();
+
     }
+
+
 
     function setTransformMode(mode) {
+
         ['select','translate','scale','rotate'].forEach(m => document.getElementById(`tool-${m}`).classList.remove('tool-active'));
+
         document.getElementById(`tool-${mode}`).classList.add('tool-active');
+
         if(mode === 'select') transform.detach();
+
         else {
+
             transform.setMode(mode);
+
             if(selectedMesh) transform.attach(selectedMesh);
+
         }
+
     }
+
+
 
     function addSelectedPart() {
+
         createObject(document.getElementById('addPartType').value, { pos: [0, 5, 0] });
+
     }
+
+
 
     function createObject(type, override = {}) {
+
         let geo, matCol = override.color || 0xdddddd;
+
         switch(type) {
+
             case 'Baseplate': geo = new THREE.BoxGeometry(1, 1, 1); break;
+
             case 'cube': case 'ladder': case 'spawn': case 'checkpoint': case 'clickdtct': geo = new THREE.BoxGeometry(4, 4, 4); break;
+
             case 'sphere': geo = new THREE.SphereGeometry(2, 32, 16); break;
+
             case 'triangle': geo = new THREE.ConeGeometry(2.5, 5, 4); break;
+
             case 'pentagon': geo = new THREE.CylinderGeometry(2.5, 2.5, 5, 5); break;
+
             case 'npc': geo = new THREE.CylinderGeometry(1.5, 1.5, 5, 16); matCol = 0xffcc00; break;
+
             case 'sign': geo = new THREE.PlaneGeometry(6, 3); matCol = 0xffffff; break;
+
             default: geo = new THREE.BoxGeometry(4,4,4);
+
         }
+
+
 
         const mat = new THREE.MeshStandardMaterial({color: matCol, roughness: 0.7});
+
         const mesh = new THREE.Mesh(geo, mat);
+
         if(override.pos) mesh.position.set(...override.pos);
+
         if(override.scale) mesh.scale.set(...override.scale);
+
         if(override.rot) mesh.rotation.set(...override.rot);
+
         
+
         mesh.userData = {
+
             id: THREE.MathUtils.generateUUID(),
+
             type: type,
+
             name: override.name || type + "_" + Math.floor(Math.random()*1000),
+
             materialType: override.matType || 'Plastic',
+
             textureUrl: override.texture || '',
+
             effectType: override.effect || 'None',
+
             interactScript: override.script || '',
+
             textValue: override.text || (type === 'sign' ? 'Text' : '')
+
         };
+
         
+
         if (mesh.userData.textureUrl) {
+
             globalTextureLoader.load(mesh.userData.textureUrl, tex => { mesh.material.map = tex; mesh.material.needsUpdate = true; });
+
         }
+
+
 
         scene.add(mesh);
+
         studioObjects.push(mesh);
+
         selectObject(mesh);
+
     }
+
+
 
     function selectObject(mesh) {
+
         selectedMesh = mesh;
+
         if(mesh) {
+
             if(!document.getElementById('tool-select').classList.contains('tool-active')) transform.attach(mesh);
+
             document.getElementById('prop-empty').style.display = 'none';
+
             document.getElementById('prop-content').style.display = 'block';
+
             document.getElementById('row-text').style.display = mesh.userData.type === 'sign' ? 'flex' : 'none';
+
             syncProperties();
+
         } else {
+
             transform.detach();
+
             document.getElementById('prop-empty').style.display = 'block';
+
             document.getElementById('prop-content').style.display = 'none';
+
         }
+
     }
+
+
 
     function syncProperties() {
+
         if(!selectedMesh) return;
+
         const u = selectedMesh.userData, p = selectedMesh.position, s = selectedMesh.scale, r = selectedMesh.rotation;
+
         
+
         document.getElementById('prop-name').value = u.name;
+
         document.getElementById('prop-type').value = u.type;
+
         document.getElementById('prop-color').value = '#' + selectedMesh.material.color.getHexString();
+
         document.getElementById('prop-material').value = u.materialType;
+
         document.getElementById('prop-texture').value = u.textureUrl;
+
         document.getElementById('prop-effect').value = u.effectType;
+
         document.getElementById('prop-script').value = u.interactScript;
+
         document.getElementById('prop-text').value = u.textValue;
+
         
+
         const setV = (prefix, vec) => {
+
             document.getElementById(`prop-${prefix}-x`).value = vec.x.toFixed(2);
+
             document.getElementById(`prop-${prefix}-y`).value = vec.y.toFixed(2);
+
             document.getElementById(`prop-${prefix}-z`).value = vec.z.toFixed(2);
+
         };
+
         setV('pos', p); setV('scale', s);
+
         
+
         document.getElementById('prop-rot-x').value = THREE.MathUtils.radToDeg(r.x).toFixed(0);
+
         document.getElementById('prop-rot-y').value = THREE.MathUtils.radToDeg(r.y).toFixed(0);
+
         document.getElementById('prop-rot-z').value = THREE.MathUtils.radToDeg(r.z).toFixed(0);
+
     }
+
+
 
     function applyPropertyChanges() {
+
         if(!selectedMesh) return;
+
         const u = selectedMesh.userData;
+
         u.name = document.getElementById('prop-name').value;
+
         u.materialType = document.getElementById('prop-material').value;
+
         
+
         const newTex = document.getElementById('prop-texture').value.trim();
+
         if (newTex !== u.textureUrl) {
+
             u.textureUrl = newTex;
+
             if(newTex) globalTextureLoader.load(newTex, tex => { selectedMesh.material.map = tex; selectedMesh.material.needsUpdate = true; });
+
             else { selectedMesh.material.map = null; selectedMesh.material.needsUpdate = true; }
+
         }
+
+
 
         u.effectType = document.getElementById('prop-effect').value;
+
         u.interactScript = document.getElementById('prop-script').value;
+
         u.textValue = document.getElementById('prop-text').value;
+
         selectedMesh.material.color.set(document.getElementById('prop-color').value);
+
         
+
         const getV = (prefix) => [
+
             parseFloat(document.getElementById(`prop-${prefix}-x`).value)||0,
+
             parseFloat(document.getElementById(`prop-${prefix}-y`).value)||0,
+
             parseFloat(document.getElementById(`prop-${prefix}-z`).value)||0
+
         ];
+
         selectedMesh.position.set(...getV('pos'));
+
         selectedMesh.scale.set(...getV('scale'));
+
         const r = getV('rot');
+
         selectedMesh.rotation.set(THREE.MathUtils.degToRad(r[0]), THREE.MathUtils.degToRad(r[1]), THREE.MathUtils.degToRad(r[2]));
+
     }
+
+
 
     function deleteSelectedObject() {
+
         if(!selectedMesh) return;
+
         transform.detach();
+
         scene.remove(selectedMesh);
+
         studioObjects = studioObjects.filter(o => o !== selectedMesh);
+
         selectObject(null);
+
     }
+
+
 
     function animateStudio() { 
+
         requestAnimationFrame(animateStudio); 
+
+        if (document.getElementById('studio-panel').style.display === 'none') return;
+
         if(orbit) orbit.update();
+
         if(renderer && scene && camera) renderer.render(scene, camera); 
+
     }
+
+
 
     function encodeRGX() {
+
         let out = "<!DOCTYPE RGX>\n<world>\n";
+
         studioObjects.forEach(obj => {
+
             const u = obj.userData; const p = obj.position; const s = obj.scale; const r = obj.rotation;
+
             const c = obj.material.color.getHexString();
+
             out += `  <part type="${u.type}" name="${u.name.replace(/"/g,"'")}" mat="${u.materialType}" color="${c}" `;
+
             out += `texture="${u.textureUrl.replace(/"/g,"'")}" effect="${u.effectType}" `;
+
             out += `pos="${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}" `;
+
             out += `scale="${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)}" `;
+
             out += `rot="${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)}" `;
+
             out += `text="${u.textValue.replace(/"/g,"&quot;")}">\n`;
+
             if(u.interactScript) out += `    <![CDATA[${u.interactScript}]]>\n`;
+
             out += `  </part>\n`;
+
         });
+
         out += "</world>\n<-DOCTYPE RGX>";
+
         return out;
+
     }
+
+
 
     function parseRGXToStudio(rgxStr) {
+
         studioObjects.forEach(o => scene.remove(o));
+
         studioObjects = [];
+
         selectObject(null);
 
+
+
         const partRegex = /<part\s+type="([^"]+)"\s+name="([^"]+)"\s+mat="([^"]+)"\s+color="([^"]+)"\s+texture="([^"]*)"\s+effect="([^"]*)"\s+pos="([^"]+)"\s+scale="([^"]+)"\s+rot="([^"]+)"\s+text="([^"]*)">([\s\S]*?)<\/part>/g;
+
         const scriptRegex = /<!\[CDATA\[([\s\S]*?)\]\]>/;
+
         
+
         let match;
+
         while((match = partRegex.exec(rgxStr)) !== null) {
+
             const [_, type, name, mat, color, tex, eff, posStr, scaleStr, rotStr, textStr, inner] = match;
+
             const parseVec = (str) => str.split(',').map(parseFloat);
+
             
+
             let script = "";
+
             const scriptMatch = inner.match(scriptRegex);
+
             if(scriptMatch) script = scriptMatch[1];
 
+
+
             createObject(type, {
+
                 name: name, matType: mat, color: parseInt(color, 16), texture: tex, effect: eff,
+
                 pos: parseVec(posStr), scale: parseVec(scaleStr), rot: parseVec(rotStr),
+
                 text: textStr.replace(/&quot;/g, '"'), script: script
+
             });
+
         }
+
     }
+
+
 
     function exportRGXFile() {
+
         const data = encodeRGX();
+
         const blob = new Blob([data], {type: "text/plain"});
+
         const a = document.createElement("a");
+
         a.href = URL.createObjectURL(blob);
+
         a.download = "RayGamixWorld.rgx";
+
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
     }
+
+
 
     function importRGXFile(event) {
+
         const file = event.target.files[0];
+
         if(!file) return;
+
         const reader = new FileReader();
+
         reader.onload = (e) => {
+
             parseRGXToStudio(e.target.result);
+
             showAlert("Success", "RGX World Imported!");
+
         };
+
         reader.readAsText(file);
+
     }
 
+
+
     function testCurrentStudioGame() {
+
         transform.detach();
-        const url = buildGameURL(false, "local-test");
+
+        const rgxCode = encodeRGX();
+
+        const engineUrl = buildGameBlobUrl(rgxCode, false, "local-test");
+
         const title = document.getElementById('gameTitle').value || "Studio Demo (Singleplayer)";
-        playGame(url, title);
+
+        
+
+        if(title) document.getElementById('player-title').innerText = title;
+
+        document.getElementById('game-frame').src = engineUrl;
+
+        document.getElementById('game-player').style.display = 'flex';
+
     }
+
+
 
     async function publishGame() {
 
         const title = document.getElementById('gameTitle').value.trim();
-        if(!title) return showAlert("Error", "Please enter a Game Title in the Studio header.");
-        
-        const gameId = crypto.randomUUID();
-        const url = buildGameURL(true, gameId); 
-        const payload = { id: gameId, name: title, creator: currentUser, url: url };
-        
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/upload`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            if(res.ok && data.ok) {
-                if(data.storage === 'd1') {
-                    showAlert("Success (AI)", "Game AI-moderated and permanently saved to database!");
-                } else {
-                    showAlert("Published", "Game AI-moderated and published to memory!");
-                }
-                fetchGames();
-            } else {
-                throw new Error(data.error || "Unknown error during publish.");
-            }
-        } catch(e) {
-            showAlert("Publish Error / AI Flag", "Failed to publish: " + e.message);
-        }
-    }
 
-    function buildGameURL(isMultiplayer, gameId) {
+        if(!title) return showAlert("Error", "Please enter a Game Title in the Studio header.");
+
+        
+
+        const gameId = crypto.randomUUID();
+
         const rgxCode = encodeRGX();
+
         const b64Rgx = btoa(unescape(encodeURIComponent(rgxCode)));
 
-        const engineHtml = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>RayGamix Runtime Engine</title>
-    <style>
-        body{margin:0; overflow:hidden; background:#87CEEB;} 
-        canvas{display:block;} 
-        #crosshair { position:fixed; top:50%; left:50%; width:12px; height:12px; background:rgba(255,255,255,0.9); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100; mix-blend-mode: difference;}
-        #ui { position:fixed; bottom:25px; left:25px; color:#fff; font-family:sans-serif; background:rgba(0,0,0,0.8); padding:20px; border-radius:12px; font-size:13px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.5); max-width: 280px;}
-        #interactPrompt { position:fixed; top:60%; left:50%; transform:translateX(-50%); background:#00b7ff; color:#000; padding:12px 25px; border-radius:8px; font-weight:900; font-family:sans-serif; display:none; pointer-events:none; box-shadow:0 5px 20px rgba(0,183,255,0.5); text-transform:uppercase; letter-spacing:1px;}
-        #leaveBtn { position:fixed; top:20px; right:20px; background:#ff4444; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; font-family:sans-serif; z-index:1000; text-transform:uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
-        #leaveBtn:hover { background: #ff2222; }
+        const rgxDataUrl = "data:text/rgx;base64," + b64Rgx;
 
-        /* Real-Time Live Chat UI */
-        #chatBox { position: fixed; top: 20px; left: 20px; width: 320px; height: 260px; background: rgba(0,0,0,0.75); border: 1px solid rgba(0,183,255,0.3); border-radius: 10px; display: flex; flex-direction: column; z-index: 1000; backdrop-filter: blur(8px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+
+
+        const payload = { id: gameId, name: title, creator: currentUser, url: rgxDataUrl };
+
+        
+
+        try {
+
+            const res = await fetch(`${CF_BACKEND_URL}/upload`, {
+
+                method: 'POST',
+
+                headers: {'Content-Type': 'application/json'},
+
+                body: JSON.stringify(payload)
+
+            });
+
+            const data = await res.json();
+
+            if(res.ok && data.ok) {
+
+                if(data.storage === 'd1') {
+
+                    showAlert("Success (AI)", "Game AI-moderated and permanently saved to database!");
+
+                } else {
+
+                    showAlert("Published", "Game AI-moderated and published to memory!");
+
+                }
+
+                fetchGames();
+
+            } else {
+
+                throw new Error(data.error || "Unknown error during publish.");
+
+            }
+
+        } catch(e) {
+
+            showAlert("Publish Error / AI Flag", "Failed to publish: " + e.message);
+
+        }
+
+    }
+
+
+
+    function buildGameBlobUrl(rgxStr, isMultiplayer, gameId) {
+
+        const html = getEngineHtml(rgxStr, isMultiplayer, gameId);
+
+        const blob = new Blob([html], { type: 'text/html' });
+
+        return URL.createObjectURL(blob);
+
+    }
+
+
+
+    function getEngineHtml(rgxStr, isMultiplayer, gameId) {
+
+        const b64Rgx = btoa(unescape(encodeURIComponent(rgxStr)));
+
+        
+
+        return `<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>RayGamix Runtime Engine</title>
+
+    <style>
+
+        body{margin:0; overflow:hidden; background:#87CEEB;} 
+
+        canvas{display:block;} 
+
+        #crosshair { position:fixed; top:50%; left:50%; width:12px; height:12px; background:rgba(255,255,255,0.9); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100; mix-blend-mode: difference;}
+
+        #ui { position:fixed; bottom:25px; left:25px; color:#fff; font-family:sans-serif; background:rgba(0,0,0,0.8); padding:20px; border-radius:12px; font-size:13px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.5); max-width: 280px;}
+
+        #interactPrompt { position:fixed; top:60%; left:50%; transform:translateX(-50%); background:#00b7ff; color:#000; padding:12px 25px; border-radius:8px; font-weight:900; font-family:sans-serif; display:none; pointer-events:none; box-shadow:0 5px 20px rgba(0,183,255,0.5); text-transform:uppercase; letter-spacing:1px;}
+
+
+
+        #fpsCounter { position:fixed; top:20px; left:20px; background:rgba(0,0,0,0.85); color:#00e5ff; padding:8px 14px; border-radius:8px; font-family:monospace; font-weight:bold; font-size:13px; border:1px solid rgba(0,183,255,0.4); z-index:1000; pointer-events:none; box-shadow:0 0 10px rgba(0,183,255,0.2); }
+
+
+
+        #chatBox { position: fixed; top: 65px; left: 20px; width: 320px; height: 260px; background: rgba(0,0,0,0.75); border: 1px solid rgba(0,183,255,0.3); border-radius: 10px; display: flex; flex-direction: column; z-index: 1000; backdrop-filter: blur(8px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+
         #chatHeader { padding: 8px 12px; background: rgba(0,183,255,0.15); border-bottom: 1px solid rgba(0,183,255,0.2); font-family: sans-serif; font-size: 11px; font-weight: 800; color: #00b7ff; display: flex; justify-content: space-between; align-items: center; border-radius: 9px 9px 0 0; }
+
         #chatLog { flex: 1; overflow-y: auto; padding: 10px; font-family: sans-serif; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
+
         .chatMsg { color: #fff; word-break: break-word; line-height: 1.3; }
+
         .chatUser { color: #00b7ff; font-weight: bold; }
+
         .chatSystem { color: #ffbb00; font-style: italic; }
+
         .chatError { color: #ff4444; font-weight: bold; }
+
         #chatForm { display: flex; padding: 6px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); border-radius: 0 0 9px 9px; }
+
         #chatInput { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-family: sans-serif; font-size: 12px; padding: 6px 8px; }
+
         #chatSendBtn { background: #00b7ff; color: #000; border: none; border-radius: 5px; font-size: 11px; font-weight: 800; cursor: pointer; padding: 6px 12px; }
+
     </style>
-    \x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"\x3E\x3C/script\x3E
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+
 </head>
+
 <body>
-    <button id="leaveBtn" onclick="window.parent.closeGame()">Leave Game</button>
+
+    <div id="fpsCounter">FPS: 60</div>
+
     <div id="crosshair"></div>
+
     
+
     <div id="chatBox">
+
         <div id="chatHeader">
+
             <span>💬 LIVE CHAT</span>
+
             <span style="color:#a8ffb2; font-size:10px;">🛡️ Llama 3.1 AI Moderated</span>
+
         </div>
+
         <div id="chatLog">
+
             <div class="chatMsg chatSystem">[System]: Welcome to RayGamix Multiplayer! Chat is moderated by Llama 3.1 AI.</div>
+
         </div>
+
         <form id="chatForm" onsubmit="sendChatMessage(event)">
+
             <input type="text" id="chatInput" placeholder="Press Enter or type to chat..." autocomplete="off">
+
             <button type="submit" id="chatSendBtn">Send</button>
+
         </form>
+
     </div>
+
+
 
     <div id="ui">
+
         <button onclick="document.getElementById('ui').style.display='none'" style="float:right; background:#ff4444; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:10px; font-weight:bold; line-height:1;">X</button>
+
         <b style="color:#00b7ff; font-size:15px; text-transform:uppercase;">Controls</b><br><br>
+
         WASD - Move<br>
+
         SPACE - Jump<br>
+
         R-Click Drag - Rotate Camera<br>
+
         E / L-Click - Interact<br><br>
+
         <b style="color:#00b7ff; font-size:15px; text-transform:uppercase;">Emotes</b><br><br>
+
         1 - Wave<br>2 - Dance<br>3 - Point
+
+
+
+        <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.15); padding-top:12px;">
+
+            <b style="color:#00b7ff; font-size:12px; text-transform:uppercase;">GRAPHICS QUALITY</b>
+
+            <select id="gfxSelect" onchange="window.setGfxQuality(this.value)" style="margin-top:6px; width:100%; background:#0a1520; color:#fff; border:1px solid #00b7ff; padding:6px; border-radius:6px; font-weight:bold; outline:none; cursor:pointer;">
+
+                <option value="low">LOW (Default Colors)</option>
+
+                <option value="medium" selected>MEDIUM (Tiled PNG Textures)</option>
+
+                <option value="high">HIGH (3D Depth & Bump Maps)</option>
+
+            </select>
+
+        </div>
+
     </div>
+
     <div id="interactPrompt">Press 'E' to Interact</div>
 
-    \x3Cscript type="module"\x3E
+
+
+    <script type="module">
+
         const isMultiplayer = ${isMultiplayer};
+
         const gameId = "${gameId}";
+
         const backendUrl = "${CF_BACKEND_URL}";
+
         
+
         const currentUsername = "${currentUser}";
+
         const userId = "${currentUser}_" + Math.random().toString(36).substr(2, 6);
+
         let otherPlayers = {};
 
-        // Chat System Integration
+
+
         window.sendChatMessage = async function(e) {
+
             e.preventDefault();
+
             const input = document.getElementById('chatInput');
+
             const msg = input.value.trim();
+
             if (!msg) return;
+
             input.value = '';
 
+
+
             try {
+
                 const res = await fetch(backendUrl + "/chat/send", {
+
                     method: "POST",
+
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        gameId: gameId,
-                        playerId: userId,
-                        username: currentUsername,
-                        message: msg
-                    })
+
+                    body: JSON.stringify({ gameId, playerId: userId, username: currentUsername, message: msg })
+
                 });
+
                 const data = await res.json();
+
                 if (data.flagged) {
-                    appendChatMsg("System AI", "Your message was blocked by RayGamix AI Moderation (" + data.reason + ")", "chatError");
+
+                    appendChatMsg("System AI", "Blocked by AI: " + data.reason, "chatError");
+
                 } else if (data.ok) {
+
                     fetchChatHistory();
-                } else if (data.error) {
-                    appendChatMsg("System AI", data.error, "chatError");
+
                 }
+
             } catch(err) {
+
                 appendChatMsg("System", "Could not connect to chat server.", "chatSystem");
+
             }
+
         };
+
+
 
         function appendChatMsg(user, text, styleClass = "chatMsg") {
+
             const log = document.getElementById('chatLog');
+
             const div = document.createElement('div');
+
             div.className = styleClass;
+
             div.innerHTML = "<span class='chatUser'>" + user + ":</span> " + text;
+
             log.appendChild(div);
+
             log.scrollTop = log.scrollHeight;
+
         }
+
+
 
         let seenMsgIds = new Set();
+
         async function fetchChatHistory() {
+
             try {
+
                 const res = await fetch(backendUrl + "/chat/messages?gameId=" + gameId);
+
                 if (res.ok) {
+
                     const messages = await res.json();
+
                     messages.forEach(m => {
+
                         if (!seenMsgIds.has(m.id)) {
+
                             seenMsgIds.add(m.id);
+
                             appendChatMsg(m.username, m.message);
+
                         }
+
                     });
+
                 }
+
             } catch(e){}
+
         }
+
+
 
         if (isMultiplayer) {
+
             setInterval(fetchChatHistory, 2500);
+
             fetchChatHistory();
+
         }
+
+
 
         const scene = new THREE.Scene();
+
         scene.background = new THREE.Color(0x87CEEB);
+
         scene.fog = new THREE.Fog(0x87CEEB, 500, 10000);
+
         
+
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 20000);
+
         const renderer = new THREE.WebGLRenderer({antialias:true});
+
         renderer.setSize(window.innerWidth, window.innerHeight);
+
         document.body.appendChild(renderer.domElement);
 
+
+
         scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+
         dirLight.position.set(100, 200, 100);
+
         scene.add(dirLight);
 
+
+
         const matLibrary = {
+
             'Stone': { roughness: 0.9, metalness: 0.1 },
+
             'Glass': { transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.8 },
+
             'Ice': { transparent: true, opacity: 0.7, roughness: 0.1 },
+
             'Lava': { emissive: 0xff3300, emissiveIntensity: 0.8 },
+
             'Water': { transparent: true, opacity: 0.6 },
+
             'Obsidian': { roughness: 0.1, metalness: 0.8 },
+
             'Grass': { roughness: 1.0 },
+
             'Dirt': { roughness: 1.0 },
+
             'Plastic': { roughness: 0.3 }
+
         };
 
-        function createTextTexture(text) {
+
+
+        function generateProceduralTexture(matType, isBump = false) {
+
             const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 256;
+
+            canvas.width = 256; canvas.height = 256;
+
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,512,256);
-            ctx.fillStyle = '#000000'; ctx.font = 'bold 48px sans-serif';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(text, 256, 128);
-            return new THREE.CanvasTexture(canvas);
+
+
+
+            if (isBump) {
+
+                ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, 256, 256);
+
+                for (let i = 0; i < 2000; i++) {
+
+                    const x = Math.random() * 256, y = Math.random() * 256, r = Math.random() * 3 + 1;
+
+                    const val = Math.floor(Math.random() * 255);
+
+                    ctx.fillStyle = "rgb(" + val + "," + val + "," + val + ")";
+
+                    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+                }
+
+            } else {
+
+                if (matType === 'Grass') {
+
+                    ctx.fillStyle = '#2e5a1c'; ctx.fillRect(0, 0, 256, 256);
+
+                    for (let i = 0; i < 1000; i++) {
+
+                        ctx.fillStyle = Math.random() > 0.5 ? '#3a7324' : '#1e3d12';
+
+                        ctx.fillRect(Math.random() * 256, Math.random() * 256, 4, 10);
+
+                    }
+
+                } else if (matType === 'Stone') {
+
+                    ctx.fillStyle = '#666666'; ctx.fillRect(0, 0, 256, 256);
+
+                    ctx.strokeStyle = '#333333'; ctx.lineWidth = 4;
+
+                    for (let y = 0; y < 256; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y); ctx.stroke(); }
+
+                    for (let x = 0; x < 256; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 256); ctx.stroke(); }
+
+                } else if (matType === 'Dirt') {
+
+                    ctx.fillStyle = '#5c4033'; ctx.fillRect(0, 0, 256, 256);
+
+                    for (let i = 0; i < 1500; i++) {
+
+                        ctx.fillStyle = Math.random() > 0.5 ? '#3d2a22' : '#7a5544';
+
+                        ctx.fillRect(Math.random() * 256, Math.random() * 256, 3, 3);
+
+                    }
+
+                } else if (matType === 'Lava') {
+
+                    ctx.fillStyle = '#ff2200'; ctx.fillRect(0, 0, 256, 256);
+
+                    ctx.fillStyle = '#ffaa00';
+
+                    for (let i = 0; i < 300; i++) { ctx.beginPath(); ctx.arc(Math.random() * 256, Math.random() * 256, Math.random() * 12 + 4, 0, Math.PI * 2); ctx.fill(); }
+
+                } else if (matType === 'Ice' || matType === 'Water') {
+
+                    ctx.fillStyle = matType === 'Water' ? '#115588' : '#aaddff'; ctx.fillRect(0, 0, 256, 256);
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
+
+                    for (let i = 0; i < 25; i++) { ctx.beginPath(); ctx.moveTo(Math.random() * 256, Math.random() * 256); ctx.lineTo(Math.random() * 256, Math.random() * 256); ctx.stroke(); }
+
+                } else if (matType === 'Obsidian') {
+
+                    ctx.fillStyle = '#111118'; ctx.fillRect(0, 0, 256, 256);
+
+                    ctx.fillStyle = '#222233';
+
+                    for (let i = 0; i < 60; i++) { ctx.fillRect(Math.random() * 256, Math.random() * 256, 18, 18); }
+
+                } else {
+
+                    ctx.fillStyle = '#aaaaaa'; ctx.fillRect(0, 0, 256, 256);
+
+                }
+
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+
+            tex.wrapS = THREE.RepeatWrapping;
+
+            tex.wrapT = THREE.RepeatWrapping;
+
+            return tex;
+
         }
+
+
+
+        function createTextTexture(text) {
+
+            const canvas = document.createElement('canvas');
+
+            canvas.width = 512; canvas.height = 256;
+
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,512,256);
+
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 48px sans-serif';
+
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+            ctx.fillText(text, 256, 128);
+
+            return new THREE.CanvasTexture(canvas);
+
+        }
+
+
 
         const textureLoader = new THREE.TextureLoader();
 
         let worldColliders = [], interactables = [], particleEmitters = [], spawnPos = new THREE.Vector3(0, 5, 0);
+
         const rgxStr = decodeURIComponent(escape(atob("${b64Rgx}")));
+
         
+
         const partRegex = /<part\\s+type="([^"]+)"\\s+name="([^"]+)"\\s+mat="([^"]+)"\\s+color="([^"]+)"\\s+texture="([^"]*)"\\s+effect="([^"]*)"\\s+pos="([^"]+)"\\s+scale="([^"]+)"\\s+rot="([^"]+)"\\s+text="([^"]*)">([\\s\\S]*?)<\\/part>/g;
+
         const scriptRegex = /<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/;
+
         
+
         let match;
+
         while((match = partRegex.exec(rgxStr)) !== null) {
+
             const [_, type, name, matStr, color, tex, eff, posStr, scaleStr, rotStr, textStr, inner] = match;
+
             const p = posStr.split(',').map(parseFloat);
+
             const s = scaleStr.split(',').map(parseFloat);
+
             const r = rotStr.split(',').map(parseFloat);
+
             let script = "";
+
             const scriptMatch = inner.match(scriptRegex);
+
             if(scriptMatch) script = scriptMatch[1];
 
+
+
             let geo;
+
             switch(type) {
+
                 case 'Baseplate': geo = new THREE.BoxGeometry(1,1,1); break;
+
                 case 'cube': case 'ladder': case 'spawn': case 'checkpoint': case 'clickdtct': geo = new THREE.BoxGeometry(4,4,4); break;
+
                 case 'sphere': geo = new THREE.SphereGeometry(2, 32, 16); break;
+
                 case 'triangle': geo = new THREE.ConeGeometry(2.5, 5, 4); break;
+
                 case 'pentagon': geo = new THREE.CylinderGeometry(2.5, 2.5, 5, 5); break;
+
                 case 'npc': geo = new THREE.CylinderGeometry(1.5, 1.5, 5, 16); break;
+
                 case 'sign': geo = new THREE.PlaneGeometry(6, 3); break;
+
                 default: geo = new THREE.BoxGeometry(4,4,4);
+
             }
+
+
 
             let matProps = matLibrary[matStr] || matLibrary['Plastic'];
+
             let meshMat = new THREE.MeshStandardMaterial({ color: parseInt(color,16), ...matProps });
+
             
+
             if(tex) textureLoader.load(tex, t => { meshMat.map = t; meshMat.needsUpdate = true; });
+
             if(type === 'sign') { meshMat.map = createTextTexture(textStr.replace(/&quot;/g, '"')); meshMat.color.set(0xffffff); }
+
             if(type === 'spawn') { spawnPos.set(p[0], p[1] + 3, p[2]); meshMat.visible = false; }
+
             
+
             let mesh = new THREE.Mesh(geo, meshMat);
+
             mesh.position.set(...p); mesh.scale.set(...s); mesh.rotation.set(...r);
-            mesh.userData = { type, script };
+
+            mesh.userData = { type, script, materialType: matStr, customTexture: meshMat.map };
+
             
+
             scene.add(mesh);
+
             if(type !== 'spawn' && type !== 'sign') worldColliders.push(mesh);
+
             if(script) interactables.push(mesh);
+
             
+
             if(eff !== 'None' && eff !== '') particleEmitters.push({ mesh: mesh, type: eff, particles: [] });
+
         }
+
+
+
+        window.setGfxQuality = function(mode) {
+
+            worldColliders.concat(interactables).forEach(mesh => {
+
+                if(!mesh || !mesh.material) return;
+
+                const matType = mesh.userData.materialType || 'Plastic';
+
+                const s = mesh.scale;
+
+                
+
+                if (mode === 'low') {
+
+                    mesh.material.map = mesh.userData.customTexture || null;
+
+                    mesh.material.bumpMap = null;
+
+                    mesh.material.bumpScale = 0;
+
+                } else if (mode === 'medium') {
+
+                    if (mesh.userData.customTexture) {
+
+                        mesh.material.map = mesh.userData.customTexture;
+
+                    } else {
+
+                        const tex = generateProceduralTexture(matType, false);
+
+                        tex.repeat.set(Math.max(1, s.x / 4), Math.max(1, s.z / 4));
+
+                        mesh.material.map = tex;
+
+                    }
+
+                    mesh.material.bumpMap = null;
+
+                    mesh.material.bumpScale = 0;
+
+                } else if (mode === 'high') {
+
+                    if (mesh.userData.customTexture) {
+
+                        mesh.material.map = mesh.userData.customTexture;
+
+                    } else {
+
+                        const tex = generateProceduralTexture(matType, false);
+
+                        tex.repeat.set(Math.max(1, s.x / 4), Math.max(1, s.z / 4));
+
+                        mesh.material.map = tex;
+
+                    }
+
+                    const bumpTex = generateProceduralTexture(matType, true);
+
+                    bumpTex.repeat.set(Math.max(1, s.x / 4), Math.max(1, s.z / 4));
+
+                    mesh.material.bumpMap = bumpTex;
+
+                    mesh.material.bumpScale = 0.35;
+
+                }
+
+                mesh.material.needsUpdate = true;
+
+            });
+
+        };
+
+        window.setGfxQuality('medium');
+
+
 
         function buildPlayerRig(colors, faceUrl, accUrl) {
+
             const group = new THREE.Group();
+
             const mat = (col) => new THREE.MeshStandardMaterial({color: col});
+
             const headMat = mat(colors.head);
+
             if(faceUrl) textureLoader.load(faceUrl, tex => { headMat.map = tex; headMat.needsUpdate = true; });
 
+
+
             const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat); head.position.y = 4.8;
+
             const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(colors.torso)); torso.position.y = 3.1;
+
             
-            const armGeo = new THREE.BoxGeometry(0.7, 2, 0.7);
 
-            const larm = new THREE.Mesh(armGeo, mat(colors.larm)); larm.position.set(-1.4, 3.1, 0);
-            const rarm = new THREE.Mesh(armGeo.clone(), mat(colors.rarm)); rarm.position.set(1.4, 3.1, 0);
+            function buildLimb(color, x, y, isLeg) {
 
-            const legGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
+                const g = new THREE.Group(); g.position.set(x, y, 0);
 
-            const lleg = new THREE.Mesh(legGeo, mat(colors.lleg)); lleg.position.set(-0.5, 1.0, 0);
-            const rleg = new THREE.Mesh(legGeo.clone(), mat(colors.rleg)); rleg.position.set(0.5, 1.0, 0);
-            
-            if(accUrl) {
-                const acc = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), new THREE.MeshStandardMaterial({color: 0xffd700}));
-                textureLoader.load(accUrl, tex => { acc.material.map = tex; acc.material.needsUpdate = true; });
-                acc.position.y = 5.6;
-                group.add(acc);
+                const m = new THREE.Mesh(new THREE.BoxGeometry(isLeg?0.8:0.7, 2, isLeg?0.8:0.7), mat(color));
+
+                m.position.set(0, -1, 0); g.add(m);
+
+                return { group: g, mesh: m };
+
             }
 
-            group.add(head, torso, larm, rarm, lleg, rleg);
+
+
+            const larm = buildLimb(colors.larm, -1.4, 4.1, false);
+
+            const rarm = buildLimb(colors.rarm, 1.4, 4.1, false);
+
+            const lleg = buildLimb(colors.lleg, -0.5, 2.0, true);
+
+            const rleg = buildLimb(colors.rleg, 0.5, 2.0, true);
+
+            
+
+            if(accUrl) {
+
+                const acc = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), new THREE.MeshStandardMaterial({color: 0xffd700}));
+
+                textureLoader.load(accUrl, tex => { acc.material.map = tex; acc.material.needsUpdate = true; });
+
+                acc.position.y = 5.6;
+
+                group.add(acc);
+
+            }
+
+
+
+            group.add(head, torso, larm.group, rarm.group, lleg.group, rleg.group);
+
             group.userData = { head, torso, larm, rarm, lleg, rleg };
+
             return group;
+
         }
+
+
 
         const myColors = ${JSON.stringify(userColors)};
-        const myFace = ${JSON.stringify(userFace)};
-        const myAcc = ${JSON.stringify(userAccessory)};
+
+        const myFace = "${userFace.replace(/"/g, "\\\"")}";
+
+        const myAcc = "${userAccessory.replace(/"/g, "\\\"")}";
+
         
+
         const playerGroup = buildPlayerRig(myColors, myFace, myAcc);
+
         playerGroup.position.copy(spawnPos);
+
         scene.add(playerGroup);
 
+
+
         const keys = { w:false, a:false, s:false, d:false, space:false };
+
         let activeEmote = null;
 
+
+
         window.addEventListener('keydown', e => { 
+
             if (document.activeElement === document.getElementById('chatInput')) return;
+
             let k = e.key.toLowerCase(); 
+
             if(k === ' ') keys.space = true; else keys[k] = true; 
+
             if(k === 'e') triggerInteract();
+
             if(k === '1') activeEmote = 'wave';
+
             if(k === '2') activeEmote = 'dance';
+
             if(k === '3') activeEmote = 'point';
+
         });
+
         window.addEventListener('keyup', e => { 
+
             if (document.activeElement === document.getElementById('chatInput')) return;
+
             let k = e.key.toLowerCase(); 
+
             if(k === ' ') keys.space = false; else keys[k] = false; 
+
         });
+
+
 
         let isRDragging = false, camYaw = 0, camPitch = 0.3;
+
         window.addEventListener('mousedown', e => { 
+
             if(e.button === 2) { isRDragging = true; document.body.requestPointerLock(); }
+
             if(e.button === 0) triggerInteract();
+
         });
+
         window.addEventListener('mouseup', e => { if(e.button === 2) { isRDragging = false; document.exitPointerLock(); }});
+
         window.addEventListener('mousemove', e => {
+
             if (isRDragging) {
+
                 camYaw -= e.movementX * 0.005;
+
                 camPitch += e.movementY * 0.005;
+
                 camPitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, camPitch));
+
             }
+
         });
+
         window.addEventListener('contextmenu', e => e.preventDefault());
 
+
+
         const raycaster = new THREE.Raycaster();
+
         function triggerInteract() {
+
             raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+
             const hits = raycaster.intersectObjects(interactables, false);
+
             if(hits.length > 0 && hits[0].distance < 15) {
+
                 const scriptStr = hits[0].object.userData.script;
+
                 if(scriptStr) {
+
                     try { new Function('player', 'scene', scriptStr)(playerGroup, scene); } 
+
                     catch(err) { console.error("Interaction Error:", err); }
+
                 }
+
             }
+
         }
 
+
+
         window.addEventListener('resize', () => {
+
             camera.aspect = window.innerWidth/window.innerHeight;
+
             camera.updateProjectionMatrix();
+
             renderer.setSize(window.innerWidth, window.innerHeight);
+
         });
+
+
 
         let velocityY = 0, walkTime = 0, emoteTime = 0;
 
+        let frameCount = 0, fpsTimer = performance.now();
+
+
+
         function loop(time) {
+
             requestAnimationFrame(loop);
+
             
+
+            const now = performance.now();
+
+            frameCount++;
+
+            if (now - fpsTimer >= 1000) {
+
+                document.getElementById('fpsCounter').innerText = "FPS: " + Math.round((frameCount * 1000) / (now - fpsTimer));
+
+                frameCount = 0; fpsTimer = now;
+
+            }
+
+
+
             raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+
             const intHits = raycaster.intersectObjects(interactables, false);
+
             document.getElementById('interactPrompt').style.display = (intHits.length > 0 && intHits[0].distance < 15) ? 'block' : 'none';
 
+
+
             let moving = false, dx = 0, dz = 0;
-            const speed = 0.15;
+
+            const speed = 0.150; // 1.44x walkspeed
+
             if(keys.w) { dx -= Math.sin(camYaw)*speed; dz -= Math.cos(camYaw)*speed; moving=true; }
+
             if(keys.s) { dx += Math.sin(camYaw)*speed; dz += Math.cos(camYaw)*speed; moving=true; }
+
             if(keys.a) { dx -= Math.cos(camYaw)*speed; dz += Math.sin(camYaw)*speed; moving=true; }
+
             if(keys.d) { dx += Math.cos(camYaw)*speed; dz -= Math.sin(camYaw)*speed; moving=true; }
+
+
 
             if (moving) activeEmote = null;
 
+
+
             if(moving) {
+
                 const dir = new THREE.Vector3(dx, 0, dz).normalize();
+
                 raycaster.set(new THREE.Vector3(playerGroup.position.x, playerGroup.position.y + 3, playerGroup.position.z), dir);
+
                 const wallHits = raycaster.intersectObjects(worldColliders, false);
+
                 if(wallHits.length > 0 && wallHits[0].distance < 1.5) { dx = 0; dz = 0; }
+
             }
+
+
 
             playerGroup.position.x += dx; playerGroup.position.z += dz;
 
+
+
             const feetPos = new THREE.Vector3(playerGroup.position.x, playerGroup.position.y + 0.5, playerGroup.position.z);
+
             raycaster.set(feetPos, new THREE.Vector3(0,-1,0));
+
             const floorHits = raycaster.intersectObjects(worldColliders, false);
+
             
+
             let isGrounded = false, onLadder = false;
+
             if (floorHits.length > 0) {
+
                 const hit = floorHits[0];
+
                 if(hit.object.userData.type === 'ladder') onLadder = true;
+
                 if(hit.object.userData.type === 'checkpoint') spawnPos.copy(hit.object.position).setY(spawnPos.y + 3);
 
+
+
                 if(hit.distance < 0.6 && velocityY <= 0) {
+
                     isGrounded = true; velocityY = 0;
+
                     playerGroup.position.y = hit.point.y; 
+
                 }
+
             }
+
+
 
             if(onLadder) {
+
                 if(keys.w) velocityY = 0.3; else if(keys.s) velocityY = -0.3; else velocityY = 0;
+
             } else {
-                if(!isGrounded) velocityY -= 0.0075; 
+
+                if(!isGrounded) velocityY -= 0.0075; // 1.44x lower gravity
+
                 if(keys.space && isGrounded) velocityY = 0.526; 
+
             }
+
             playerGroup.position.y += velocityY;
 
+
+
             const {larm, rarm, lleg, rleg} = playerGroup.userData;
+
+            
+
+            // Reset Rotations
+
+            larm.group.rotation.set(0,0,0); larm.mesh.rotation.set(0,0,0);
+
+            rarm.group.rotation.set(0,0,0); rarm.mesh.rotation.set(0,0,0);
+
+            lleg.group.rotation.set(0,0,0); lleg.mesh.rotation.set(0,0,0);
+
+            rleg.group.rotation.set(0,0,0); rleg.mesh.rotation.set(0,0,0);
+
+
+
             if(!isGrounded && !onLadder) {
+
+                // Falling: Rotate around Mesh Center
+
                 const wobble = Math.sin(time * 0.01) * 0.4;
-                larm.rotation.x = Math.PI / 2 + wobble; 
-                rarm.rotation.x = Math.PI / 2 + wobble;
-                larm.rotation.z = 0; rarm.rotation.z = 0;
-                lleg.rotation.x = 0; rleg.rotation.x = 0;
+
+                larm.mesh.rotation.x = Math.PI / 2 + wobble; 
+
+                rarm.mesh.rotation.x = Math.PI / 2 + wobble;
+
             } else if(moving || (onLadder && (keys.w || keys.s))) {
-                walkTime += 0.225;
-                larm.rotation.x = Math.sin(walkTime) * 0.8; rarm.rotation.x = -Math.sin(walkTime) * 0.8;
-                larm.rotation.z = 0; rarm.rotation.z = 0;
-                lleg.rotation.x = -Math.sin(walkTime) * 0.8; rleg.rotation.x = Math.sin(walkTime) * 0.8;
+
+                // Walking: Rotate around Group Shoulder
+
+                walkTime += 0.065;
+
+                larm.group.rotation.x = Math.sin(walkTime) * 0.8; 
+
+                rarm.group.rotation.x = -Math.sin(walkTime) * 0.8;
+
+                lleg.group.rotation.x = -Math.sin(walkTime) * 0.8; 
+
+                rleg.group.rotation.x = Math.sin(walkTime) * 0.8;
+
                 playerGroup.rotation.y = Math.atan2(dx, dz);
+
             } else if(activeEmote) {
+
                 emoteTime += 0.075;
-                if (activeEmote === 'wave') {
-                    rarm.rotation.x = 0; 
-                    rarm.rotation.z = Math.PI / 2 + Math.sin(emoteTime * 1.5) * 0.3;
-                    larm.rotation.x = 0; larm.rotation.z = 0;
-                    lleg.rotation.x = 0; rleg.rotation.x = 0;
+
+ 
+
+if (activeEmote === 'wave') {
+
+                    rarm.group.rotation.z = THREE.MathUtils.degToRad(150) + Math.sin(emoteTime * 1.5) * 0.3;
+
                 } else if (activeEmote === 'dance') {
-                    larm.rotation.x = Math.sin(emoteTime) * 1.2; rarm.rotation.x = Math.cos(emoteTime) * 1.2;
-                    larm.rotation.z = 0; rarm.rotation.z = 0;
-                    lleg.rotation.x = Math.sin(emoteTime) * 0.4; rleg.rotation.x = Math.cos(emoteTime) * 0.4;
+
+                    // Dancing | Rotate around Mesh Center
+
+                    larm.mesh.rotation.x = Math.sin(emoteTime) * 1.2; 
+
+                    rarm.mesh.rotation.x = Math.cos(emoteTime) * 1.2;
+
+                    lleg.mesh.rotation.x = Math.sin(emoteTime) * 0.4;
+
+                    rleg.mesh.rotation.x = Math.cos(emoteTime) * 0.4;
+
                     playerGroup.rotation.y += 0.0375;
+
                 } else if (activeEmote === 'point') {
-                    rarm.rotation.x = Math.PI / 2; rarm.rotation.z = 0;
-                    larm.rotation.x = 0; larm.rotation.z = 0;
-                    lleg.rotation.x = 0; rleg.rotation.x = 0;
+
+                    rarm.group.rotation.x = THREE.MathUtils.degToRad(-90);
+
                 }
-            } else {
-                walkTime = 0; emoteTime = 0;
-                larm.rotation.x = 0; rarm.rotation.x = 0; lleg.rotation.x = 0; rleg.rotation.x = 0; larm.rotation.z = 0; rarm.rotation.z = 0;
-            }
+
+ 
+
+            } else { walkTime = 0; emoteTime = 0; }
+
+
 
             if(playerGroup.position.y < -100) playerGroup.position.copy(spawnPos);
 
+
+
             particleEmitters.forEach(em => {
+
                 if(Math.random() < 0.25) {
+
                     const c = em.type === 'Fire' ? 0xff4400 : (em.type === 'Sparkles' ? 0xffff00 : 0xaaaaaa);
+
                     const p = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,0.5), new THREE.MeshBasicMaterial({color: c}));
+
                     p.position.copy(em.mesh.position);
+
                     p.position.x += (Math.random()-0.5)*em.mesh.scale.x*2;
+
                     p.position.z += (Math.random()-0.5)*em.mesh.scale.z*2;
+
                     scene.add(p);
+
                     em.particles.push({m: p, age: 0});
+
                 }
+
                 em.particles.forEach((p, idx) => {
+
                     p.age += 0.02;
+
                     p.m.position.y += (em.type === 'Smoke' ? 0.05 : 0.15);
+
                     p.m.scale.setScalar(Math.max(0, 1 - p.age));
+
                     if(p.age > 1) { scene.remove(p.m); em.particles.splice(idx, 1); }
+
                 });
+
             });
 
-            // Smooth Lerp Remote Multiplayer Players
+
+
             for (const id in otherPlayers) {
+
                 const remoteP = otherPlayers[id];
+
                 if (remoteP.userData && remoteP.userData.targetPos) {
+
                     const distToTarget = remoteP.position.distanceTo(remoteP.userData.targetPos);
-                    
+
                     remoteP.position.lerp(remoteP.userData.targetPos, 0.2);
+
                     
+
                     let rotDiff = remoteP.userData.targetRotY - remoteP.rotation.y;
+
                     while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+
                     while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+
                     remoteP.rotation.y += rotDiff * 0.2;
-                    
+
+
+
                     const { larm: remLA, rarm: remRA, lleg: remLL, rleg: remRL } = remoteP.userData;
+
                     if (remLA && remRA && remLL && remRL) {
+
                         if (distToTarget > 0.08) {
+
                             remoteP.userData.walkTime = (remoteP.userData.walkTime || 0) + 0.225;
-                            remLA.rotation.x = Math.sin(remoteP.userData.walkTime) * 0.8;
-                            remRA.rotation.x = -Math.sin(remoteP.userData.walkTime) * 0.8;
-                            remLL.rotation.x = -Math.sin(remoteP.userData.walkTime) * 0.8;
-                            remRL.rotation.x = Math.sin(remoteP.userData.walkTime) * 0.8;
+
+                            remLA.group.rotation.x = Math.sin(remoteP.userData.walkTime) * 0.8;
+
+                            remRA.group.rotation.x = -Math.sin(remoteP.userData.walkTime) * 0.8;
+
+                            remLL.group.rotation.x = -Math.sin(remoteP.userData.walkTime) * 0.8;
+
+                            remRL.group.rotation.x = Math.sin(remoteP.userData.walkTime) * 0.8;
+
                         } else {
+
                             remoteP.userData.walkTime = 0;
-                            remLA.rotation.x = 0; remRA.rotation.x = 0;
-                            remLL.rotation.x = 0; remRL.rotation.x = 0;
+
+                            remLA.group.rotation.x = 0; remRA.group.rotation.x = 0;
+
+                            remLL.group.rotation.x = 0; remRL.group.rotation.x = 0;
+
                         }
+
                     }
+
                 }
+
             }
 
+
+
             const camDist = 18;
+
             camera.position.x = playerGroup.position.x + camDist * Math.sin(camYaw) * Math.cos(camPitch);
+
             camera.position.y = playerGroup.position.y + 5 + camDist * Math.sin(camPitch);
+
             camera.position.z = playerGroup.position.z + camDist * Math.cos(camYaw) * Math.cos(camPitch);
+
             camera.lookAt(playerGroup.position.x, playerGroup.position.y + 4, playerGroup.position.z);
 
+
+
             renderer.render(scene, camera);
+
         }
+
         
+
         requestAnimationFrame(loop);
 
+
+
         if (isMultiplayer) {
+
             setInterval(async () => {
+
                 try {
+
                     const res = await fetch(backendUrl + "/sync", {
+
                         method: "POST",
+
                         headers: { "Content-Type": "application/json" },
+
                         body: JSON.stringify({
+
                             gameId: gameId,
+
                             playerId: userId,
+
                             state: {
-                                x: playerGroup.position.x,
-                                y: playerGroup.position.y,
-                                z: playerGroup.position.z,
-                                ry: playerGroup.rotation.y,
-                                colors: myColors,
-                                face: myFace,
-                                acc: myAcc
+
+                                x: playerGroup.position.x, y: playerGroup.position.y, z: playerGroup.position.z,
+
+                                ry: playerGroup.rotation.y, colors: myColors, face: myFace, acc: myAcc
+
                             }
+
                         })
+
                     });
+
                     const players = await res.json();
+
                     
+
                     const activeIds = new Set();
+
                     players.forEach(p => {
+
                         if (p.player_id === userId) return;
+
                         activeIds.add(p.player_id);
+
                         
+
                         let pState = {};
+
                         try { pState = typeof p.state === 'string' ? JSON.parse(p.state) : p.state; } catch(e){}
+
                         
+
                         if (!otherPlayers[p.player_id]) {
+
                             const newPlayer = buildPlayerRig(pState.colors || myColors, pState.face || "", pState.acc || "");
+
                             newPlayer.position.set(pState.x || 0, pState.y || 0, pState.z || 0);
+
                             newPlayer.rotation.y = pState.ry || 0;
+
                             newPlayer.userData.targetPos = new THREE.Vector3(pState.x || 0, pState.y || 0, pState.z || 0);
+
                             newPlayer.userData.targetRotY = pState.ry || 0;
+
                             newPlayer.userData.walkTime = 0;
+
                             scene.add(newPlayer);
+
                             otherPlayers[p.player_id] = newPlayer;
+
                         } else {
+
                             const remoteP = otherPlayers[p.player_id];
+
                             remoteP.userData.targetPos.set(pState.x || 0, pState.y || 0, pState.z || 0);
+
                             remoteP.userData.targetRotY = pState.ry || 0;
+
                         }
+
                     });
+
                     
+
                     for (const id in otherPlayers) {
+
                         if (!activeIds.has(id)) {
+
                             scene.remove(otherPlayers[id]);
+
                             delete otherPlayers[id];
+
                         }
+
                     }
+
                 } catch(e) {}
+
             }, 200);
+
         }
-    \x3C/script\x3E
+
+    <\/script>
+
 </body>
+
 </html>`;
-        
-        return "data:text/html;base64," + btoa(unescape(encodeURIComponent(engineHtml)));
+
     }
 
+
+
     window.onload = () => { 
+
         updateUI();
+
         fetchGames(); 
+
         initAvatar(); 
+
     };
+
 </script>
+
 </body>
-</html>
+
+</html> 
+
