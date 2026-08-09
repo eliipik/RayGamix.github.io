@@ -15,10 +15,20 @@
             --bg: #03070b; --panel: #0a131c; --card: #111a24; --muted: #7d96b0;
             --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05);
         }
+
+     @font-face {
+      font-family: "RayGamix Neue";
+      src: url("https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf")
+           format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+        
         html, body { 
             height: 100%; width: 100%; margin: 0; 
             background: var(--bg); color: #fff; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            font-family: 'RayGamix Neue', system-ui, -apple-system, sans-serif; 
             overflow: hidden; touch-action: manipulation;
         }
         .app {
