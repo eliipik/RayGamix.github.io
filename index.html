@@ -72,8 +72,17 @@ If a third-party service flags raygamix.com solely because it is a forwarding em
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 
+    @font-face {
+      font-family: "RayGamix Neue";
+      src: url("https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf")
+           format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "RayGamix Neue", Helvetica, Arial, sans-serif;
   background: radial-gradient(circle at top, #0b1030, #050816 60%);
   color: #f5f5f5;
   display: flex;
