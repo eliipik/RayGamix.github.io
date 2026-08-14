@@ -7,48 +7,59 @@
     <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
 
     <style>
+        @font-face {
+            font-family: 'RayGamix Neue';
+            src: url('https://raygamix.com/RayGamix-Neue-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         :root {
             --bg: #03070b; --panel: #0a131c; --card: #111a24; --muted: #7d96b0;
             --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05); --gold: #ffc107;
             --red: #ff4444; --green: #00e676; --card-border: #162438; --accent-glow: rgba(0,183,255,0.4);
         }
+
+        * {
+            font-family: 'RayGamix Neue' !important;
+        }
+
         html, body { 
             height: 100%; width: 100%; margin: 0; 
             background: var(--bg); color: #fff; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            font-family: 'RayGamix Neue', system-ui, -apple-system, sans-serif; 
             overflow: hidden; touch-action: manipulation;
         }
-
-        body.forced-phone-ui { zoom: 0.85 !important; }
-        body.forced-desktop-ui { zoom: 1 !important; }
 
         .app {
             display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 80px 1fr;
             gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box;
         }
 
-        /* Avatar Editor Panel Requirements: Total 90vw width, Left 45%, Right 45% */
-        .avatar-editor-panel { width: 90vw; max-width: 90vw; height: 86vh; padding: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--panel); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: 0 0 50px rgba(0,162,255,0.15); }
+        .avatar-editor-panel { 
+            width: 90vw !important; max-width: 90vw !important; height: 88vh; padding: 0; 
+            display: flex; flex-direction: column; overflow: hidden; background: var(--panel); 
+            border: 1px solid var(--card-border); border-radius: 20px; box-shadow: 0 0 50px rgba(0,162,255,0.15); 
+        }
+
         .avatar-editor-header { background: #071018; padding: 18px 26px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
         .avatar-editor-tabs { display: flex; gap: 8px; background: #071018; padding: 0 26px 14px 26px; border-bottom: 1px solid var(--card-border); overflow-x: auto; }
         .avatar-tab-btn { background: transparent; border: none; color: var(--muted); font-size: 13px; font-weight: 800; padding: 10px 18px; border-radius: 10px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .avatar-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
         .avatar-tab-active { background: var(--accent) !important; color: #fff !important; box-shadow: 0 0 15px var(--accent-glow); }
         
-        .avatar-editor-body { display: flex; flex: 1; min-height: 0; overflow: hidden; justify-content: space-around; }
-        .avatar-viewport-side { width: 45%; max-width: 45%; flex: 0 0 45%; background: #080a10; border-right: 1px solid var(--card-border); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; box-sizing: border-box; overflow: hidden; }
-        .avatar-content-side { width: 45%; max-width: 45%; flex: 0 0 45%; padding: 22px; overflow-y: auto; box-sizing: border-box; }
+        .avatar-editor-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+        .avatar-viewport-side { flex: 0 0 45% !important; width: 45% !important; max-width: 45% !important; background: #080a10; border-right: 1px solid var(--card-border); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; box-sizing: border-box; overflow: hidden !important; }
+        .avatar-content-side { flex: 0 0 45% !important; width: 45% !important; max-width: 45% !important; padding: 22px; overflow-y: auto; box-sizing: border-box; }
         
         .sidebar {
             grid-row: 1 / span 2; background: linear-gradient(180deg, var(--panel), transparent);
             border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; border-right: 1px solid rgba(0,183,255,0.1); overflow-y: auto;
         }
-        .avatar-viewport { width: 100%; height: 260px; max-height: 35vh; background: #000; border-radius: 8px; border: 1px solid #142536; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,183,255,0.05); position: relative; box-sizing: border-box; }
-        .avatar-viewport canvas, .avatar-viewport-side canvas { width: 100% !important; height: 100% !important; max-width: 100%; max-height: 100%; display: block; border-radius: inherit; pointer-events: auto; }
+        .avatar-viewport { width: 95%; height: 260px; max-height: 35vh; background: #000; border-radius: 8px; border: 1px solid #142536; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,183,255,0.05); position: relative; box-sizing: border-box; }
+        .avatar-viewport canvas, .avatar-viewport-side canvas { width: 100% !important; height: 100% !important; max-width: 100%; max-height: 100%; display: block; border-radius: inherit; pointer-events: auto; cursor: grab;}
 
         .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
         .logo { height: 42.5px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
@@ -63,13 +74,6 @@
         .badge-rank { background: linear-gradient(135deg, #cc66ff, #00b7ff); color: #000; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
         .token-counter { display: flex; align-items: center; gap: 6px; background: rgba(255, 193, 7, 0.15); border: 1px solid var(--gold); color: var(--gold); font-weight: 900; padding: 6px 12px; border-radius: 20px; font-size: 13px; }
 
-        .lang-select { background: #0a1520; border: 1px solid #2a3d52; color: #fff; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; outline: none; }
-        .lang-select:hover { border-color: var(--accent); }
-
-        .btn-tool { background: #1a2b3d; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-tool:hover { background: var(--accent); color: #000; }
-        .tool-active { background: var(--accent) !important; color: #000 !important; }
-
         .main { grid-column: 2; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 25px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.02);}
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
         .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid #1a2b3d; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column;}
@@ -77,57 +81,20 @@
         .card-type-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,183,255,0.2); border: 1px solid var(--accent); color: var(--accent); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
         .card-actions { display: flex; gap: 8px; margin-top: 15px; }
 
-        .avatar-item-card { background: #0a1520; border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
-        .avatar-item-card:hover { border-color: var(--accent); background: #111e2e; }
-        .avatar-item-card.equipped { border-color: var(--green); background: rgba(0, 230, 118, 0.1); }
-        .equipped-badge { position: absolute; top: 6px; right: 6px; background: var(--green); color: #000; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
-
-        .skin-palette-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 15px; }
-        .skin-swatch { height: 36px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .skin-swatch:hover { transform: scale(1.08); border-color: #fff; }
-
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .panel { background: var(--panel); padding: 35px; border-radius: 20px; border: 1px solid var(--accent); width: 520px; max-width: 92vw; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 50px rgba(0,183,255,0.1); box-sizing: border-box;}
         .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: #ff4444; font-weight: bold; transition: 0.2s;}
         .close-btn:hover { transform: scale(1.2); }
-        
+
         .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
         .studio-header { display:flex; justify-content:space-between; align-items: center; padding: 12px 25px; background: #071018; border-bottom: 1px solid #142536; gap: 10px; flex-wrap: wrap;}
-        .studio-toolbar { background: #0a1520; padding: 12px 25px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap;}
         .studio-body { display: flex; flex: 1; min-height: 0; }
         .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; }
-        .studio-sidebar { width: 340px; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; }
         
-        .prop-section { padding: 15px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1;}
-        .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color:var(--muted); font-weight: bold;}
-        .prop-input { flex: 1; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px 8px; font-size: 12px; border-radius: 4px; width: 100%; box-sizing: border-box; transition: 0.2s;}
-        .prop-input:focus { border-color: var(--accent); outline: none; }
-        .prop-vec3 { display: flex; gap: 6px; flex: 1; }
-        .prop-vec3 input { width: 33%; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px; font-size: 12px; text-align: center; border-radius: 4px;}
-
         #game-player { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; padding: 0; margin: 0; flex-direction: column;}
         .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10001; pointer-events: none;}
         .player-header * { pointer-events: auto; }
         #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
-
-        .offset-control-box { background: #050a0f; border: 1px solid #1a2b3d; border-radius: 8px; padding: 12px; margin-top: 10px; }
-        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; font-weight: bold; color: var(--muted); }
-        .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
-
-        @media (max-width: 850px) {
-            html, body { overflow-y: auto; zoom: 0.85; }
-            .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100vh; padding: 12px; gap: 12px; }
-            .sidebar { grid-row: auto; width: 100%; box-sizing: border-box; border-right: none; border-bottom: 1px solid rgba(0,183,255,0.1); }
-            .avatar-viewport { height: 220px; max-height: 240px; }
-            .avatar-editor-body { flex-direction: column; overflow-y: auto; }
-            .avatar-viewport-side { width: 100%; max-width: 100%; height: 240px; min-height: 200px; border-right: none; border-bottom: 1px solid var(--card-border); flex-shrink: 0; padding: 12px; }
-            .avatar-content-side { width: 100%; padding: 15px; }
-            .topbar { grid-column: 1; flex-wrap: wrap; }
-            .main { grid-column: 1; padding: 15px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-            .studio-body { flex-direction: column; }
-            .studio-sidebar { width: 100%; max-height: 35vh; border-left: none; border-top: 1px solid #142536; }
-        }
     </style>
 </head>
 <body>
@@ -139,40 +106,32 @@
             <span id="uDisp">Guest</span>
         </div>
         <div id="uRankBadge" class="badge-rank">GUEST PLAYER</div>
+        
         <div class="token-counter" style="margin-top: 4px;">
             <span>🪙 Tokens:</span> <span id="uTokenDisp">0</span>
         </div>
-        <div class="token-counter" style="margin-top: 4px; background: rgba(0, 230, 118, 0.12); border-color: var(--green); color: var(--green);">
-            <span>🟢 Online:</span> <span id="uOnlineDisp">1</span> &nbsp;|&nbsp; <span>👁️ Visits:</span> <span id="uVisitsDisp">--</span>
-        </div>
-        <div style="color:var(--muted); font-size:11px; font-weight: bold; margin-bottom:6px;">
-            Warnings: <span id="uWarningDisp" style="color:var(--red);">⚠️ 0.0 / 3.0</span>
+
+        <div style="font-size:11px; font-weight:800; color:var(--green); background:rgba(0,230,118,0.1); border:1px solid var(--green); padding:4px 10px; border-radius:20px; margin-top:2px;">
+            🟢 Live: <span id="liveOnlineCount">1</span> | 👁️ Visits: <span id="liveVisitsCount">1</span>
         </div>
 
-        <button class="btn" style="background:linear-gradient(135deg, var(--gold), #ff8800); color:#000; margin-bottom:4px;" onclick="claimDailyTokens()" id="btnDailyClaim">🎁 Claim Daily Tokens</button>
-        <button class="btn-alt" onclick="openShop()" id="btnShopText">🛒 RayGamix Avatar Customizer</button>
-        <button class="btn" style="margin-top: 4px;" onclick="openStudio()" id="btnStudioText">🛠️ Launch Studio</button>
+        <button class="btn" style="background:linear-gradient(135deg, var(--gold), #ff8800); color:#000; margin-top:6px;" onclick="claimDailyTokens()">🎁 Claim Daily Tokens</button>
+        <button class="btn-alt" onclick="openShop()">🛒 RayGamix Avatar Customizer</button>
+        <button class="btn" style="margin-top: 4px;" onclick="openStudio()">🛠️ Launch Studio</button>
     </aside>
 
     <header class="topbar">
-        <img src="https://raygamix.com/logo.png" class="logo" onerror="this.src='https://placehold.co/150x40/0b0e17/00a2ff?text=RayGamix'">
+        <a href="/" id="appRootLink" style="text-decoration:none;"><span class="logo">RAYGAMIX</span></a>
         <div class="search">
-            <input id="gSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search Games, Real Users, or Items..." oninput="renderAppContent()">
+            <input id="gSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search Games, Users, or Catalog Assets..." oninput="renderAppContent()">
         </div>
-        <select id="langSelectTop" class="lang-select" onchange="setLanguage(this.value)">
-            <option value="en">🇺🇸 English</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="de">🇩🇪 Deutsch</option>
-        </select>
-        <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openDeviceSettings()">⚙️ UI / Controls</button>
         <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openAuth()" id="btnAccountText">👤 Account</button>
     </header>
 
     <main class="main">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;">
-            <h2 style="margin:0; color:#fff; font-size: 20px;" id="hubHeadingText">RayGamix Game Hub</h2>
-            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v6.5 RGX Anti-Cheat Engine</span>
+            <h2 style="margin:0; color:#fff; font-size: 20px;">RayGamix Game Hub</h2>
+            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v6.5 Anti-Cheat Engine</span>
         </div>
         <div class="grid" id="gameGrid"></div>
     </main>
@@ -183,186 +142,91 @@
         <div class="avatar-editor-header">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:24px;">🛒</span>
-                <h2 style="margin:0; color:#fff; font-size:20px; font-weight:900;">RayGamix Avatar Editor & Marketplace</h2>
+                <h2 style="margin:0; color:#fff; font-size:20px; font-weight:900;">RayGamix Avatar Editor</h2>
             </div>
-            <div class="close-btn" onclick="document.getElementById('shop-panel').style.display='none'">×</div>
+            <div class="close-btn" onclick="closeShopModal()">×</div>
         </div>
 
         <div class="avatar-editor-tabs">
-            <button class="avatar-tab-btn avatar-tab-active" onclick="switchShopTab('skin')" id="tab-btn-skin">🎨 Body & Skin</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('catalog')" id="tab-btn-catalog">🧢 Accessories & Shirts</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('face')" id="tab-btn-face">🙂 Faces & Expressions</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('nudge')" id="tab-btn-nudge">📐 Item 3D Nudge & Resizer</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('wardrobe')" id="tab-btn-wardrobe">📦 Wardrobe & Refunds</button>
+            <button class="avatar-tab-btn avatar-tab-active" onclick="switchShopTab('skin')" id="tab-btn-skin">🎨 Skin Colors</button>
+            <button class="avatar-tab-btn" onclick="switchShopTab('face')" id="tab-btn-face">🙂 Preset Faces</button>
+            <button class="avatar-tab-btn" onclick="switchShopTab('catalog')" id="tab-btn-catalog">🧢 Shirts & Clothing</button>
+            <button class="avatar-tab-btn" onclick="switchShopTab('nudge')" id="tab-btn-nudge">📐 Item Sliders</button>
         </div>
 
         <div class="avatar-editor-body">
-            <!-- Left Viewport Side -->
             <div class="avatar-viewport-side">
-                <div style="width:100%; height:100%; background:#000; border-radius:14px; border:1px solid var(--card-border);" id="shopAvatarCanvas"></div>
-                <div style="position:absolute; bottom:28px; display:flex; gap:8px;">
-                    <button class="btn-alt" style="padding:6px 14px; font-size:11px;" id="btnToggleShopSpin" onclick="toggleShopAvatarSpin()">⏸ Pause Spin</button>
-                    <button class="btn-alt" style="padding:6px 14px; font-size:11px;" onclick="resetShopAvatarRotation()">↻ Reset View</button>
-                </div>
+                <div style="width:100%; height:100%; background:#000; border-radius:14px; border:1px solid var(--card-border); cursor:grab;" id="shopAvatarCanvas"></div>
+                <button class="btn-alt" style="position:absolute; bottom:20px; width:auto; padding:6px 14px; font-size:11px;" id="btnSpinToggle" onclick="toggleShopSpin()">⏸ Pause Spin</button>
             </div>
 
-            <!-- Right Content Tab Side -->
             <div class="avatar-content-side">
-                <!-- Tab: Skin Tone -->
                 <div id="tab-sec-skin">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Quick Skin Presets</h3>
-                    <div class="skin-palette-grid">
-                        <div class="skin-swatch" style="background:#ffdbac;" onclick="applyPresetSkin(0xffdbac)" title="Fair Skin"></div>
-                        <div class="skin-swatch" style="background:#f1c27d;" onclick="applyPresetSkin(0xf1c27d)" title="Tan"></div>
-                        <div class="skin-swatch" style="background:#e0ac69;" onclick="applyPresetSkin(0xe0ac69)" title="Medium"></div>
-                        <div class="skin-swatch" style="background:#8d5524;" onclick="applyPresetSkin(0x8d5524)" title="Dark"></div>
-                        <div class="skin-swatch" style="background:#0000ff;" onclick="applyPresetSkin(0x0000ff)" title="Classic Blue"></div>
-                        <div class="skin-swatch" style="background:#00e676;" onclick="applyPresetSkin(0x00e676)" title="Alien Green"></div>
-                    </div>
-
-                    <h3 style="color:#fff; font-size:16px; border-top:1px solid var(--card-border); padding-top:15px; margin-top:15px;">Individual Body Colors</h3>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                        <div class="prop-row">Head: <input type="color" id="col-head" onchange="applyShopUpdates()" style="height:32px; width:50px; padding:0; border:none; background:transparent; cursor:pointer;"></div>
-                        <div class="prop-row">Torso: <input type="color" id="col-torso" onchange="applyShopUpdates()" style="height:32px; width:50px; padding:0; border:none; background:transparent; cursor:pointer;"></div>
-                        <div class="prop-row">L-Arm: <input type="color" id="col-larm" onchange="applyShopUpdates()" style="height:32px; width:50px; padding:0; border:none; background:transparent; cursor:pointer;"></div>
-                        <div class="prop-row">R-Arm: <input type="color" id="col-rarm" onchange="applyShopUpdates()" style="height:32px; width:50px; padding:0; border:none; background:transparent; cursor:pointer;"></div>
-                        <div class="prop-row">L-Leg: <input type="color" id="col-lleg" onchange="applyShopUpdates()" style="height:32px; width:50px; padding:0; border:none; background:transparent; cursor:pointer;"></div>
-                        <div class="prop-row">R-Leg: <input type="color" id="col-rleg" onchange="applyShopUpdates()" style="height:32px; width:50px; padding:0; border:none; background:transparent; cursor:pointer;"></div>
+                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Quick Presets</h3>
+                    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; margin-bottom:15px;">
+                        <div style="height:36px; background:#ffdbac; border-radius:8px; cursor:pointer;" onclick="applyPresetSkin(0xffdbac)"></div>
+                        <div style="height:36px; background:#f1c27d; border-radius:8px; cursor:pointer;" onclick="applyPresetSkin(0xf1c27d)"></div>
+                        <div style="height:36px; background:#e0ac69; border-radius:8px; cursor:pointer;" onclick="applyPresetSkin(0xe0ac69)"></div>
+                        <div style="height:36px; background:#8d5524; border-radius:8px; cursor:pointer;" onclick="applyPresetSkin(0x8d5524)"></div>
+                        <div style="height:36px; background:#0000ff; border-radius:8px; cursor:pointer;" onclick="applyPresetSkin(0x0000ff)"></div>
+                        <div style="height:36px; background:#00e676; border-radius:8px; cursor:pointer;" onclick="applyPresetSkin(0x00e676)"></div>
                     </div>
                 </div>
 
-                <!-- Tab: Catalog & Gear -->
-                <div id="tab-sec-catalog" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Equip 3D Gear / Custom Shirt</h3>
-                    <div style="display:flex; gap:10px; margin-bottom:15px;">
-                        <input type="text" id="equipItemUrl" class="prop-input" placeholder="Enter 3D Accessory / Shirt URL..." onchange="applyShopUpdates()">
-                        <button class="btn-alt" style="width: auto; padding: 8px 14px; border-color: var(--red); color: var(--red);" onclick="unequipAccessory()">Unequip</button>
-                    </div>
-
-                    <div style="margin-bottom: 20px;">
-                        <button class="btn-alt" style="border-color: var(--accent); color: var(--accent); padding: 12px;" onclick="document.getElementById('uploadShopAssetInput').click()">📁 Upload Local Asset (.rgxo / .rgxa / PNG)</button>
-                        <input type="file" id="uploadShopAssetInput" accept=".rgxo,.rgxa,.png,.jpg,.jpeg" style="display:none;" onchange="handleShopAssetUpload(event)">
-                    </div>
-
-                    <h3 style="color:#fff; font-size:16px;">Featured Clothes & Gear</h3>
-                    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;" id="shopCatalogGrid">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Tab: Faces & Expressions -->
                 <div id="tab-sec-face" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Equip Custom Face Texture</h3>
-                    <div style="display:flex; gap:10px; margin-bottom:15px;">
-                        <input type="text" id="equipFaceUrl" class="prop-input" placeholder="Enter Face Texture URL..." onchange="applyShopUpdates()">
-                        <button class="btn-alt" style="width: auto; padding: 8px 14px; border-color: var(--red); color: var(--red);" onclick="unequipFace()">Unequip</button>
-                    </div>
-
-                    <h3 style="color:#fff; font-size:16px;">Official Expressions & Face Templates</h3>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;" id="shopFaceGrid">
-                        <!-- Populated dynamically -->
+                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Hardcoded Github Expression Faces</h3>
+                    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px;">
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/neutral.png')">😐 Neutral</button>
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/happy.png')">🙂 Happy</button>
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/veryhappy.png')">😄 Very Happy</button>
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/sad.png')">🙁 Sad</button>
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/cry.png')">😢 Cry</button>
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/ohno.png')">😱 Oh No</button>
+                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/wow.png')">😮 Wow</button>
+                        <button class="btn-alt" style="border-color:var(--red); color:var(--red);" onclick="setPresetFace('')">Unequip Face</button>
                     </div>
                 </div>
 
-                <!-- Tab: 3D Nudge & Resizer -->
+                <div id="tab-sec-catalog" style="display:none;">
+                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Hardcoded Github Shirts</h3>
+                    <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+                        <button class="btn-alt" onclick="setPresetShirt('https://raygamix.github.io/hardcodedassets/classic-blue-shirt.png')">👔 Classic Blue Shirt</button>
+                        <button class="btn-alt" onclick="setPresetShirt('https://raygamix.github.io/hardcodedassets/RayGamix-Shirt-template.png')">👕 RayGamix Template Shirt</button>
+                        <button class="btn-alt" style="border-color:var(--red); color:var(--red);" onclick="setPresetShirt('')">Unequip Shirt</button>
+                    </div>
+                </div>
+
                 <div id="tab-sec-nudge" style="display:none;">
-                    <h3 style="margin-top:0; color:var(--accent); font-size:16px;">📐 Individual Item 3D Nudge & Resizer</h3>
-                    <p style="color:var(--muted); font-size:12px; margin-bottom:12px;">Select an equipped item below to fine-tune its position and scale independently:</p>
-                    
-                    <div class="prop-row" style="margin-bottom:15px;">
-                        <span>Target Item:</span>
-                        <select id="nudgeTargetSelect" class="prop-input" onchange="onNudgeTargetChange()">
-                            <!-- Populated with equipped items -->
+                    <h3 style="margin-top:0; color:var(--accent); font-size:16px;">📐 Individual Item Sliders</h3>
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:12px; color:var(--muted);">Select Equipped Item:</label>
+                        <select id="itemSliderSelect" style="width:100%; background:#020406; border:1px solid #1a2b3d; color:#fff; padding:8px; border-radius:6px; margin-top:4px;" onchange="loadItemSliderValues()">
+                            <option value="face">Face Expression</option>
+                            <option value="shirt">Shirt / Accessory</option>
                         </select>
                     </div>
 
-                    <div class="offset-control-box">
-                        <div class="slider-row">
-                            <span>Offset X (Left/Right):</span>
-                            <input type="range" id="accOffX" min="-10" max="10" step="0.2" value="0" oninput="applyItemNudgeSlider()">
-                            <span id="dispAccOffX">0</span>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div>
+                            <span style="font-size:12px; color:var(--muted);">Offset X:</span>
+                            <input type="range" id="slOffX" min="-5" max="5" step="0.2" value="0" oninput="saveItemSliderValues()">
                         </div>
-                        <div class="slider-row">
-                            <span>Offset Y (Up/Down):</span>
-                            <input type="range" id="accOffY" min="-10" max="10" step="0.2" value="0" oninput="applyItemNudgeSlider()">
-                            <span id="dispAccOffY">0</span>
+                        <div>
+                            <span style="font-size:12px; color:var(--muted);">Offset Y:</span>
+                            <input type="range" id="slOffY" min="-5" max="5" step="0.2" value="0" oninput="saveItemSliderValues()">
                         </div>
-                        <div class="slider-row">
-                            <span>Offset Z (Front/Back):</span>
-                            <input type="range" id="accOffZ" min="-10" max="10" step="0.2" value="0" oninput="applyItemNudgeSlider()">
-                            <span id="dispAccOffZ">0</span>
+                        <div>
+                            <span style="font-size:12px; color:var(--muted);">Offset Z:</span>
+                            <input type="range" id="slOffZ" min="-5" max="5" step="0.2" value="0" oninput="saveItemSliderValues()">
                         </div>
-                        <div class="slider-row">
-                            <span>Scale Resizer (0.1x to 10.0x):</span>
-                            <input type="range" id="accScale" min="0.1" max="10" step="0.1" value="1" oninput="applyItemNudgeSlider()">
-                            <span id="dispAccScale">1.0</span>
+                        <div>
+                            <span style="font-size:12px; color:var(--muted);">Scale:</span>
+                            <input type="range" id="slScale" min="0.2" max="3" step="0.1" value="1" oninput="saveItemSliderValues()">
                         </div>
                     </div>
                 </div>
-
-                <!-- Tab: Wardrobe & Refunds -->
-                <div id="tab-sec-wardrobe" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">🎁 Wardrobe & 1-Day Refund Guarantee</h3>
-                    <p style="color:var(--muted); font-size:12px; margin-bottom:15px;">Purchased catalog items can be refunded for 100% tokens within 24 hours of purchase:</p>
-                    <div id="acquiredItemsContainer" style="max-height: 250px; overflow-y: auto; background:var(--card); border: 1px solid var(--card-border); border-radius:12px; padding:12px; font-size:12px; color:var(--muted);">
-                        No purchased items yet.
-                    </div>
-                </div>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="overlay" id="device-panel">
-    <div class="panel" style="max-width: 480px; text-align: center;">
-        <div class="close-btn" onclick="document.getElementById('device-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 22px; font-weight:800;">⚙️ Device & Control Setup</h2>
-        <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Select interface and control preferences:</p>
-
-        <div style="margin-bottom: 20px; text-align: left;">
-            <label style="color:#fff; font-weight:bold; font-size:13px; display:block; margin-bottom:8px;">Interface Mode:</label>
-            <div style="display:flex; gap:10px;">
-                <button id="btnUiPhone" class="btn-alt" style="flex:1; padding:12px;" onclick="selectUiSetting('phone')">Phone UI</button>
-                <button id="btnUiDesktop" class="btn-alt" style="flex:1; padding:12px;" onclick="selectUiSetting('desktop')">Desktop UI</button>
-            </div>
-        </div>
-
-        <div style="margin-bottom: 25px; text-align: left;">
-            <label style="color:#fff; font-weight:bold; font-size:13px; display:block; margin-bottom:8px;">Control Method:</label>
-            <div style="display:flex; gap:10px;">
-                <button id="btnCtrlTouch" class="btn-alt" style="flex:1; padding:12px;" onclick="selectCtrlSetting('touch')">Touch Joystick</button>
-                <button id="btnCtrlKeyboard" class="btn-alt" style="flex:1; padding:12px;" onclick="selectCtrlSetting('keyboard')">Keyboard Controls</button>
-            </div>
-        </div>
-
-        <button class="btn" style="width:100%; padding:14px;" onclick="confirmDeviceSettings()">Confirm Settings</button>
-    </div>
-</div>
-
-<div class="overlay" id="lang-panel">
-    <div class="panel" style="text-align: center;">
-        <div class="close-btn" onclick="document.getElementById('lang-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">🌐 Welcome to RayGamix</h2>
-        <p style="color:var(--muted); font-size:14px; margin-bottom: 25px;">Please select your language:</p>
-        <select id="langModalSelect" class="lang-select" style="width: 100%; margin-bottom: 25px; padding: 14px;">
-            <option value="en">🇺🇸 English</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="de">🇩🇪 Deutsch</option>
-        </select>
-        <button class="btn" onclick="confirmLangModal()">Continue</button>
-    </div>
-</div>
-
-<div class="overlay" id="auth-panel">
-    <div class="panel">
-        <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Log in to earn tokens, track streaks, and unlock the Avatar Customizer.</p>
-        <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;">
-        <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;">
-        <button class="btn" onclick="handleAuth()">Login / Register</button>
-        <button class="btn-alt" style="margin-top:12px;" onclick="handleLogout()">Play as Guest</button>
     </div>
 </div>
 
@@ -370,190 +234,59 @@
     <div class="studio-layout">
         <div class="studio-header">
             <h2 style="color:var(--accent); margin:0; font-weight:900;">RAYGAMIX STUDIO</h2>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <input type="text" id="gameTitle" class="prop-input" placeholder="ENTER NAME..." style="width: 160px; font-size: 13px; padding: 8px 10px; border-radius: 8px; font-weight:bold;">
-                
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="document.getElementById('rgxWorldImportInput').click()">📥 IMPORT RGX</button>
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="exportRGXFile()">📤 EXPORT RGX</button>
-                
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px; border-color:#cc66ff; color:#cc66ff;" onclick="document.getElementById('rgxObjectImportInput').click()">📦 IMPORT RGXA / RGXO</button>
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px; border-color:#cc66ff; color:#cc66ff;" onclick="exportSelectedAsRGXO()">✨ EXPORT RGXA / RGXO</button>
-                
-                <input type="file" id="rgxWorldImportInput" accept=".rgx" style="display:none;" onchange="importRGXWorldFile(event)">
-                <input type="file" id="rgxObjectImportInput" accept=".rgxo,.rgxa" style="display:none;" onchange="importRGXObjectFile(event)">
-                
-                <button class="btn" style="background:linear-gradient(135deg, #00e5ff, #0088ff); color:#000; width: auto; padding: 8px 14px; font-size:11px;" onclick="testCurrentStudioGame()">🕹️ TEST DEMO</button>
-                <button class="btn" id="btnPublish" style="background:linear-gradient(135deg, #cc66ff, #8800ff); color:#fff; width: auto; padding: 8px 14px; font-size:11px;" onclick="publishGame()">🌐 PUBLISH</button>
-                <button class="btn" style="background:var(--red); color:#fff; width: auto; padding: 8px 12px; font-size:11px;" onclick="closeStudio()">EXIT</button>
-            </div>
+            <button class="btn" style="background:var(--red); color:#fff; width: auto; padding: 8px 16px;" onclick="closeStudio()">EXIT STUDIO</button>
         </div>
-        <div class="studio-toolbar">
-            <button id="tool-select" class="btn-tool tool-active" onclick="setTransformMode('select')">🖱️ Select</button>
-            <button id="tool-translate" class="btn-tool" onclick="setTransformMode('translate')">☩ Move</button>
-            <button id="tool-scale" class="btn-tool" onclick="setTransformMode('scale')">⤡ Scale</button>
-            <button id="tool-rotate" class="btn-tool" onclick="setTransformMode('rotate')">↻ Rotate</button>
-            <div style="width: 1px; height: 20px; background: #333; margin: 0 5px;"></div>
-            
-            <select id="addPartType" class="prop-input" style="width: auto; padding: 6px; font-weight:bold;">
-                <option value="cube">🧱 Block</option>
-                <option value="sphere">⚽ Sphere</option>
-                <option value="triangle">🔺 Triangle</option>
-                <option value="pentagon">⬟ Pentagon</option>
-                <option value="ladder">🪜 Ladder</option>
-                <option value="water">🌊 Water</option>
-                <option value="spawn">🏁 Spawn</option>
-                <option value="checkpoint">🚩 Checkpoint</option>
-                <option value="npc">🧍 NPC</option>
-                <option value="sign">🪧 Sign (Text)</option>
-                <option value="clickdtct">🖱️ Click Detector</option>
-            </select>
-            <button class="btn" style="width:auto; padding: 6px 15px;" onclick="addSelectedPart()">➕ Insert</button>
-        </div>
-        
         <div class="studio-body">
             <div id="studio-viewport" class="studio-viewport"></div>
-            <div class="studio-sidebar">
-                <div style="background: #050a12; padding: 12px 15px; font-size: 13px; font-weight: 800; color: #fff; border-bottom: 1px solid #162438; text-transform:uppercase;">Properties & Scripts</div>
-                <div class="prop-section" id="studioPropertiesPanel">
-                    <div id="prop-empty" style="color:var(--muted); text-align:center; margin-top:30px; font-weight:bold;">Select an object to edit properties</div>
-                    <div id="prop-content" style="display:none;">
-                        <div class="prop-row"><span style="width:80px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:80px;">Type</span><input type="text" id="prop-type" class="prop-input" disabled style="background:#03060a; color:#555;"></div>
-                        <div class="prop-row"><span style="width:80px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px; border:none;" onchange="applyPropertyChanges()"></div>
-                        
-                        <div class="prop-row">
-                            <span style="width:80px;">Material</span>
-                            <select id="prop-material" class="prop-input" onchange="applyPropertyChanges()">
-                                <option value="Plastic">Plastic</option><option value="Grass">Grass</option>
-                                <option value="Stone">Stone</option><option value="Dirt">Dirt</option>
-                                <option value="Glass">Glass</option><option value="Ice">Ice</option>
-                                <option value="Water">Water</option><option value="Lava">Lava</option>
-                                <option value="Obsidian">Obsidian</option>
-                            </select>
-                        </div>
-                        
-                        <div class="prop-row">
-                            <span style="width:80px;">Texture URL</span>
-                            <input type="text" id="prop-texture" class="prop-input" onchange="applyPropertyChanges()" placeholder="https://...">
-                        </div>
-                        
-                        <div class="prop-row">
-                            <span style="width:80px;">Effect</span>
-                            <select id="prop-effect" class="prop-input" onchange="applyPropertyChanges()">
-                                <option value="None">None</option>
-                                <option value="Fire">🔥 Fire</option>
-                                <option value="Smoke">💨 Smoke</option>
-                                <option value="Sparkles">✨ Sparkles</option>
-                            </select>
-                        </div>
-                        
-                        <div class="prop-row" id="row-text" style="display:none;">
-                            <span style="width:80px;">Sign Text</span>
-                            <input type="text" id="prop-text" class="prop-input" onchange="applyPropertyChanges()" placeholder="Enter text...">
-                        </div>
-
-                        <div style="border-top: 1px solid #1c2e46; margin: 15px 0; padding-top: 15px;"></div>
-
-                        <div class="prop-row"><span style="width:40px;">Pos</span><div class="prop-vec3"><input type="number" id="prop-pos-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
-                        <div class="prop-row"><span style="width:40px;">Scale</span><div class="prop-vec3"><input type="number" id="prop-scale-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
-                        <div class="prop-row"><span style="width:40px;">Rot</span><div class="prop-vec3"><input type="number" id="prop-rot-x" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-y" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-z" step="15" onchange="applyPropertyChanges()"></div></div>
-                        
-                        <div style="margin-top:20px; margin-bottom:8px; font-weight:bold; color:var(--accent);">Interaction RGX Script</div>
-                        <textarea id="prop-script" class="prop-input" style="height:80px; resize:vertical; font-family:monospace; background:#000;" onchange="applyPropertyChanges()" placeholder="player.position.y += 10;"></textarea>
-                        
-                        <button class="btn-alt" style="margin-top:10px; border-color:var(--accent); color:var(--accent);" onclick="exportSelectedAsRGXO()">📦 Export Object (.rgxo)</button>
-                        <button class="btn-alt" style="margin-top:5px; border-color:#cc66ff; color:#cc66ff;" onclick="exportSelectedAsRGXA()">✨ Export Avatar Item (.rgxa)</button>
-
-                        <button class="btn-alt" style="border-color:var(--red); color:var(--red); margin-top:20px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
 <div id="game-player">
     <div class="player-header">
-        <button class="btn-alt" style="width: auto; padding: 6px 12px; font-size: 11px;" onclick="openDeviceSettings()">⚙️ Controls</button>
-        <h2 id="player-title" style="color:var(--accent); margin:0; font-weight:900; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 12px var(--accent-glow);">RayGamix Engine</h2>
-        <button class="btn" style="width: auto; background: var(--red); color: #fff; padding: 6px 18px; font-size:12px;" onclick="closeGame()">Leave Game</button>
+        <h2 id="player-title" style="color:var(--accent); margin:0; font-weight:900;">RayGamix Engine</h2>
+        <button class="btn" style="width: auto; background: var(--red); color: #fff; padding: 6px 18px;" onclick="closeGame()">Leave Game</button>
     </div>
-    <iframe id="game-frame" allow="pointer-lock"></iframe>
+    <iframe id="game-frame"></iframe>
 </div>
 
-<div class="overlay" id="msg-panel" style="z-index: 99999;">
-    <div class="panel" style="width: 380px; text-align: center; padding: 30px;">
+<div class="overlay" id="auth-panel">
+    <div class="panel">
+        <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
+        <h2 style="color:var(--accent); margin-top:0;">RayGamix Account</h2>
+        <input type="text" id="authUsername" style="width:100%; padding:12px; background:#020406; border:1px solid #1a2b3d; color:#fff; border-radius:8px; margin-bottom:12px; box-sizing:border-box;" placeholder="Username">
+        <button class="btn" onclick="handleAuth()">Login / Register</button>
+    </div>
+</div>
+
+<div class="overlay" id="msg-panel">
+    <div class="panel" style="width: 380px; text-align: center;">
         <div class="close-btn" onclick="document.getElementById('msg-panel').style.display='none'">×</div>
-        <h3 id="msg-title" style="color:var(--accent); margin-top:0; font-size:22px;">Notice</h3>
-        <p id="msg-body" style="color: var(--muted); margin-bottom: 25px; line-height:1.5;"></p>
+        <h3 id="msg-title" style="color:var(--accent); margin-top:0;">Notice</h3>
+        <p id="msg-body" style="color: var(--muted); margin-bottom: 25px;"></p>
         <button class="btn" onclick="document.getElementById('msg-panel').style.display='none'">Acknowledge</button>
-    </div>
-</div>
-
-<div class="overlay" id="device-banned-panel" style="z-index: 999999;">
-    <div class="panel" style="width: 440px; text-align: center; border-color: var(--red);">
-        <h2 style="color:var(--red); margin-top:0; font-size: 26px; font-weight:900;">⛔ DEVICE ACCESS SUSPENDED</h2>
-        <p style="color:#fff; font-size:14px; line-height:1.4;">Your account or device accumulated <b style="color:var(--red);">3.0 Warning Points</b> or violated security guardrails.</p>
-
-        <h4 style="margin: 15px 0 8px 0; color: var(--accent); text-align: left;">Submit Ban Appeal</h4>
-        <textarea id="appealInputText" class="prop-input" style="height: 90px; resize: none; font-size: 12px; margin-bottom: 15px;" placeholder="Explain why your warning points should be pardoned..."></textarea>
-        
-        <button class="btn" style="background:linear-gradient(135deg, #00e5ff, #0088ff); color:#000;" onclick="submitBanAppeal()">📨 Submit Appeal</button>
     </div>
 </div>
 
 <script>
     const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
-    const ASSETS_BASE = "https://raygamix.github.io/hardcodedassets/";
-
-    const HARDCODED_FACES = [
-        { id: 'face_neutral', name: 'Neutral', url: ASSETS_BASE + 'neutral.png' },
-        { id: 'face_happy', name: 'Happy', url: ASSETS_BASE + 'happy.png' },
-        { id: 'face_veryhappy', name: 'Very Happy', url: ASSETS_BASE + 'veryhappy.png' },
-        { id: 'face_sad', name: 'Sad', url: ASSETS_BASE + 'sad.png' },
-        { id: 'face_cry', name: 'Cry', url: ASSETS_BASE + 'cry.png' },
-        { id: 'face_ohno', name: 'Oh No', url: ASSETS_BASE + 'ohno.png' },
-        { id: 'face_wow', name: 'Wow', url: ASSETS_BASE + 'wow.png' },
-        { id: 'face_tmpl', name: 'Head Template', url: ASSETS_BASE + 'RayGamix-Head-template.png' }
-    ];
-
-    const HARDCODED_CLOTHES = [
-        { id: 'shirt_classic', name: 'Classic Blue Shirt', url: ASSETS_BASE + 'classic-blue-shirt.png', price: 0 },
-        { id: 'shirt_tmpl', name: 'Shirt Template', url: ASSETS_BASE + 'RayGamix-Shirt-template.png', price: 0 },
-        { id: 'cat_hat', name: '🎩 Top Hat', url: 'https://i.imgur.com/8N3x42B.png', price: 0 },
-        { id: 'cat_crown', name: '👑 King Crown', url: 'https://i.imgur.com/6X9m71A.png', price: 10 },
-        { id: 'cat_wings', name: '🪽 Cyber Wings', url: 'https://i.imgur.com/2X7p91B.png', price: 15 },
-        { id: 'cat_sword', name: '⚔️ Dual Katana', url: 'https://i.imgur.com/9K1p82Z.png', price: 20 }
-    ];
-
-    const globalTextureLoader = new THREE.TextureLoader();
-
-    let scene, camera, renderer, orbit, transform;
-    let studioObjects = [];
-    let selectedMesh = null;
-    let games = [];
-    let isPublishing = false;
-
+    
     let avatarScene, avatarCamera, avatarRenderer, avatarGroup;
     let shopScene, shopCamera, shopRenderer, shopAvatarGroup;
-    let isShopSpinning = true;
+    let globalSharedSpin = 0;
+    let isShopAutoSpinning = true;
     let isDraggingShop = false;
-    let previousShopMouseX = 0;
-    let previousShopMouseY = 0;
 
     let currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
     let userTokens = 0;
-    let userWarnings = 0.0;
-    let userDailyTier = 1;
-    let userLastClaim = 0;
-    let userStreak = 1;
-
     let userColors = { head: 0xffdbac, torso: 0xffffff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
-    let userFace = ASSETS_BASE + 'neutral.png';
-    let userShirt = ASSETS_BASE + 'classic-blue-shirt.png';
-    let userAccessories = []; 
-    let itemTransforms = {}; 
-    let acquiredItems = [];
+    let userFace = "";
+    let userShirt = "";
+
+    let itemTransforms = {
+        face: { offX: 0, offY: 0, offZ: 0, scale: 1.0 },
+        shirt: { offX: 0, offY: 0, offZ: 0, scale: 1.0 }
+    };
 
     function showAlert(title, body) {
         document.getElementById('msg-title').innerText = title;
@@ -561,49 +294,45 @@
         document.getElementById('msg-panel').style.display = 'flex';
     }
 
-    async function setLanguage(lang) {
-        localStorage.setItem('rgxLang', lang);
+    function checkDomainGuard() {
+        const rootHref = document.getElementById('appRootLink')?.href || '';
+        const currentUrl = window.location.href;
+        return (
+            rootHref.includes('raygamix.com/launcher') ||
+            currentUrl.includes('raygamix.com/launcher')
+        );
     }
 
-    function checkReturnAndLanguage() {
-        const savedLang = localStorage.getItem('rgxLang');
-        if(!savedLang) {
-            document.getElementById('lang-panel').style.display = 'flex';
-        } else {
-            document.getElementById('langSelectTop').value = savedLang;
+    async function sendTelemetryPing() {
+        if (!checkDomainGuard()) return;
+
+        try {
+            const res = await fetch(`${CF_BACKEND_URL}/visit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: currentUser, launcherUrl: window.location.href })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.online) document.getElementById('liveOnlineCount').innerText = data.online;
+                if (data.visits) document.getElementById('liveVisitsCount').innerText = data.visits;
+            }
+        } catch(e) {}
+    }
+
+    setInterval(sendTelemetryPing, 2500);
+
+    window.addEventListener('beforeunload', () => {
+        if (checkDomainGuard()) {
+            navigator.sendBeacon(`${CF_BACKEND_URL}/visit/offline`, JSON.stringify({ user: currentUser }));
         }
-    }
+    });
 
-    function confirmLangModal() {
-        const val = document.getElementById('langModalSelect').value;
-        setLanguage(val);
-        document.getElementById('langSelectTop').value = val;
-        document.getElementById('lang-panel').style.display = 'none';
-    }
-
-    function checkDeviceSetup() {
-        const uiMode = localStorage.getItem('rgxUiMode') || 'desktop';
-        const ctrlMode = localStorage.getItem('rgxCtrlMode') || 'keyboard';
-        selectUiSetting(uiMode);
-        selectCtrlSetting(ctrlMode);
-    }
-
-    function openDeviceSettings() { document.getElementById('device-panel').style.display = 'flex'; }
-
-    function selectUiSetting(mode) {
-        localStorage.setItem('rgxUiMode', mode);
-        document.getElementById('btnUiPhone').classList.toggle('tool-active', mode === 'phone');
-        document.getElementById('btnUiDesktop').classList.toggle('tool-active', mode === 'desktop');
-        document.body.classList.toggle('forced-phone-ui', mode === 'phone');
-    }
-
-    function selectCtrlSetting(mode) {
-        localStorage.setItem('rgxCtrlMode', mode);
-        document.getElementById('btnCtrlTouch').classList.toggle('tool-active', mode === 'touch');
-        document.getElementById('btnCtrlKeyboard').classList.toggle('tool-active', mode === 'keyboard');
-    }
-
-    function confirmDeviceSettings() { document.getElementById('device-panel').style.display = 'none'; }
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && checkDomainGuard()) {
+            navigator.sendBeacon(`${CF_BACKEND_URL}/visit/offline`, JSON.stringify({ user: currentUser }));
+        }
+    });
 
     function openAuth() { document.getElementById('auth-panel').style.display = 'flex'; }
 
@@ -613,1011 +342,301 @@
         currentUser = u;
         document.getElementById('uDisp').innerText = currentUser;
         document.getElementById('auth-panel').style.display = 'none';
-        
-        syncUserDataWithBackend();
-        updateUserRankBadge();
         rebuildAvatar();
         rebuildShopAvatar();
-        showAlert("Logged In", `Welcome back, ${currentUser}! Customizer Unlocked.`);
-    }
-
-    function handleLogout() {
-        currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
-        userTokens = 0;
-        document.getElementById('uDisp').innerText = "Guest";
-        document.getElementById('uTokenDisp').innerText = "0";
-        document.getElementById('auth-panel').style.display = 'none';
-        updateUserRankBadge();
-        rebuildAvatar();
-        rebuildShopAvatar();
-    }
-
-    function updateUserRankBadge() {
-        const badge = document.getElementById('uRankBadge');
-        if (!badge) return;
-        if (currentUser.startsWith("Guest_")) {
-            badge.innerText = "GUEST PLAYER";
-            return;
-        }
-
-        const s = userStreak;
-        if (s >= 3650) badge.innerText = "MASTER";
-        else if (s >= 1825) badge.innerText = "VETERAN";
-        else if (s >= 365) badge.innerText = "CLASSIC PLAYER";
-        else if (s >= 100) badge.innerText = "TOP USER";
-        else if (s >= 30) badge.innerText = "OG";
-        else if (s >= 7) badge.innerText = "VERIFIED USER";
-        else badge.innerText = "MEMBER";
-    }
-
-    function claimDailyTokens() {
-        if (currentUser.startsWith("Guest_")) return showAlert("Guest Restriction", "Guests cannot earn or claim daily tokens. Please register an account!");
-        const now = Date.now();
-        const ONE_DAY = 24 * 60 * 60 * 1000;
-
-        if (now - userLastClaim < ONE_DAY) {
-            const hoursLeft = Math.ceil((ONE_DAY - (now - userLastClaim)) / (1000 * 60 * 60));
-            return showAlert("Daily Claim", `Already claimed today! Next reward available in ~${hoursLeft} hours.`);
-        }
-
-        let reward = 1;
-        if (userDailyTier === 2) reward = 5;
-        if (userDailyTier >= 3) reward = 10;
-
-        userTokens += reward;
-        userLastClaim = now;
-        userStreak += 1;
-
-        if (userStreak >= 21) userDailyTier = 3;
-        else if (userStreak >= 7) userDailyTier = 2;
-
-        document.getElementById('uTokenDisp').innerText = userTokens;
-        syncUserDataWithBackend();
-        updateUserRankBadge();
-        showAlert("Daily Tokens Claimed", `Claimed +${reward} Tokens! Current Streak: ${userStreak} days.`);
-    }
-
-    async function syncUserDataWithBackend() {
-        if (currentUser.startsWith("Guest_")) return;
-        try {
-            await fetch(`${CF_BACKEND_URL}/user/sync`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user: currentUser, tokens: userTokens, warnings: userWarnings,
-                    dailyTier: userDailyTier, lastClaim: userLastClaim, streak: userStreak,
-                    colors: userColors, face: userFace, accessories: userAccessories,
-                    itemTransforms: itemTransforms
-                })
-            });
-        } catch(e) {}
-    }
-
-    function switchShopTab(tabKey) {
-        ['skin','catalog','face','nudge','wardrobe'].forEach(t => {
-            document.getElementById(`tab-sec-${t}`).style.display = t === tabKey ? 'block' : 'none';
-            document.getElementById(`tab-btn-${t}`).classList.toggle('avatar-tab-active', t === tabKey);
-        });
-        if (tabKey === 'nudge') updateNudgeTargetDropdown();
     }
 
     function openShop() {
         if (currentUser.startsWith("Guest_")) {
-            return showAlert("🔒 Customizer Locked for Guests", "Avatar Customizer is disabled for Guest accounts. Please click 'Account' and log in or register to unlock!");
+            return showAlert("🔒 Guest Restricted", "Avatar Customizer is locked for guests! Please click 'Account' and log in to customize your avatar.");
         }
-
         document.getElementById('shop-panel').style.display = 'flex';
-        Object.keys(userColors).forEach(k => {
-            const el = document.getElementById('col-'+k);
-            if (el) el.value = "#" + userColors[k].toString(16).padStart(6, '0');
-        });
-        document.getElementById('equipFaceUrl').value = userFace;
-        document.getElementById('equipItemUrl').value = userAccessories[0] || '';
-        
         initShopAvatarView();
-        renderShopCatalog();
-        renderShopFaces();
-        renderAcquiredItemsList();
-        updateNudgeTargetDropdown();
-        applyShopUpdates();
     }
 
-    function applyPresetSkin(hexCol) {
-        userColors = { head: hexCol, torso: hexCol, larm: hexCol, rarm: hexCol, lleg: hexCol, rleg: hexCol };
-        Object.keys(userColors).forEach(k => {
-            const el = document.getElementById('col-'+k);
-            if (el) el.value = "#" + hexCol.toString(16).padStart(6, '0');
+    function closeShopModal() {
+        document.getElementById('shop-panel').style.display = 'none';
+    }
+
+    function switchShopTab(tabKey) {
+        ['skin','face','catalog','nudge'].forEach(t => {
+            document.getElementById(`tab-sec-${t}`).style.display = t === tabKey ? 'block' : 'none';
+            document.getElementById(`tab-btn-${t}`).classList.toggle('avatar-tab-active', t === tabKey);
         });
-        applyShopUpdates();
     }
 
-    function setPresetFace(faceUrl) {
-        userFace = faceUrl;
-        document.getElementById('equipFaceUrl').value = faceUrl;
-        applyShopUpdates();
+    function applyPresetSkin(hex) {
+        userColors = { head: hex, torso: hex, larm: hex, rarm: hex, lleg: hex, rleg: hex };
+        rebuildAvatar(); rebuildShopAvatar();
     }
 
-    function unequipFace() {
-        userFace = ASSETS_BASE + 'neutral.png';
-        document.getElementById('equipFaceUrl').value = userFace;
-        applyShopUpdates();
+    function setPresetFace(url) {
+        userFace = url; rebuildAvatar(); rebuildShopAvatar();
     }
 
-    function unequipAccessory() {
-        userAccessories = [];
-        document.getElementById('equipItemUrl').value = "";
-        applyShopUpdates();
+    function setPresetShirt(url) {
+        userShirt = url; rebuildAvatar(); rebuildShopAvatar();
     }
 
-    function renderShopFaces() {
-        const grid = document.getElementById('shopFaceGrid');
-        if (!grid) return;
-        grid.innerHTML = HARDCODED_FACES.map(f => {
-            const isEquipped = userFace === f.url;
-            return `
-            <div class="avatar-item-card ${isEquipped ? 'equipped' : ''}" onclick="setPresetFace('${f.url}')">
-                ${isEquipped ? '<span class="equipped-badge">EQUIPPED</span>' : ''}
-                <img src="${f.url}" style="width:48px; height:48px; object-fit:contain; margin-bottom:8px;">
-                <span style="font-size:12px; font-weight:bold; color:#fff;">${f.name}</span>
-            </div>`;
-        }).join('');
+    function toggleShopSpin() {
+        isShopAutoSpinning = !isShopAutoSpinning;
+        document.getElementById('btnSpinToggle').innerText = isShopAutoSpinning ? "⏸ Pause Spin" : "▶ Auto Spin";
     }
 
-    function renderShopCatalog() {
-        const grid = document.getElementById('shopCatalogGrid');
-        if(!grid) return;
-
-        grid.innerHTML = HARDCODED_CLOTHES.map(item => {
-            const isEquipped = userAccessories.includes(item.url) || userShirt === item.url;
-            return `
-            <div class="avatar-item-card ${isEquipped ? 'equipped' : ''}" onclick="equipCatalogItem('${item.url}', '${item.name}', ${item.price})">
-                ${isEquipped ? '<span class="equipped-badge">EQUIPPED</span>' : ''}
-                <img src="${item.url}" style="width:42px; height:42px; object-fit:contain; margin-bottom:8px;" onerror="this.src='https://placehold.co/40x40/0b0e17/00a2ff?text=3D'">
-                <span style="font-size:12px; font-weight:bold; color:#fff;">${item.name}</span>
-                <span style="font-size:11px; font-weight:800; color:var(--gold); margin-top:4px;">${item.price === 0 ? 'FREE' : '🪙 ' + item.price}</span>
-            </div>`;
-        }).join('');
+    function loadItemSliderValues() {
+        const item = document.getElementById('itemSliderSelect').value;
+        const tf = itemTransforms[item];
+        document.getElementById('slOffX').value = tf.offX;
+        document.getElementById('slOffY').value = tf.offY;
+        document.getElementById('slOffZ').value = tf.offZ;
+        document.getElementById('slScale').value = tf.scale;
     }
 
-    function equipCatalogItem(url, name, cost) {
-        if (currentUser.startsWith("Guest_")) return showAlert("Guest Restriction", "Guests cannot customize avatar items!");
-        
-        if (url.includes("shirt") || url.includes("Shirt")) {
-            userShirt = url;
-        } else {
-            if (userAccessories.includes(url)) {
-                userAccessories = userAccessories.filter(a => a !== url);
+    function saveItemSliderValues() {
+        const item = document.getElementById('itemSliderSelect').value;
+        itemTransforms[item] = {
+            offX: parseFloat(document.getElementById('slOffX').value) || 0,
+            offY: parseFloat(document.getElementById('slOffY').value) || 0,
+            offZ: parseFloat(document.getElementById('slOffZ').value) || 0,
+            scale: parseFloat(document.getElementById('slScale').value) || 1.0
+        };
+        rebuildAvatar(); rebuildShopAvatar();
+    }
+
+    function applyTextureWithBase(mesh, url, isHead, baseColorHex, lArmMesh, rArmMesh, transform) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            const w = img.width, h = img.height;
+            const aspect = w / h;
+            const tempCv = document.createElement('canvas');
+            tempCv.width = w; tempCv.height = h;
+            const tempCtx = tempCv.getContext('2d');
+
+            const baseCss = "#" + baseColorHex.toString(16).padStart(6, '0');
+
+            if (!isHead && w > 40 && h > 40) {
+                tempCtx.fillStyle = baseCss;
+                tempCtx.fillRect(0, 0, w, h);
+                tempCtx.drawImage(img, 20, 20, w - 40, h - 40, 0, 0, w, h);
             } else {
-                if (cost > 0 && !acquiredItems.some(i => i.url === url)) {
-                    if (userTokens < cost) return showAlert("Insufficient Tokens", `You need ${cost} Tokens to purchase "${name}".`);
-                    userTokens -= cost;
-                    document.getElementById('uTokenDisp').innerText = userTokens;
-                    recordPurchasedItem(name, url, cost);
-                }
-                userAccessories.push(url);
-                if (!itemTransforms[url]) itemTransforms[url] = { offX: 0, offY: 0, offZ: 0, scale: 1.0 };
+                tempCtx.fillStyle = baseCss;
+                tempCtx.fillRect(0, 0, w, h);
+                tempCtx.drawImage(img, 0, 0);
             }
-        }
 
-        document.getElementById('equipItemUrl').value = url;
-        applyShopUpdates();
-    }
+            const applyTrans = (tex) => {
+                if(transform) {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    tex.repeat.set(1 / transform.scale, 1 / transform.scale);
+                    const offsetCenter = (1 - (1 / transform.scale)) / 2;
+                    tex.offset.set(transform.offX + offsetCenter, transform.offY + offsetCenter);
+                }
+                tex.needsUpdate = true;
+                return tex;
+            };
 
-    function handleShopAssetUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+            if (!isHead && aspect >= 2.0 && aspect <= 2.8) {
+                const colW = w / 5;
+                const makeTex = (colIdx) => {
+                    const cv = document.createElement('canvas');
+                    cv.width = colW; cv.height = h;
+                    const ctx = cv.getContext('2d');
+                    ctx.fillStyle = baseCss; ctx.fillRect(0,0,colW,h);
+                    ctx.drawImage(tempCv, colIdx * colW, 0, colW, h, 0, 0, colW, h);
+                    return new THREE.MeshStandardMaterial({ map: applyTrans(new THREE.CanvasTexture(cv)), roughness: 0.7 });
+                };
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const dataUrl = e.target.result;
-            userAccessories.push(dataUrl);
-            itemTransforms[dataUrl] = { offX: 0, offY: 0, offZ: 0, scale: 1.0 };
-            recordPurchasedItem(file.name, dataUrl, 0);
-            applyShopUpdates();
-            showAlert("Item Uploaded", `Uploaded and equipped 3D item: ${file.name}`);
-            event.target.value = "";
+                const backLeftMat = makeTex(0);
+                const leftArmMat = makeTex(1);
+                const frontMat = makeTex(2);
+                const rightArmMat = makeTex(3);
+                const backRightMat = makeTex(4);
+                const capMat = new THREE.MeshStandardMaterial({ color: baseColorHex, roughness: 0.7 });
+
+                mesh.material = [capMat, capMat, capMat, capMat, frontMat, backLeftMat];
+
+                if (lArmMesh) lArmMesh.material = [leftArmMat, leftArmMat, capMat, capMat, leftArmMat, leftArmMat];
+                if (rArmMesh) rArmMesh.material = [rightArmMat, rightArmMat, capMat, capMat, rightArmMat, rightArmMat];
+            } else if (isHead && Math.abs(aspect - 1.0) <= 0.2) {
+                const frontMat = new THREE.MeshStandardMaterial({ map: applyTrans(new THREE.CanvasTexture(tempCv)), roughness: 0.7 });
+                const baseMat = new THREE.MeshStandardMaterial({ color: baseColorHex, roughness: 0.7 });
+                mesh.material = [baseMat, baseMat, baseMat, baseMat, frontMat, baseMat];
+            } else {
+                const wrapMat = new THREE.MeshStandardMaterial({ map: applyTrans(new THREE.CanvasTexture(tempCv)), roughness: 0.7 });
+                const capMat = new THREE.MeshStandardMaterial({ color: baseColorHex, roughness: 0.7 });
+                mesh.material = [wrapMat, wrapMat, capMat, capMat, wrapMat, wrapMat];
+                if (lArmMesh) lArmMesh.material = [wrapMat, wrapMat, capMat, capMat, wrapMat, wrapMat];
+                if (rArmMesh) rArmMesh.material = [wrapMat, wrapMat, capMat, capMat, wrapMat, wrapMat];
+            }
         };
-        reader.readAsDataURL(file);
-    }
-
-    function recordPurchasedItem(name, url, cost = 10) {
-        const newItem = {
-            id: 'item_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-            name: name || 'Custom Item', url: url, cost: cost, timestamp: Date.now()
-        };
-        acquiredItems.unshift(newItem);
-        localStorage.setItem('rgxAcquiredItems', JSON.stringify(acquiredItems));
-        renderAcquiredItemsList();
-    }
-
-    function renderAcquiredItemsList() {
-        const cont = document.getElementById('acquiredItemsContainer');
-        if (!cont) return;
-        if (!acquiredItems || acquiredItems.length === 0) {
-            cont.innerHTML = `<span style="color:var(--muted);">No acquired items in wardrobe.</span>`;
-            return;
-        }
-
-        const now = Date.now();
-        const ONE_DAY = 24 * 60 * 60 * 1000;
-
-        cont.innerHTML = acquiredItems.map(item => {
-            const age = now - item.timestamp;
-            const canRefund = age <= ONE_DAY && item.cost > 0;
-            const isEquipped = userAccessories.includes(item.url) || userFace === item.url;
-
-            return `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#111216; padding:10px 14px; border-radius:8px; margin-bottom:8px; border:1px solid var(--card-border);">
-                <div>
-                    <span style="font-weight:bold; color:#fff; display:block;">${item.name}</span>
-                    <span style="font-size:11px; color:var(--muted);">Paid: ${item.cost} Tokens</span>
-                </div>
-                <div style="display:flex; gap:6px;">
-                    <button class="btn-alt" style="padding:6px 10px; font-size:11px; ${isEquipped ? 'border-color:var(--green); color:var(--green);' : ''}" onclick="reequipAcquiredItem('${item.id}')">
-                        ${isEquipped ? 'Equipped' : 'Re-equip'}
-                    </button>
-                    ${canRefund ? `<button class="btn-alt" style="padding:6px 10px; font-size:11px; border-color:var(--red); color:var(--red);" onclick="refundItem('${item.id}')">Refund 🪙${item.cost}</button>` : ''}
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    function reequipAcquiredItem(id) {
-        const item = acquiredItems.find(i => i.id === id);
-        if (!item) return;
-        if (!userAccessories.includes(item.url)) userAccessories.push(item.url);
-        applyShopUpdates();
-    }
-
-    function refundItem(id) {
-        const itemIndex = acquiredItems.findIndex(i => i.id === id);
-        if (itemIndex === -1) return;
-        const item = acquiredItems[itemIndex];
-        
-        userTokens += item.cost;
-        document.getElementById('uTokenDisp').innerText = userTokens;
-
-        userAccessories = userAccessories.filter(a => a !== item.url);
-        if (userFace === item.url) userFace = ASSETS_BASE + 'neutral.png';
-
-        acquiredItems.splice(itemIndex, 1);
-        localStorage.setItem('rgxAcquiredItems', JSON.stringify(acquiredItems));
-
-        applyShopUpdates();
-        syncUserDataWithBackend();
-        showAlert("Refund Processed", `Refunded ${item.cost} Tokens back to your balance!`);
-    }
-
-    function updateNudgeTargetDropdown() {
-        const select = document.getElementById('nudgeTargetSelect');
-        if (!select) return;
-        
-        select.innerHTML = '';
-        if (userAccessories.length === 0) {
-            select.innerHTML = `<option value="">(No Equipped 3D Accessories)</option>`;
-            return;
-        }
-
-        userAccessories.forEach((accUrl, idx) => {
-            const opt = document.createElement('option');
-            opt.value = accUrl;
-            opt.innerText = `Item ${idx + 1}: ${accUrl.split('/').pop().substring(0, 18)}`;
-            select.appendChild(opt);
-        });
-
-        onNudgeTargetChange();
-    }
-
-    function onNudgeTargetChange() {
-        const targetUrl = document.getElementById('nudgeTargetSelect')?.value;
-        if (!targetUrl || !itemTransforms[targetUrl]) {
-            if (targetUrl) itemTransforms[targetUrl] = { offX: 0, offY: 0, offZ: 0, scale: 1.0 };
-            else return;
-        }
-
-        const tf = itemTransforms[targetUrl];
-        document.getElementById('accOffX').value = tf.offX || 0;
-        document.getElementById('accOffY').value = tf.offY || 0;
-        document.getElementById('accOffZ').value = tf.offZ || 0;
-        document.getElementById('accScale').value = tf.scale || 1.0;
-
-        document.getElementById('dispAccOffX').innerText = tf.offX || 0;
-        document.getElementById('dispAccOffY').innerText = tf.offY || 0;
-        document.getElementById('dispAccOffZ').innerText = tf.offZ || 0;
-        document.getElementById('dispAccScale').innerText = (tf.scale || 1.0).toFixed(1);
-    }
-
-    function applyItemNudgeSlider() {
-        const targetUrl = document.getElementById('nudgeTargetSelect')?.value;
-        if (!targetUrl) return;
-
-        if (!itemTransforms[targetUrl]) itemTransforms[targetUrl] = { offX: 0, offY: 0, offZ: 0, scale: 1.0 };
-
-        const tf = itemTransforms[targetUrl];
-        tf.offX = parseFloat(document.getElementById('accOffX').value) || 0;
-        tf.offY = parseFloat(document.getElementById('accOffY').value) || 0;
-        tf.offZ = parseFloat(document.getElementById('accOffZ').value) || 0;
-        tf.scale = parseFloat(document.getElementById('accScale').value) || 1.0;
-
-        document.getElementById('dispAccOffX').innerText = tf.offX;
-        document.getElementById('dispAccOffY').innerText = tf.offY;
-        document.getElementById('dispAccOffZ').innerText = tf.offZ;
-        document.getElementById('dispAccScale').innerText = tf.scale.toFixed(1);
-
-        applyShopUpdates();
-    }
-
-    function applyShopUpdates() {
-        Object.keys(userColors).forEach(k => {
-            const el = document.getElementById('col-'+k);
-            if (el) userColors[k] = parseInt(el.value.replace('#',''), 16);
-        });
-        
-        userFace = document.getElementById('equipFaceUrl').value.trim() || (ASSETS_BASE + 'neutral.png');
-
-        localStorage.setItem('rgxColors', JSON.stringify(userColors));
-        localStorage.setItem('rgxFace', userFace);
-        localStorage.setItem('rgxShirt', userShirt);
-        localStorage.setItem('rgxAccessories', JSON.stringify(userAccessories));
-        localStorage.setItem('rgxItemTransforms', JSON.stringify(itemTransforms));
-
-        rebuildAvatar();
-        rebuildShopAvatar();
-        renderShopCatalog();
-        renderShopFaces();
-        renderAcquiredItemsList();
-    }
-
-    function fitAvatarCameraToBox(camera, container, targetDistance = 9.5) {
-        if (!container || !camera) return;
-        const width = container.clientWidth || 1;
-        const height = container.clientHeight || 1;
-        const aspect = width / height;
-        camera.aspect = aspect;
-
-        const adjustedDist = aspect < 0.85 ? targetDistance / aspect : targetDistance;
-        camera.position.set(0, 3.5, Math.min(adjustedDist, 18));
-        camera.lookAt(0, 3.2, 0);
-        camera.updateProjectionMatrix();
-    }
-
-    function hexToCssColor(hex) {
-        if (typeof hex === 'string') return hex.startsWith('#') ? hex : '#' + hex;
-        return '#' + (hex || 0xffffff).toString(16).padStart(6, '0');
+        img.src = url;
     }
 
     function build3DAvatarMeshGroup() {
-        const isGuest = currentUser.startsWith("Guest_");
-        const c = userColors;
         const group = new THREE.Group();
-        const mat = (col) => new THREE.MeshStandardMaterial({color: col, roughness: 0.7});
+        const mat = (col) => new THREE.MeshStandardMaterial({ color: col, roughness: 0.7 });
 
-        // Helper to bake transparent PNGs over base body color (prevents black background)
-        const applyTextureWithBase = (mesh, url, isHead, baseColorHex, lArmMesh, rArmMesh) => {
-            if (!url) return;
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.onload = () => {
-                const w = img.width, h = img.height;
-                const aspect = w / h;
-                const baseCss = hexToCssColor(baseColorHex);
-
-                if (!isHead && aspect >= 2.0 && aspect <= 2.8) {
-                    // 5-Panel Template Layout
-                    const colW = w / 5;
-                    const makeTex = (colIdx) => {
-                        const cv = document.createElement('canvas');
-                        cv.width = colW; cv.height = h;
-                        const ctx = cv.getContext('2d');
-                        ctx.fillStyle = baseCss; ctx.fillRect(0,0,colW,h);
-                        ctx.drawImage(img, colIdx * colW, 0, colW, h, 0, 0, colW, h);
-                        const t = new THREE.CanvasTexture(cv); t.needsUpdate = true;
-                        return new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 });
-                    };
-
-                    const frontMat = makeTex(2);
-                    const leftArmMat = makeTex(1);
-                    const rightArmMat = makeTex(3);
-                    const backLeftMat = makeTex(0);
-
-                    const torsoMats = Array.isArray(mesh.material) ? [...mesh.material] : [mesh.material];
-                    torsoMats[4] = frontMat; torsoMats[5] = backLeftMat;
-                    mesh.material = torsoMats;
-
-                    if (lArmMesh) {
-                        const lMats = Array.isArray(lArmMesh.material) ? [...lArmMesh.material] : [lArmMesh.material];
-                        lMats[4] = leftArmMat; lArmMesh.material = lMats;
-                    }
-                    if (rArmMesh) {
-                        const rMats = Array.isArray(rArmMesh.material) ? [...rArmMesh.material] : [rArmMesh.material];
-                        rMats[4] = rightArmMat; rArmMesh.material = rMats;
-                    }
-                } else if (isHead && Math.abs(aspect - 1.0) <= 0.2) {
-                    // Square face -> Front face only
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w; canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = baseCss; ctx.fillRect(0, 0, w, h);
-                    ctx.drawImage(img, 0, 0);
-
-                    const tex = new THREE.CanvasTexture(canvas); tex.needsUpdate = true;
-                    const mats = Array.isArray(mesh.material) ? [...mesh.material] : [mesh.material];
-                    mats[4] = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7 });
-                    mesh.material = mats;
-                } else {
-                    // Non-standard image -> Wrap around 4 sides with pre-baked base color
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w; canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = baseCss; ctx.fillRect(0, 0, w, h);
-                    ctx.drawImage(img, 0, 0);
-
-                    const tex = new THREE.CanvasTexture(canvas); tex.needsUpdate = true;
-                    const mats = Array.isArray(mesh.material) ? [...mesh.material] : [mesh.material];
-                    const wrapMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7 });
-                    [0, 1, 4, 5].forEach(idx => mats[idx] = wrapMat);
-                    mesh.material = mats;
-                }
-            };
-            img.src = url;
-        };
-
-        const headBaseMat = mat(c.head);
-        const headMaterials = [ headBaseMat, headBaseMat, headBaseMat, headBaseMat, headBaseMat, headBaseMat ];
-        const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMaterials); 
-        head.position.y = 4.8;
-
-        const torsoBaseMat = mat(c.torso);
-        const torsoMaterials = [ torsoBaseMat, torsoBaseMat, torsoBaseMat, torsoBaseMat, torsoBaseMat, torsoBaseMat ];
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), torsoMaterials); 
-        torso.position.y = 3.1;
+        const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), mat(userColors.head)); head.position.y = 4.8;
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1), mat(userColors.torso)); torso.position.y = 3.1;
 
         function buildLimb(color, x, y, isLeg) {
             const g = new THREE.Group(); g.position.set(x, y, 0);
-            const m = new THREE.Mesh(new THREE.BoxGeometry(isLeg?0.8:0.7, 2, isLeg?0.8:0.7), mat(color));
+            const baseMat = mat(color);
+            const mats = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat];
+            const m = new THREE.Mesh(new THREE.BoxGeometry(isLeg?0.8:0.7, 2, isLeg?0.8:0.7), mats);
             m.position.set(0, -1, 0); g.add(m);
             return g;
         }
 
-        const lArmGroup = buildLimb(c.larm, -1.4, 4.1, false);
-        const rArmGroup = buildLimb(c.rarm, 1.4, 4.1, false);
-        const lLegGroup = buildLimb(c.lleg, -0.5, 2.0, true);
-        const rLegGroup = buildLimb(c.rleg, 0.5, 2.0, true);
+        const lArmGroup = buildLimb(userColors.larm, -1.4, 4.1, false);
+        const rArmGroup = buildLimb(userColors.rarm, 1.4, 4.1, false);
+        const lLegGroup = buildLimb(userColors.lleg, -0.5, 2.0, true);
+        const rLegGroup = buildLimb(userColors.rleg, 0.5, 2.0, true);
 
         const lArmMesh = lArmGroup.children[0];
         const rArmMesh = rArmGroup.children[0];
 
-        if (userFace) applyTextureWithBase(head, userFace, true, c.head);
-        if (userShirt) applyTextureWithBase(torso, userShirt, false, c.torso, lArmMesh, rArmMesh);
+        if (userFace) applyTextureWithBase(head, userFace, true, userColors.head, null, null, itemTransforms.face);
+        if (userShirt) applyTextureWithBase(torso, userShirt, false, userColors.torso, lArmMesh, rArmMesh, itemTransforms.shirt);
 
         group.add(head, torso, lArmGroup, rArmGroup, lLegGroup, rLegGroup);
-
-        // Render each 3D Accessory
-        if (!isGuest && userAccessories && userAccessories.length > 0) {
-            userAccessories.forEach(accUrl => {
-                const tf = itemTransforms[accUrl] || { offX: 0, offY: 0, offZ: 0, scale: 1.0 };
-                const accGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-                const accMat = new THREE.MeshStandardMaterial({color: 0xffd700, roughness: 0.5});
-                
-                if (accUrl.startsWith("data:") || accUrl.startsWith("http")) {
-                    globalTextureLoader.load(accUrl, tex => { accMat.map = tex; accMat.needsUpdate = true; });
-                }
-
-                const accMesh = new THREE.Mesh(accGeo, accMat);
-                accMesh.position.set(tf.offX || 0, 5.6 + (tf.offY || 0), tf.offZ || 0);
-                accMesh.scale.set(tf.scale || 1.0, tf.scale || 1.0, tf.scale || 1.0);
-                group.add(accMesh);
-            });
-        }
-
         return group;
     }
 
-    function rebuildAvatar() {
-        if(!avatarScene) return;
-        if(avatarGroup) avatarScene.remove(avatarGroup);
-        avatarGroup = build3DAvatarMeshGroup();
-        avatarScene.add(avatarGroup);
-    }
-
-    function rebuildShopAvatar() {
-        if(!shopScene) return;
-        if(shopAvatarGroup) shopScene.remove(shopAvatarGroup);
-        shopAvatarGroup = build3DAvatarMeshGroup();
-        shopScene.add(shopAvatarGroup);
+    function setupDragControls(canvasElem, groupRefFn) {
+        let dragging = false, prevX = 0, prevY = 0;
+        canvasElem.addEventListener('mousedown', (e) => { dragging = true; prevX = e.clientX; prevY = e.clientY; isDraggingShop = true; });
+        window.addEventListener('mouseup', () => { dragging = false; isDraggingShop = false; });
+        canvasElem.addEventListener('contextmenu', (e) => e.preventDefault());
+        canvasElem.addEventListener('mousemove', (e) => {
+            const grp = groupRefFn();
+            if (dragging && grp) {
+                globalSharedSpin += (e.clientX - prevX) * 0.003;
+                grp.rotation.x = Math.max(-0.5, Math.min(0.5, grp.rotation.x + (e.clientY - prevY) * 0.003));
+                prevX = e.clientX; prevY = e.clientY;
+            }
+        });
     }
 
     function initAvatar() {
         const cont = document.getElementById('avatarCanvas');
         if (!cont) return;
         avatarScene = new THREE.Scene();
-        avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-        avatarRenderer = new THREE.WebGLRenderer({alpha:true, antialias:true, powerPreference:"low-power", precision:"mediump"});
-        avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+        avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / cont.clientHeight, 0.1, 1000);
+        avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
         cont.appendChild(avatarRenderer.domElement);
-        
+
         avatarScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-        dirLight.position.set(2, 5, 5);
-        avatarScene.add(dirLight);
+        const dir = new THREE.DirectionalLight(0xffffff, 0.7); dir.position.set(2, 5, 5); avatarScene.add(dir);
 
         rebuildAvatar();
-        fitAvatarCameraToBox(avatarCamera, cont, 9.5);
+        setupDragControls(cont, () => avatarGroup);
+        
+        avatarCamera.position.set(0, 3.5, 9.5);
+        avatarCamera.lookAt(0, 3.2, 0);
 
-        const resizeObs = new ResizeObserver(() => {
-            if (cont && avatarRenderer && avatarCamera) {
-                const w = cont.clientWidth;
-                const h = cont.clientHeight;
-                if (w > 0 && h > 0) {
-                    avatarRenderer.setSize(w, h);
-                    fitAvatarCameraToBox(avatarCamera, cont, 9.5);
-                }
-            }
-        });
-        resizeObs.observe(cont);
+        function anim() {
+            requestAnimationFrame(anim);
+            if (document.getElementById('shop-panel').style.display === 'flex' ||
+                document.getElementById('studio-panel').style.display === 'flex' ||
+                document.getElementById('game-player').style.display === 'flex' ||
+                document.getElementById('auth-panel').style.display === 'flex') return;
 
-        // Zero-Lag Performance Fix: Pause sidebar loop when overlay modals or game are active!
-        function avatarAnim() {
-            requestAnimationFrame(avatarAnim);
-            if (document.hidden || 
-                document.getElementById('shop-panel').style.display === 'flex' || 
-                document.getElementById('studio-panel').style.display === 'flex' || 
-                document.getElementById('auth-panel').style.display === 'flex' || 
-                document.getElementById('game-player').style.display === 'flex') {
-                return;
-            }
-            if (avatarGroup) avatarGroup.rotation.y += 0.0033;
-            if (avatarRenderer && avatarScene && avatarCamera) avatarRenderer.render(avatarScene, avatarCamera);
+            if (!isDraggingShop && isShopAutoSpinning) globalSharedSpin += 0.005;
+            if (avatarGroup) avatarGroup.rotation.y = globalSharedSpin;
+            
+            avatarRenderer.render(avatarScene, avatarCamera);
         }
-        avatarAnim();
-    }
-
-    function toggleShopAvatarSpin() {
-        isShopSpinning = !isShopSpinning;
-        const btn = document.getElementById('btnToggleShopSpin');
-        if (btn) btn.innerText = isShopSpinning ? '⏸ Pause Spin' : '▶ Auto Spin';
+        anim();
     }
 
     function initShopAvatarView() {
         const cont = document.getElementById('shopAvatarCanvas');
         if (!cont || shopRenderer) return;
         shopScene = new THREE.Scene();
-        shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-        shopRenderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
-        shopRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+        shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / cont.clientHeight, 0.1, 1000);
+        shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         shopRenderer.setSize(cont.clientWidth, cont.clientHeight);
         cont.appendChild(shopRenderer.domElement);
-        
-        shopScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-        dirLight.position.set(2, 5, 5);
-        shopScene.add(dirLight);
 
-        cont.addEventListener('contextmenu', (e) => e.preventDefault());
-        cont.addEventListener('mousedown', (e) => {
-            if (e.button === 0 || e.button === 2) { // Left-click OR Right-click drag
-                isDraggingShop = true;
-                previousShopMouseX = e.clientX;
-                previousShopMouseY = e.clientY;
-            }
-        });
-        window.addEventListener('mousemove', (e) => {
-            if (isDraggingShop && shopAvatarGroup) {
-                const deltaX = e.clientX - previousShopMouseX;
-                const deltaY = e.clientY - previousShopMouseY;
-                // 3x Slower sensitivity for precision orbit control
-                shopAvatarGroup.rotation.y += deltaX * 0.0016;
-                shopAvatarGroup.rotation.x = Math.max(-0.8, Math.min(0.8, shopAvatarGroup.rotation.x + deltaY * 0.0016));
-                previousShopMouseX = e.clientX;
-                previousShopMouseY = e.clientY;
-            }
-        });
-        window.addEventListener('mouseup', (e) => {
-            if (e.button === 0 || e.button === 2) isDraggingShop = false;
-        });
+        shopScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const dir = new THREE.DirectionalLight(0xffffff, 0.7); dir.position.set(2, 5, 5); shopScene.add(dir);
 
         rebuildShopAvatar();
-        fitAvatarCameraToBox(shopCamera, cont, 9.8);
+        setupDragControls(cont, () => shopAvatarGroup);
 
-        function shopAnim(){ 
+        shopCamera.position.set(0, 3.5, 9.8);
+        shopCamera.lookAt(0, 3.2, 0);
+
+        function shopAnim() {
             requestAnimationFrame(shopAnim);
-            if (document.hidden || document.getElementById('shop-panel').style.display === 'none') return;
-            if (shopAvatarGroup && isShopSpinning && !isDraggingShop) shopAvatarGroup.rotation.y += 0.0016; // 3x slower auto spin
-            shopRenderer.render(shopScene, shopCamera); 
+            if (document.getElementById('shop-panel').style.display === 'none') return;
+            
+            if (!isDraggingShop && isShopAutoSpinning) globalSharedSpin += 0.005;
+            if (shopAvatarGroup) shopAvatarGroup.rotation.y = globalSharedSpin;
+            
+            shopRenderer.render(shopScene, shopCamera);
         }
         shopAnim();
     }
 
-    function resetShopAvatarRotation() {
-        if(shopAvatarGroup) {
-            shopAvatarGroup.rotation.y = 0;
-            shopAvatarGroup.rotation.x = 0;
-        }
+    function rebuildAvatar() {
+        if(!avatarScene) return;
+        if(avatarGroup) avatarScene.remove(avatarGroup);
+        avatarGroup = build3DAvatarMeshGroup(); 
+        avatarGroup.rotation.y = globalSharedSpin;
+        avatarScene.add(avatarGroup);
     }
 
-    async function fetchGames() {
-        try {
-            const response = await fetch(`${CF_BACKEND_URL}/games`);
-            if(response.ok) {
-                const fetched = await response.json();
-                games = (Array.isArray(fetched) && fetched.length > 0) ? fetched : [];
-            } else { games = []; }
-        } catch(e) { games = []; }
-
-        if (games.length === 0) {
-            games = [
-                { id: 'default-1', name: 'Starter Baseplate World', creator: 'RayGamix', url: '' },
-                { id: 'default-2', name: 'Obby Parkour Challenge', creator: 'SystemBuilder', url: '' },
-                { id: 'default-3', name: 'Sword Fight Heights', creator: 'ClassicPlayer', url: '' }
-            ];
-        }
-
-        renderAppContent();
+    function rebuildShopAvatar() {
+        if(!shopScene) return;
+        if(shopAvatarGroup) shopScene.remove(shopAvatarGroup);
+        shopAvatarGroup = build3DAvatarMeshGroup(); 
+        shopAvatarGroup.rotation.y = globalSharedSpin;
+        shopScene.add(shopAvatarGroup);
     }
 
     function renderAppContent() {
         const grid = document.getElementById('gameGrid');
-        if(!grid) return;
-        const q = (document.getElementById('gSearch')?.value || '').toLowerCase().trim();
-
-        const filtered = games.filter(g => g.name.toLowerCase().includes(q) || g.creator.toLowerCase().includes(q));
-        grid.innerHTML = filtered.map(g => `
+        grid.innerHTML = `
             <div class="card">
                 <span class="card-type-tag">3D WORLD</span>
-                <div style="height:110px; background:#080a0e; border-radius:10px; margin-bottom:12px; display:flex; align-items:center; justify-content:center; border:1px solid var(--card-border);">
+                <div style="height:110px; background:#080a0e; border-radius:10px; margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
                     <span style="font-size:38px;">🕹️</span>
                 </div>
-                <h3 style="margin:0 0 4px 0; font-size:16px; color:#fff;">${g.name}</h3>
-                <span style="font-size:12px; color:var(--muted); font-weight:bold;">By ${g.creator}</span>
+                <h3 style="margin:0 0 4px 0; font-size:16px;">Starter Baseplate World</h3>
+                <span style="font-size:12px; color:var(--muted);">By RayGamix</span>
                 <div class="card-actions">
-                    <button class="btn" onclick="playGame('${g.id}')">Play Game</button>
-                    <button class="btn-alt" style="width:auto; padding:10px 12px;" onclick="reportGame()">🚩</button>
+                    <button class="btn" onclick="playGame()">Play Game</button>
                 </div>
             </div>
-        `).join('');
+        `;
     }
 
-    async function reportGame() {
-        try { await fetch(`${CF_BACKEND_URL}/report`, { method: 'POST' }); } catch(e) {}
-        showAlert("Game Reported", "Report submitted to moderators.");
-    }
-
-    let studioInitialized = false;
-    function openStudio() {
-        document.getElementById('studio-panel').style.display = 'flex';
-        if(!studioInitialized) { initStudio(); studioInitialized = true; }
-        window.dispatchEvent(new Event('resize'));
-    }
-    function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
-
-    function initStudio() {
-        const cont = document.getElementById('studio-viewport');
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x020406);
-        
-        camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
-        renderer = new THREE.WebGLRenderer({antialias: false, powerPreference: "low-power"});
-        renderer.setSize(cont.clientWidth, cont.clientHeight);
-        cont.appendChild(renderer.domElement);
-        
-        camera.position.set(0, 50, 100);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-        const dl = new THREE.DirectionalLight(0xffffff, 0.8);
-        dl.position.set(100, 200, 100);
-        scene.add(dl);
-        
-        scene.add(new THREE.GridHelper(4096, 128, 0x142536, 0x0a1520));
-
-        orbit = new THREE.OrbitControls(camera, renderer.domElement);
-        transform = new THREE.TransformControls(camera, renderer.domElement);
-        transform.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
-        transform.addEventListener('change', () => { if(selectedMesh) syncProperties(); });
-        scene.add(transform);
-
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        renderer.domElement.addEventListener('pointerdown', (e) => {
-            if(transform.dragging) return;
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(studioObjects);
-            if(intersects.length > 0) selectObject(intersects[0].object);
-            else selectObject(null);
-        });
-
-        if(studioObjects.length === 0) createObject('Baseplate', { scale: [4096, 1, 4096], pos: [0, -0.5, 0], mat: 'Grass', color: 0x1e3612 });
-
-        animateStudio();
-    }
-
-    function setTransformMode(mode) {
-        ['select','translate','scale','rotate'].forEach(m => document.getElementById(`tool-${m}`).classList.remove('tool-active'));
-        document.getElementById(`tool-${mode}`).classList.add('tool-active');
-        if(mode === 'select') transform.detach();
-        else {
-            transform.setMode(mode);
-            if(selectedMesh) transform.attach(selectedMesh);
-        }
-    }
-
-    function addSelectedPart() { createObject(document.getElementById('addPartType').value, { pos: [0, 5, 0] }); }
-
-    function createObject(type, override = {}) {
-        let geo, matCol = override.color || 0xdddddd;
-        switch(type) {
-            case 'Baseplate': geo = new THREE.BoxGeometry(1, 1, 1); break;
-            case 'cube': case 'ladder': case 'spawn': case 'checkpoint': case 'clickdtct': geo = new THREE.BoxGeometry(4, 4, 4); break;
-            case 'water': geo = new THREE.BoxGeometry(10, 4, 10); matCol = 0x0088ff; override.matType = 'Water'; break;
-            case 'sphere': geo = new THREE.SphereGeometry(2, 32, 16); break;
-            case 'triangle': geo = new THREE.ConeGeometry(2.5, 5, 4); break;
-            case 'pentagon': geo = new THREE.CylinderGeometry(2.5, 2.5, 5, 5); break;
-            case 'npc': geo = new THREE.CylinderGeometry(1.5, 1.5, 5, 16); matCol = 0xffcc00; break;
-            case 'sign': geo = new THREE.PlaneGeometry(6, 3); matCol = 0xffffff; break;
-            default: geo = new THREE.BoxGeometry(4,4,4);
-        }
-
-        const mat = new THREE.MeshStandardMaterial({
-            color: matCol, roughness: 0.7,
-            transparent: type === 'water', opacity: type === 'water' ? 0.6 : 1.0
-        });
-        const mesh = new THREE.Mesh(geo, mat);
-        if(override.pos) mesh.position.set(...override.pos);
-        if(override.scale) mesh.scale.set(...override.scale);
-        if(override.rot) mesh.rotation.set(...override.rot);
-        
-        mesh.userData = {
-            id: THREE.MathUtils.generateUUID(), type: type,
-            name: override.name || type + "_" + Math.floor(Math.random()*1000),
-            materialType: override.matType || (type === 'water' ? 'Water' : 'Plastic'), textureUrl: override.texture || '',
-            effectType: override.effect || 'None', interactScript: override.script || '',
-            textValue: override.text || (type === 'sign' ? 'Text' : '')
-        };
-
-        scene.add(mesh); studioObjects.push(mesh); selectObject(mesh);
-    }
-
-    function selectObject(mesh) {
-        selectedMesh = mesh;
-        if(mesh) {
-            if(!document.getElementById('tool-select').classList.contains('tool-active')) transform.attach(mesh);
-            document.getElementById('prop-empty').style.display = 'none';
-            document.getElementById('prop-content').style.display = 'block';
-            document.getElementById('row-text').style.display = mesh.userData.type === 'sign' ? 'flex' : 'none';
-            syncProperties();
-        } else {
-            transform.detach();
-            document.getElementById('prop-empty').style.display = 'block';
-            document.getElementById('prop-content').style.display = 'none';
-        }
-    }
-
-    function syncProperties() {
-        if(!selectedMesh) return;
-        const u = selectedMesh.userData, p = selectedMesh.position, s = selectedMesh.scale, r = selectedMesh.rotation;
-        
-        document.getElementById('prop-name').value = u.name;
-        document.getElementById('prop-type').value = u.type;
-        document.getElementById('prop-color').value = '#' + selectedMesh.material.color.getHexString();
-        document.getElementById('prop-material').value = u.materialType;
-        document.getElementById('prop-texture').value = u.textureUrl;
-        document.getElementById('prop-effect').value = u.effectType;
-        document.getElementById('prop-script').value = u.interactScript;
-        document.getElementById('prop-text').value = u.textValue;
-        
-        const setV = (prefix, vec) => {
-            document.getElementById(`prop-${prefix}-x`).value = vec.x.toFixed(2);
-            document.getElementById(`prop-${prefix}-y`).value = vec.y.toFixed(2);
-            document.getElementById(`prop-${prefix}-z`).value = vec.z.toFixed(2);
-        };
-        setV('pos', p); setV('scale', s);
-        
-        document.getElementById('prop-rot-x').value = THREE.MathUtils.radToDeg(r.x).toFixed(0);
-        document.getElementById('prop-rot-y').value = THREE.MathUtils.radToDeg(r.y).toFixed(0);
-        document.getElementById('prop-rot-z').value = THREE.MathUtils.radToDeg(r.z).toFixed(0);
-    }
-
-    function applyPropertyChanges() {
-        if(!selectedMesh) return;
-        const u = selectedMesh.userData;
-        u.name = document.getElementById('prop-name').value;
-        u.materialType = document.getElementById('prop-material').value;
-        u.textureUrl = document.getElementById('prop-texture').value.trim();
-        u.effectType = document.getElementById('prop-effect').value;
-        u.interactScript = document.getElementById('prop-script').value;
-        u.textValue = document.getElementById('prop-text').value;
-        selectedMesh.material.color.set(document.getElementById('prop-color').value);
-        
-        const getV = (prefix) => [
-            parseFloat(document.getElementById(`prop-${prefix}-x`).value)||0,
-            parseFloat(document.getElementById(`prop-${prefix}-y`).value)||0,
-            parseFloat(document.getElementById(`prop-${prefix}-z`).value)||0
-        ];
-        selectedMesh.position.set(...getV('pos'));
-        selectedMesh.scale.set(...getV('scale'));
-        const r = getV('rot');
-        selectedMesh.rotation.set(THREE.MathUtils.degToRad(r[0]), THREE.MathUtils.degToRad(r[1]), THREE.MathUtils.degToRad(r[2]));
-    }
-
-    function deleteSelectedObject() {
-        if(!selectedMesh) return;
-        transform.detach();
-        scene.remove(selectedMesh);
-        studioObjects = studioObjects.filter(o => o !== selectedMesh);
-        selectObject(null);
-    }
-
-    function animateStudio() { 
-        requestAnimationFrame(animateStudio); 
-        if (document.hidden || document.getElementById('studio-panel').style.display === 'none' || document.getElementById('game-player').style.display === 'flex') return;
-        if(orbit) orbit.update();
-        if(renderer && scene && camera) renderer.render(scene, camera); 
-    }
-
-    function encodeRGX() {
-        let out = "<world>\n";
-        studioObjects.forEach(obj => {
-            const u = obj.userData; const p = obj.position; const s = obj.scale; const r = obj.rotation;
-            const c = obj.material.color.getHexString();
-            out += `  <part type="${u.type}" name="${u.name.replace(/"/g,"'")}" mat="${u.materialType}" color="${c}" `;
-            out += `texture="${u.textureUrl.replace(/"/g,"'")}" effect="${u.effectType}" `;
-            out += `pos="${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}" `;
-            out += `scale="${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)}" `;
-            out += `rot="${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)}" `;
-            out += `text="${u.textValue.replace(/"/g,"&quot;")}">\n`;
-            if(u.interactScript) out += `    <![CDATA[${u.interactScript}]]>\n`;
-            out += `  </part>\n`;
-        });
-        out += "</world>";
-        return out;
-    }
-
-    function parseRGXToStudio(rgxStr) {
-        studioObjects.forEach(o => scene.remove(o));
-        studioObjects = [];
-        selectObject(null);
-
+    async function playGame() {
         try {
-            const cleanStr = rgxStr.replace(/<[-!]DOCTYPE[^>]*>/g, '').trim();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(cleanStr, "text/xml");
-            const parts = xmlDoc.getElementsByTagName("part");
-            
-            for (let i = 0; i < parts.length; i++) {
-                const part = parts[i];
-                const type = part.getAttribute("type") || "cube";
-                const name = part.getAttribute("name") || type;
-                const mat = part.getAttribute("mat") || "Plastic";
-                const colorHex = part.getAttribute("color") || "dddddd";
-                const tex = part.getAttribute("texture") || "";
-                const eff = part.getAttribute("effect") || "None";
-                const textStr = part.getAttribute("text") || "";
-                const script = part.textContent ? part.textContent.trim() : "";
-                
-                const parseVec = (str) => (str || "0,0,0").split(',').map(v => parseFloat(v) || 0);
-                createObject(type, {
-                    name: name, matType: mat, color: parseInt(colorHex, 16), texture: tex, effect: eff,
-                    pos: parseVec(part.getAttribute("pos")), scale: parseVec(part.getAttribute("scale")),
-                    rot: parseVec(part.getAttribute("rot")), text: textStr, script: script
-                });
-            }
-        } catch (e) { showAlert("Parse Error", "Failed to load world data."); }
-    }
-
-    function exportRGXFile() {
-        const data = encodeRGX();
-        const blob = new Blob([data], {type: "text/plain"});
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        const name = document.getElementById('gameTitle').value.trim() || "RayGamixWorld";
-        a.download = `${name}.rgx`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    function exportSelectedAsRGXO(ext = "rgxo") {
-        if (!selectedMesh) return showAlert("Error", "Select an object in Studio first!");
-        const obj = selectedMesh;
-        const u = obj.userData; const p = obj.position; const s = obj.scale; const r = obj.rotation;
-        const c = obj.material.color.getHexString();
-        let out = `<part type="${u.type}" name="${u.name.replace(/"/g,"'")}" mat="${u.materialType}" color="${c}" `;
-        out += `texture="${u.textureUrl.replace(/"/g,"'")}" effect="${u.effectType}" `;
-        out += `pos="${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}" `;
-        out += `scale="${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)}" `;
-        out += `rot="${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)}" `;
-        out += `text="${u.textValue.replace(/"/g,"&quot;")}">\n`;
-        if(u.interactScript) out += `  <![CDATA[${u.interactScript}]]>\n`;
-        out += `</part>`;
-
-        const blob = new Blob([out], {type: "text/plain"});
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `${u.name || "Object"}.${ext}`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    function exportSelectedAsRGXA() { exportSelectedAsRGXO("rgxa"); }
-
-    function importRGXWorldFile(event) {
-        const file = event.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            parseRGXToStudio(e.target.result);
-            if(file.name) document.getElementById('gameTitle').value = file.name.replace(/\.[^/.]+$/, "");
-            showAlert("Success", "RGX World Imported!");
-            event.target.value = "";
-        };
-        reader.readAsText(file);
-    }
-
-    function importRGXObjectFile(event) {
-        const file = event.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
-            const part = xmlDoc.getElementsByTagName("part")[0];
-            if (part) {
-                const parseVec = (str) => (str || "0,0,0").split(',').map(v => parseFloat(v) || 0);
-                createObject(part.getAttribute("type") || "cube", {
-                    name: part.getAttribute("name") || "ImportedItem",
-                    matType: part.getAttribute("mat") || "Plastic",
-                    color: parseInt(part.getAttribute("color") || "dddddd", 16),
-                    pos: parseVec(part.getAttribute("pos")),
-                    scale: parseVec(part.getAttribute("scale")),
-                    script: part.textContent ? part.textContent.trim() : ""
-                });
-                showAlert("Success", "Object Imported into Studio!");
-            }
-            event.target.value = "";
-        };
-        reader.readAsText(file);
-    }
-
-    async function testCurrentStudioGame() {
-        transform.detach();
-        const rgxCode = encodeRGX();
-        const testGameId = "studio-test-" + Math.floor(Math.random() * 100000);
-        const engineUrl = await buildGameBlobUrl(rgxCode, false, testGameId);
-        const title = document.getElementById('gameTitle').value || "Studio Demo";
-        
-        document.getElementById('player-title').innerText = title;
-        document.getElementById('game-frame').src = engineUrl;
-        document.getElementById('game-player').style.display = 'flex';
-    }
-
-    async function publishGame() {
-        if(isPublishing) return;
-        isPublishing = true;
-        const name = document.getElementById('gameTitle').value.trim() || "Untitled RGX Game";
-        const rgxCode = encodeRGX();
-        
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/upload`, {
+            const res = await fetch(`${CF_BACKEND_URL}/engine/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name, creator: currentUser, url: rgxCode })
+                body: JSON.stringify({ 
+                    userColors, 
+                    userFace, 
+                    userAccessory: userShirt, 
+                    currentUser,
+                    faceTransform: itemTransforms.face,
+                    accTransform: itemTransforms.shirt
+                })
             });
             if(res.ok) {
-                showAlert("Game Published", `"${name}" published successfully!`);
-                fetchGames();
-            } else { showAlert("Publish Failed", "Content flagged."); }
-        } catch(e) { showAlert("Publish Error", "Could not reach server."); }
-        finally { isPublishing = false; }
-    }
-
-    async function playGame(gameId) {
-        const g = games.find(item => item.id === gameId);
-        const title = g ? g.name : "RayGamix World";
-        document.getElementById('player-title').innerText = title;
-
-        const rgxData = g ? g.url : encodeRGX();
-        const engineUrl = await buildGameBlobUrl(rgxData, true, gameId);
-        document.getElementById('game-frame').src = engineUrl;
-        document.getElementById('game-player').style.display = 'flex';
+                const html = await res.text();
+                const blob = new Blob([html], { type: 'text/html' });
+                document.getElementById('game-frame').src = URL.createObjectURL(blob);
+                document.getElementById('game-player').style.display = 'flex';
+            }
+        } catch(e) {}
     }
 
     function closeGame() {
@@ -1625,69 +644,13 @@
         document.getElementById('game-frame').src = 'about:blank';
     }
 
-    async function buildGameBlobUrl(rgxCode, isMultiplayer, gameId) {
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/engine/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    rgx: rgxCode, isMultiplayer: isMultiplayer, gameId: gameId,
-                    currentUser: currentUser, isGuest: currentUser.startsWith("Guest_"),
-                    userColors: userColors, userFace: userFace, userShirt: userShirt,
-                    userAccessories: userAccessories, itemTransforms: itemTransforms
-                })
-            });
-            if(res.ok) {
-                const htmlText = await res.text();
-                if (htmlText && htmlText.length > 200) {
-                    const blob = new Blob([htmlText], {type: "text/html"});
-                    return URL.createObjectURL(blob);
-                }
-            }
-        } catch(e) {}
-        return 'about:blank';
-    }
-
-    async function submitBanAppeal() {
-        const text = document.getElementById('appealInputText').value.trim();
-        if(!text) return showAlert("Error", "Please enter an explanation.");
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/appeal`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ deviceId: 'dev_1', username: currentUser, appealText: text })
-            });
-            const data = await res.json();
-            showAlert("Appeal Submitted", data.message || "Submitted for review.");
-        } catch(e) { showAlert("Submitted", "Queued for review."); }
-    }
-
-    async function trackUserVisit() {
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/visit`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser, timestamp: Date.now() })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.totalVisits !== undefined) {
-                    const visitsEl = document.getElementById('uVisitsDisp');
-                    const onlineEl = document.getElementById('uOnlineDisp');
-                    if (visitsEl) visitsEl.innerText = data.totalVisits;
-                    if (onlineEl) onlineEl.innerText = data.onlineUsers || 1;
-                }
-            }
-        } catch(e) {}
-    }
+    function openStudio() { document.getElementById('studio-panel').style.display = 'flex'; }
+    function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
 
     window.onload = () => {
-        try { checkReturnAndLanguage(); } catch(e) {}
-        try { checkDeviceSetup(); } catch(e) {}
-        try { syncUserDataWithBackend(); } catch(e) {}
-        try { fetchGames(); } catch(e) {}
-        try { initAvatar(); } catch(e) {}
-        try { trackUserVisit(); setInterval(trackUserVisit, 30000); } catch(e) {}
+        sendTelemetryPing();
+        renderAppContent();
+        initAvatar();
     };
 </script>
 </body>
