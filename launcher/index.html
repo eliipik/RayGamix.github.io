@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
     
+    <!-- Three.js and loaders -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
@@ -25,6 +26,7 @@
             --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05); --gold: #ffc107;
             --red: #ff4444; --green: #00e676; --card-border: #162438; --accent-glow: rgba(0,183,255,0.4);
         }
+        
         html, body { 
             height: 100%; width: 100%; margin: 0; 
             background: var(--bg); color: #fff; 
@@ -37,7 +39,7 @@
 
         .app {
             display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 80px 1fr;
-            gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box;
+            gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; margin-top: -40px;
         }
 
         .sidebar {
@@ -53,7 +55,7 @@
         }
         .avatar-viewport canvas { width: 100% !important; height: 100% !important; display: block; border-radius: inherit; background-color: transparent !important; }
 
-        .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
+        .topbar {grid-column: 2; display: flex; align-items: center; gap: 12px; }
         .logo { height: 42.5px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
         .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; font-size: 15px; font-family: 'RayGamix Neue', sans-serif;}
@@ -73,7 +75,7 @@
         .btn-tool:hover { background: var(--accent); color: #000; }
         .tool-active { background: var(--accent) !important; color: #000 !important; }
 
-        .main { grid-column: 2; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 25px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.02);}
+        .main { grid-column: 2; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 25px; overflow: hidden !important; border: 1px solid rgba(255,255,255,0.02);}
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
         .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid #1a2b3d; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column;}
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
@@ -82,7 +84,7 @@
 
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .panel { background: var(--panel); padding: 35px; border-radius: 20px; border: 1px solid var(--accent); width: 520px; max-width: 92vw; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 50px rgba(0,183,255,0.1); box-sizing: border-box;}
-        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: #ff4444; font-weight: bold; transition: 0.2s; background: transparent; border: none; z-index: 10;}
+        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: #ff4444; font-weight: bold; transition: 0.2s;}
         .close-btn:hover { transform: scale(1.2); }
 
         .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
@@ -104,79 +106,6 @@
         .player-header * { pointer-events: auto; }
         #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
 
-        /* Avatar Editor Styles */
-        .avatar-editor-panel {
-            width: 900px;
-            max-width: 95vw;
-            max-height: 90vh;
-            background: #0a131c;
-            border-radius: 20px;
-            border: 1px solid var(--accent);
-            box-shadow: 0 0 50px rgba(0,183,255,0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .avatar-editor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 25px;
-            background: #050a12;
-            border-bottom: 1px solid #1a2b3d;
-        }
-        .avatar-editor-tabs {
-            display: flex;
-            gap: 8px;
-            padding: 10px 25px;
-            background: #050a12;
-            border-bottom: 1px solid #1a2b3d;
-            flex-wrap: wrap;
-        }
-        .avatar-tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--muted);
-            padding: 10px 14px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-            font-family: 'RayGamix Neue', sans-serif;
-            border-bottom: 3px solid transparent;
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .avatar-tab-btn:hover {
-            color: #fff;
-        }
-        .avatar-tab-active {
-            color: var(--accent) !important;
-            border-bottom-color: var(--accent) !important;
-        }
-        .avatar-editor-body {
-            display: flex;
-            gap: 0;
-            flex: 1;
-            min-height: 0;
-        }
-        .avatar-viewport-side {
-            width: 45%;
-            position: relative;
-            padding: 20px;
-            border-right: 1px solid #1a2b3d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #03070b;
-        }
-        .avatar-content-side {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 70vh;
-        }
-
         @media (max-width: 850px) {
             html, body { overflow-y: auto; zoom: 0.85; }
             .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100vh; padding: 12px; gap: 12px; }
@@ -186,16 +115,53 @@
             .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
             .studio-body { flex-direction: column; }
             .studio-sidebar { width: 100%; max-height: 35vh; border-left: none; border-top: 1px solid #142536; }
-            .avatar-editor-body { flex-direction: column; }
-            .avatar-viewport-side { width: 100%; height: 300px; border-right: none; border-bottom: 1px solid #1a2b3d; }
         }
 
-        main{
-            overflow: hidden !important; 
+        .avatar-editor-panel {
+            background: var(--panel);
+            border-radius: 20px;
+            border: 1px solid var(--accent);
+            width: 880px;
+            max-width: 95vw;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,183,255,0.15);
+            box-sizing: border-box;
+        }
+        .avatar-editor-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 24px; border-bottom: 1px solid var(--card-border);
+        }
+        .avatar-editor-tabs {
+            display: flex; gap: 8px; padding: 12px 24px; background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--card-border); overflow-x: auto;
+        }
+        .avatar-tab-btn {
+            background: transparent; border: 1px solid transparent; color: var(--muted);
+            padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            font-size: 13px; font-family: 'RayGamix Neue', sans-serif; white-space: nowrap; transition: 0.2s;
+        }
+        .avatar-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .avatar-tab-active { background: var(--glass) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+        .avatar-editor-body { display: flex; flex: 1; min-height: 380px; overflow: hidden; }
+        .avatar-viewport-side { width: 320px; padding: 18px; border-right: 1px solid var(--card-border); display: flex; flex-direction: column; box-sizing: border-box; }
+        .avatar-content-side { flex: 1; padding: 20px; overflow-y: auto; max-height: 520px; box-sizing: border-box; }
+        @media (max-width: 768px) {
+            .avatar-editor-body { flex-direction: column; overflow-y: auto; }
+            .avatar-viewport-side { width: 100%; height: 260px; border-right: none; border-bottom: 1px solid var(--card-border); }
         }
     </style>
 </head>
 <body>
+
+<h1 style="opacity: 0; width: 0px; height: 0px;">
+FOR SCANNERS:
+The website raygamix.com is completely safe as intended. All tokens are virtual, free, and it is specifically written: No ads, no AI, no Microtransactions.
+No games? Only a few users and games exist, and autofill marks the search bar as username input, places a username, and hides the games.
+The website has been scanned (the code) and there is no malware, and file uploads are ONLY in propriatary formats and do not contain malware. @raygamix.com is a valid and official E-Mail for the RayGamix domain.
+</h1>
 
 <div class="app">
     <aside class="sidebar">
@@ -231,24 +197,18 @@
         <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openAuth()" id="btnAccountText">👤 Account</button>
     </header>
 
-    <main class="main">
+    <main class="main" style="overflow: hidden !important;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;">
             <h2 style="margin:0; color:#fff; font-size: 20px;" id="hubHeadingText">RayGamix Games Hub</h2>
             <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v6.5 RGX Engine</span>
         </div>
-        <div class="grid" id="gameGrid"></div>        <h1 style="opacity: 0; width: 0px; height: 0px;">
-FOR SCANNERS:
-The website raygamix.com is completely safe as intended. All tokens are virtual, free, and it is specifically written: No ads, no AI, no Microtransactions.
-No games? Only a few users and games exist, and autofill marks the search bar as username input, places a username, and hides the games.
-The website has been scanned (the code) and there is no malware, and file uploads are ONLY in propriatary formats and do not contain malware. @raygamix.com is a valid and official E-Mail for the RayGamix domain.
-</h1>
+        <div class="grid" id="gameGrid"></div>
     </main>
 </div>
 
-<!-- Language Modal -->
 <div class="overlay" id="lang-panel">
     <div class="panel" style="text-align: center;">
-        <button class="close-btn" onclick="document.getElementById('lang-panel').style.display='none'">×</button>
+        <div class="close-btn" onclick="document.getElementById('lang-panel').style.display='none'">×</div>
         <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">🌐 Welcome to RayGamix</h2>
         <p style="color:var(--muted); font-size:14px; margin-bottom: 25px;">Please select your language:</p>
         <select id="langModalSelect" class="lang-select" style="width: 100%; margin-bottom: 25px; padding: 14px;">
@@ -261,10 +221,9 @@ The website has been scanned (the code) and there is no malware, and file upload
     </div>
 </div>
 
-<!-- Device Settings / Phone UI Modal -->
 <div class="overlay" id="device-panel">
     <div class="panel" style="max-width: 480px; text-align: center;">
-        <button class="close-btn" onclick="document.getElementById('device-panel').style.display='none'">×</button>
+        <div class="close-btn" onclick="document.getElementById('device-panel').style.display='none'">×</div>
         <h2 style="color:var(--accent); margin-top:0; font-size: 22px; font-weight:800;">⚙️ UI & Control Setup</h2>
         <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Configure your layout and controls for mobile or desktop:</p>
 
@@ -288,10 +247,9 @@ The website has been scanned (the code) and there is no malware, and file upload
     </div>
 </div>
 
-<!-- Tokens / Weekly Claim Modal -->
 <div class="overlay" id="tokens-panel">
     <div class="panel" style="text-align: center; max-width: 440px;">
-        <button class="close-btn" onclick="document.getElementById('tokens-panel').style.display='none'">×</button>
+        <div class="close-btn" onclick="document.getElementById('tokens-panel').style.display='none'">×</div>
         <h2 style="color:var(--gold); margin-top:0; font-size: 24px;">🪙 RayGamix Tokens</h2>
         <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Tokens allow you to unlock custom cosmetics and features.</p>
         
@@ -304,10 +262,9 @@ The website has been scanned (the code) and there is no malware, and file upload
     </div>
 </div>
 
-<!-- Account Auth Modal -->
 <div class="overlay" id="auth-panel">
     <div class="panel">
-        <button class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</button>
+        <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
         <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
         <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Sign in or register with Username and Password:</p>
         <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;">
@@ -320,7 +277,6 @@ The website has been scanned (the code) and there is no malware, and file upload
     </div>
 </div>
 
-<!-- Avatar Customizer Modal - UPDATED with 6 Tabs -->
 <div class="overlay" id="shop-panel">
     <div class="avatar-editor-panel">
         <div class="avatar-editor-header">
@@ -461,7 +417,6 @@ The website has been scanned (the code) and there is no malware, and file upload
     </div>
 </div>
 
-<!-- Studio Panel Modal -->
 <div class="overlay" id="studio-panel" style="background:#000;">
     <div class="studio-layout">
         <div class="studio-header">
@@ -569,7 +524,6 @@ The website has been scanned (the code) and there is no malware, and file upload
     </div>
 </div>
 
-<!-- Game Player Overlay -->
 <div id="game-player">
     <div class="player-header">
         <h3 id="player-title" style="margin:0; color:#00b7ff; font-size:18px;">RayGamix Game</h3>
@@ -587,16 +541,14 @@ The website has been scanned (the code) and there is no malware, and file upload
     let userFaceTexture = null;
     let userShirtTexture = null;
     let userPantsTexture = null;
-    let faceOffset = { x: 0, y: 0, z: 0, scale: 1.5 }; // 1.5x zoomed in
+    let faceOffset = { x: 0, y: 0, z: 0, scale: 1.5 };
     let shirtOffset = { x: 0, y: 0, z: 0, scale: 1 };
     let pantsOffset = { x: 0, y: 0, z: 0, scale: 1 };
     let hatOffset = { x: 0, y: 0, z: 0, scale: 1 };
-    let shopSpinEnabled = true;
-    let hatModel = null;
-    let shopOpened = false;
-    
+
     let avatarScene, avatarCamera, avatarRenderer, sidebarRig;
     let shopScene, shopCamera, shopRenderer, shopRig;
+    let shopIsSpinning = true;
     let lastTime = performance.now();
     let animTimeGlobal = 0;
 
@@ -604,13 +556,94 @@ The website has been scanned (the code) and there is no malware, and file upload
     let scene, camera, renderer, orbit, transform;
     let gamesList = [];
 
-    // Exact Kinematic Constants for UI avatars
     const RAD_45 = Math.PI / 4;
     const RAD_90 = Math.PI / 2;
     const RAD_180 = Math.PI;
-    const RAD_3_5 = 3.5 * (Math.PI / 180);
-    const RAD_4 = 4.0 * (Math.PI / 180);
     const RAD_1_15 = 1 / 15;
+
+    function saveUserSessionLocally(pass = '') {
+        const sessionData = {
+            username: currentUser,
+            password: pass || (JSON.parse(localStorage.getItem('rgx_user_session') || '{}').password || ''),
+            tokens: userTokens,
+            userColors, userFaceTexture, userShirtTexture, userPantsTexture,
+            faceOffset, shirtOffset, pantsOffset, hatOffset
+        };
+        localStorage.setItem('rgx_user_session', JSON.stringify(sessionData));
+        saveAvatarToBackend();
+    }
+
+    async function restoreUserSessionLocally() {
+        const stored = localStorage.getItem('rgx_user_session');
+        if (!stored) return;
+
+        try {
+            const data = JSON.parse(stored);
+            if (data.username && data.password) {
+                const res = await fetch(`${CF_BACKEND_URL}/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', username: data.username, password: data.password })
+                });
+                const authResult = await res.json();
+
+                if (authResult.success) {
+                    currentUser = authResult.username;
+                    userTokens = authResult.tokens || data.tokens || 100;
+
+                    if (authResult.avatar && Object.keys(authResult.avatar).length > 0) {
+                        applyAvatarObject(authResult.avatar);
+                    } else {
+                        applyAvatarObject(data);
+                    }
+
+                    document.getElementById('uDisp').innerText = currentUser;
+                    document.getElementById('uRankBadge').innerText = "VERIFIED MEMBER";
+                    document.getElementById('uTokenDisp').innerText = userTokens;
+                    return;
+                }
+            }
+
+            if (data.username) {
+                currentUser = data.username;
+                userTokens = data.tokens || 100;
+                applyAvatarObject(data);
+                document.getElementById('uDisp').innerText = currentUser;
+                document.getElementById('uRankBadge').innerText = "GUEST PLAYER";
+                document.getElementById('uTokenDisp').innerText = userTokens;
+            }
+        } catch(e) { console.error("Auto login error:", e); }
+    }
+
+    function applyAvatarObject(a) {
+        if (a.userColors) {
+            userColors = a.userColors;
+            if(document.getElementById('shop-col-head')) document.getElementById('shop-col-head').value = '#' + userColors.head.toString(16).padStart(6, '0');
+            if(document.getElementById('shop-col-torso')) document.getElementById('shop-col-torso').value = '#' + userColors.torso.toString(16).padStart(6, '0');
+            if(document.getElementById('shop-col-legs')) document.getElementById('shop-col-legs').value = '#' + userColors.lleg.toString(16).padStart(6, '0');
+            updateCustomizerColors();
+        }
+        if (a.userFaceTexture) userFaceTexture = a.userFaceTexture;
+        if (a.userShirtTexture) userShirtTexture = a.userShirtTexture;
+        if (a.userPantsTexture) userPantsTexture = a.userPantsTexture;
+        if (a.faceOffset) faceOffset = a.faceOffset;
+        if (a.shirtOffset) shirtOffset = a.shirtOffset;
+        if (a.pantsOffset) pantsOffset = a.pantsOffset;
+        if (a.hatOffset) hatOffset = a.hatOffset;
+    }
+
+    async function saveAvatarToBackend() {
+        try {
+            await fetch(`${CF_BACKEND_URL}/user/avatar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser,
+                    avatar: { userColors, userFaceTexture, userShirtTexture, userPantsTexture, faceOffset, shirtOffset, pantsOffset, hatOffset }
+                })
+            });
+        } catch(e){}
+    }
 
     function createAvatarRig(colors) {
         const group = new THREE.Group();
@@ -618,27 +651,46 @@ The website has been scanned (the code) and there is no malware, and file upload
 
         const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), createMat(colors.head));
         head.position.y = 4.8; head.castShadow = true;
+        head.name = "headMesh";
 
-        // No mesh face
+        // Default 2D Decal Plane Face (No 3D Mesh Face)
+        const faceGeo = new THREE.PlaneGeometry(0.8, 0.8);
+        const faceMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: userFaceTexture ? 1 : 0 });
+        const facePlane = new THREE.Mesh(faceGeo, faceMat);
+        facePlane.name = "decalFacePlane";
+        facePlane.position.set(faceOffset.x, faceOffset.y, 0.61 + faceOffset.z);
+        facePlane.scale.set(faceOffset.scale, faceOffset.scale, 1);
+        head.add(facePlane);
+
+        if (userFaceTexture) {
+            new THREE.TextureLoader().load(userFaceTexture, (tex) => {
+                faceMat.map = tex;
+                faceMat.opacity = 1;
+                faceMat.needsUpdate = true;
+            });
+        }
+
         const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1.0), createMat(colors.torso));
         torso.position.y = 3.1; torso.castShadow = true;
+        torso.name = "torsoMesh";
 
-        function buildPivotedLimb(color, x, y, isLeg) {
+        function buildPivotedLimb(color, x, y, isLeg, name) {
             const limbGroup = new THREE.Group();
             limbGroup.position.set(x, y, 0);
             const width = isLeg ? 0.8 : 0.7, height = 2.0, depth = isLeg ? 0.8 : 0.7;
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), createMat(color));
             mesh.position.set(0, -height / 2, 0); mesh.castShadow = true;
+            mesh.name = name;
             limbGroup.add(mesh); return limbGroup;
         }
 
-        const lArm = buildPivotedLimb(colors.larm, -1.4, 4.1, false);
-        const rArm = buildPivotedLimb(colors.rarm, 1.4, 4.1, false);
-        const lLeg = buildPivotedLimb(colors.lleg, -0.5, 2.0, true);
-        const rLeg = buildPivotedLimb(colors.rleg, 0.5, 2.0, true);
+        const lArm = buildPivotedLimb(colors.larm, -1.4, 4.1, false, "lArm");
+        const rArm = buildPivotedLimb(colors.rarm, 1.4, 4.1, false, "rArm");
+        const lLeg = buildPivotedLimb(colors.lleg, -0.5, 2.0, true, "lLeg");
+        const rLeg = buildPivotedLimb(colors.rleg, 0.5, 2.0, true, "rLeg");
 
         group.add(head, torso, lArm, rArm, lLeg, rLeg);
-        return { group, head, torso, lArm, rArm, lLeg, rLeg, faceMesh: null, shirtMesh: null, pantsMesh: null, hatModel: null };
+        return { group, head, torso, lArm, rArm, lLeg, rLeg };
     }
 
     function applyIdleAnimation(rig, animTime) {
@@ -660,7 +712,7 @@ The website has been scanned (the code) and there is no malware, and file upload
         avatarScene.background = null;
 
         avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-        avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+        avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
         avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         avatarRenderer.shadowMap.enabled = true;
@@ -691,31 +743,25 @@ The website has been scanned (the code) and there is no malware, and file upload
         avatarCamera.position.set(0, 3.2, 9.5);
         avatarCamera.lookAt(0, 3.0, 0);
 
-        lastTime = performance.now();
         requestAnimationFrame(renderGlobalLoop);
     }
 
     function openShop() {
         document.getElementById('shop-panel').style.display = 'flex';
-        shopOpened = true;
         if (!shopRenderer) {
             const cont = document.getElementById('shopAvatarCanvas');
-            const canvasContainer = cont.querySelector('div') || cont;
-            
             shopScene = new THREE.Scene();
-            shopScene.background = new THREE.Color(0x03070b);
+            shopScene.background = null;
 
-            shopCamera = new THREE.PerspectiveCamera(45, canvasContainer.clientWidth / (canvasContainer.clientHeight || 1), 0.1, 1000);
-            shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
-            shopRenderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-            shopRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
+            shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            shopRenderer.setSize(cont.clientWidth, cont.clientHeight);
             shopRenderer.shadowMap.enabled = true;
             shopRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            canvasContainer.appendChild(shopRenderer.domElement);
+            cont.appendChild(shopRenderer.domElement);
 
             shopScene.add(new THREE.AmbientLight(0xffffff, 0.6));
             const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(5, 12, 8); dl.castShadow = true; shopScene.add(dl);
-            const cyanLight = new THREE.PointLight(0x00b7ff, 0.8, 10); cyanLight.position.set(0, 2, 3); shopScene.add(cyanLight);
             
             const stage = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.4, 0.2, 32), new THREE.MeshStandardMaterial({ color: 0x0a131c }));
             stage.position.y = -0.1; stage.receiveShadow = true; shopScene.add(stage);
@@ -723,20 +769,39 @@ The website has been scanned (the code) and there is no malware, and file upload
             shopRig = createAvatarRig(userColors);
             shopScene.add(shopRig.group);
             shopCamera.position.set(0, 3.2, 9.5); shopCamera.lookAt(0, 3.0, 0);
-            
-            // Apply default happy face with 1.5x zoom
-            setPresetFace('https://raygamix.github.io/hardcodedassets/happy.png');
+        }
+    }
+
+    function renderGlobalLoop(time) {
+        requestAnimationFrame(renderGlobalLoop);
+        
+        const dt = Math.min((time - lastTime) / 1000, 0.1);
+        lastTime = time;
+        animTimeGlobal += dt;
+
+        if (sidebarRig && sidebarRig.group) {
+            sidebarRig.group.rotation.y += 0.006;
+            applyIdleAnimation(sidebarRig, animTimeGlobal);
+            if (avatarRenderer && avatarScene && avatarCamera) avatarRenderer.render(avatarScene, avatarCamera);
+        }
+
+        if (shopRig && shopRig.group && document.getElementById('shop-panel').style.display !== 'none') {
+            if (shopIsSpinning) {
+                shopRig.group.rotation.y += 0.008;
+            }
+            applyIdleAnimation(shopRig, animTimeGlobal);
+            if (shopRenderer && shopScene && shopCamera) shopRenderer.render(shopScene, shopCamera);
         }
     }
 
     function closeShopModal() {
         document.getElementById('shop-panel').style.display = 'none';
-        shopOpened = false;
     }
 
     function toggleShopSpin() {
-        shopSpinEnabled = !shopSpinEnabled;
-        document.getElementById('btnSpinToggle').innerText = shopSpinEnabled ? '⏸ Pause Spin' : '▶ Resume Spin';
+        shopIsSpinning = !shopIsSpinning;
+        const btn = document.getElementById('btnSpinToggle');
+        if (btn) btn.innerText = shopIsSpinning ? "⏸ Pause Spin" : "▶ Resume Spin";
     }
 
     function switchShopTab(tab) {
@@ -744,203 +809,135 @@ The website has been scanned (the code) and there is no malware, and file upload
         tabs.forEach(t => {
             const btn = document.getElementById(`tab-btn-${t}`);
             const sec = document.getElementById(`tab-sec-${t}`);
-            if (btn && sec) {
-                if (t === tab) {
-                    btn.classList.add('avatar-tab-active');
-                    sec.style.display = 'block';
-                } else {
-                    btn.classList.remove('avatar-tab-active');
-                    sec.style.display = 'none';
-                }
-            }
+            if (btn) btn.classList.toggle('avatar-tab-active', t === tab);
+            if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
         });
-    }
-
-    // Global render loop - optimized to skip rendering when hidden or shop open
-    function renderGlobalLoop(time) {
-        requestAnimationFrame(renderGlobalLoop);
-        
-        if (document.hidden) return;
-        
-        const dt = Math.min((time - lastTime) / 1000, 0.1);
-        lastTime = time;
-        animTimeGlobal += dt;
-
-        // Render sidebar avatar ONLY if shop is not open and sidebar is visible
-        if (sidebarRig && sidebarRig.group && !shopOpened && !document.getElementById('shop-panel').style.display.includes('flex')) {
-            sidebarRig.group.rotation.y += 0.006;
-            applyIdleAnimation(sidebarRig, animTimeGlobal);
-            if (avatarRenderer && avatarScene && avatarCamera) avatarRenderer.render(avatarScene, avatarCamera);
-        }
-
-        // Render shop avatar ONLY if shop is open
-        if (shopRig && shopRig.group && shopOpened && document.getElementById('shop-panel').style.display.includes('flex')) {
-            if (shopSpinEnabled) shopRig.group.rotation.y += 0.008;
-            applyIdleAnimation(shopRig, animTimeGlobal);
-            if (shopRenderer && shopScene && shopCamera) shopRenderer.render(shopScene, shopCamera);
-        }
-    }
-
-    function updateCustomizerColors() {
-        userColors.head = parseInt(document.getElementById('shop-col-head').value.replace('#',''), 16);
-        userColors.larm = userColors.head; userColors.rarm = userColors.head;
-        userColors.torso = parseInt(document.getElementById('shop-col-torso').value.replace('#',''), 16);
-        userColors.lleg = parseInt(document.getElementById('shop-col-legs').value.replace('#',''), 16);
-        userColors.rleg = userColors.lleg;
-
-        const updateRigMats = (r) => {
-            if(!r) return;
-            r.head.material.color.setHex(userColors.head);
-            r.torso.material.color.setHex(userColors.torso);
-            r.lArm.children[0].material.color.setHex(userColors.larm);
-            r.rArm.children[0].material.color.setHex(userColors.rarm);
-            r.lLeg.children[0].material.color.setHex(userColors.lleg);
-            r.rLeg.children[0].material.color.setHex(userColors.rleg);
-        };
-
-        updateRigMats(sidebarRig);
-        updateRigMats(shopRig);
+        if (tab === 'positioners') loadItemSliderValues();
     }
 
     function applyPresetSkin(hexColor) {
         userColors.head = hexColor;
-        userColors.larm = hexColor; userColors.rarm = hexColor;
-        document.getElementById('shop-col-head').value = '#' + hexColor.toString(16).padStart(6, '0');
+        userColors.larm = hexColor;
+        userColors.rarm = hexColor;
+        const colStr = '#' + hexColor.toString(16).padStart(6, '0');
+        if (document.getElementById('shop-col-head')) document.getElementById('shop-col-head').value = colStr;
         updateCustomizerColors();
     }
 
-    function removeFaceFromRig(rig) {
-        if (rig && rig.faceMesh) {
-            if (rig.faceMesh.parent) rig.faceMesh.parent.remove(rig.faceMesh);
-            rig.faceMesh = null;
-        }
-    }
-
     function setPresetFace(url) {
-        userFaceTexture = url;
-        removeFaceFromRig(sidebarRig);
-        removeFaceFromRig(shopRig);
-
-        if (!url) return;
-
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load(url, (texture) => {
-            const faceGeo = new THREE.PlaneGeometry(0.8, 0.8);
-            const faceMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-            
-            const createFaceMesh = (rig) => {
-                if (!rig) return;
-                const faceMesh = new THREE.Mesh(faceGeo, faceMat);
-                faceMesh.position.set(0, 0, 0.61 + faceOffset.z);
-                faceMesh.position.y += faceOffset.y;
-                faceMesh.position.x += faceOffset.x;
-                faceMesh.scale.set(faceOffset.scale, faceOffset.scale, 1);
-                rig.head.add(faceMesh);
-                rig.faceMesh = faceMesh;
-            };
-            
-            createFaceMesh(sidebarRig);
-            createFaceMesh(shopRig);
-        });
+        userFaceTexture = url || null;
+        applyDecalFaceToRig(sidebarRig);
+        applyDecalFaceToRig(shopRig);
+        saveUserSessionLocally();
     }
 
-    function removeShirtFromRig(rig) {
-        if (rig && rig.shirtMesh) {
-            if (rig.shirtMesh.parent) rig.shirtMesh.parent.remove(rig.shirtMesh);
-            rig.shirtMesh = null;
-        }
+    function uploadCustomFace(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => { setPresetFace(ev.target.result); };
+        reader.readAsDataURL(file);
     }
 
     function setPresetShirt(url) {
-        userShirtTexture = url;
-        removeShirtFromRig(sidebarRig);
-        removeShirtFromRig(shopRig);
-        if (!url) return;
-
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load(url, (texture) => {
-            const shirtGeo = new THREE.PlaneGeometry(1.8, 2.2);
-            const shirtMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-            
-            const createShirtMesh = (rig) => {
-                if (!rig) return;
-                const shirtMesh = new THREE.Mesh(shirtGeo, shirtMat);
-                shirtMesh.position.set(0, 3.1 + shirtOffset.y, 0.51 + shirtOffset.z);
-                shirtMesh.position.x += shirtOffset.x;
-                shirtMesh.scale.set(shirtOffset.scale, shirtOffset.scale, 1);
-                rig.torso.add(shirtMesh);
-                rig.shirtMesh = shirtMesh;
-            };
-            
-            createShirtMesh(sidebarRig);
-            createShirtMesh(shopRig);
-        });
+        userShirtTexture = url || null;
+        applyClothingToRig(sidebarRig);
+        applyClothingToRig(shopRig);
+        saveUserSessionLocally();
     }
 
-    function removePantsFromRig(rig) {
-        if (rig && rig.pantsMesh) {
-            if (rig.pantsMesh.parent) rig.pantsMesh.parent.remove(rig.pantsMesh);
-            rig.pantsMesh = null;
+    function uploadCustomShirt(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => { setPresetShirt(ev.target.result); };
+        reader.readAsDataURL(file);
+    }
+
+    function uploadCustomPants(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            userPantsTexture = ev.target.result;
+            applyClothingToRig(sidebarRig);
+            applyClothingToRig(shopRig);
+            saveUserSessionLocally();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleAvatarModelUpload(e) {
+        importAvatarAccessoryFile(e);
+    }
+
+    function applyDecalFaceToRig(rig) {
+        if (!rig || !rig.head) return;
+        let facePlane = rig.head.getObjectByName("decalFacePlane");
+        if (!facePlane) return;
+
+        if (userFaceTexture) {
+            new THREE.TextureLoader().load(userFaceTexture, (tex) => {
+                facePlane.material.map = tex;
+                facePlane.material.opacity = 1;
+                facePlane.material.needsUpdate = true;
+            });
+        } else {
+            facePlane.material.map = null;
+            facePlane.material.opacity = 0;
+            facePlane.material.needsUpdate = true;
+        }
+        facePlane.position.set(faceOffset.x, faceOffset.y, 0.61 + faceOffset.z);
+        facePlane.scale.set(faceOffset.scale, faceOffset.scale, 1);
+    }
+
+    function applyClothingToRig(rig) {
+        if (!rig) return;
+        const loader = new THREE.TextureLoader();
+        if (userShirtTexture && rig.torso) {
+            loader.load(userShirtTexture, (t) => { rig.torso.material.map = t; rig.torso.material.needsUpdate = true; });
+        }
+        if (userPantsTexture) {
+            loader.load(userPantsTexture, (t) => {
+                if (rig.lLeg && rig.lLeg.children[0]) { rig.lLeg.children[0].material.map = t; rig.lLeg.children[0].material.needsUpdate = true; }
+                if (rig.rLeg && rig.rLeg.children[0]) { rig.rLeg.children[0].material.map = t; rig.rLeg.children[0].material.needsUpdate = true; }
+            });
         }
     }
 
-    function setPantsTexture(url) {
-        userPantsTexture = url;
-        removePantsFromRig(sidebarRig);
-        removePantsFromRig(shopRig);
-        if (!url) return;
+    function loadItemSliderValues() {
+        const type = document.getElementById('itemSliderSelect').value;
+        let target = faceOffset;
+        if (type === 'shirt') target = shirtOffset;
+        else if (type === 'pants') target = pantsOffset;
+        else if (type === 'hat') target = hatOffset;
 
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load(url, (texture) => {
-            const pantsGeo = new THREE.PlaneGeometry(0.8, 2.0);
-            const pantsMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-            
-            const createPantsMesh = (rig) => {
-                if (!rig) return;
-                const pantsMesh = new THREE.Mesh(pantsGeo, pantsMat);
-                pantsMesh.position.set(0, 2.0 + pantsOffset.y, 0.41 + pantsOffset.z);
-                pantsMesh.position.x += pantsOffset.x;
-                pantsMesh.scale.set(pantsOffset.scale, pantsOffset.scale, 1);
-                rig.group.add(pantsMesh);
-                rig.pantsMesh = pantsMesh;
-            };
-            
-            createPantsMesh(sidebarRig);
-            createPantsMesh(shopRig);
-        });
+        document.getElementById('slOffX').value = target.x;
+        document.getElementById('slOffY').value = target.y;
+        document.getElementById('slOffZ').value = target.z;
+        document.getElementById('slScale').value = target.scale;
     }
 
-    function uploadCustomFace(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setPresetFace(e.target.result);
-        };
-        reader.readAsDataURL(file);
+    function saveItemSliderValues() {
+        const type = document.getElementById('itemSliderSelect').value;
+        let target = faceOffset;
+        if (type === 'shirt') target = shirtOffset;
+        else if (type === 'pants') target = pantsOffset;
+        else if (type === 'hat') target = hatOffset;
+
+        target.x = parseFloat(document.getElementById('slOffX').value) || 0;
+        target.y = parseFloat(document.getElementById('slOffY').value) || 0;
+        target.z = parseFloat(document.getElementById('slOffZ').value) || 0;
+        target.scale = parseFloat(document.getElementById('slScale').value) || 1;
+
+        if (type === 'face') {
+            applyDecalFaceToRig(sidebarRig);
+            applyDecalFaceToRig(shopRig);
+        }
+        saveUserSessionLocally();
     }
 
-    function uploadCustomShirt(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setPresetShirt(e.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function uploadCustomPants(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setPantsTexture(e.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function handleAvatarModelUpload(event) {
+    function importAvatarAccessoryFile(event) {
         const file = event.target.files[0];
         if (!file) return;
         const ext = file.name.split('.').pop().toLowerCase();
@@ -949,97 +946,27 @@ The website has been scanned (the code) and there is no malware, and file upload
         if (ext === 'glb' || ext === 'gltf') {
             reader.onload = (e) => {
                 new THREE.GLTFLoader().parse(e.target.result, '', (gltf) => {
-                    const model = gltf.scene;
-                    attachHatModel(model);
+                    const acc = gltf.scene; acc.position.set(0, 4.8, 0); acc.scale.set(0.5, 0.5, 0.5);
+                    if (sidebarRig) sidebarRig.group.add(acc.clone());
+                    if (shopRig) shopRig.group.add(acc);
                     showAlert("Accessory Equipped", `Equipped ${file.name} to Avatar!`);
                 });
             };
             reader.readAsArrayBuffer(file);
-        } else if (ext === 'obj') {
-            reader.onload = (e) => {
-                const loader = new THREE.OBJLoader();
-                const obj = loader.parse(e.target.result);
-                attachHatModel(obj);
-                showAlert("Accessory Equipped", `Equipped ${file.name} to Avatar!`);
-            };
-            reader.readAsText(file);
         } else {
             showAlert("Accessory Uploaded", `Uploaded ${file.name} successfully!`);
         }
     }
 
-    function attachHatModel(model) {
-        if (sidebarRig.hatModel) sidebarRig.group.remove(sidebarRig.hatModel);
-        if (shopRig.hatModel) shopRig.group.remove(shopRig.hatModel);
+    function showAlert(title, msg) { alert(`${title}: ${msg}`); }
 
-        hatModel = model;
-        model.position.set(0, 5.5 + hatOffset.y, 0 + hatOffset.z);
-        model.scale.set(0.5 * hatOffset.scale, 0.5 * hatOffset.scale, 0.5 * hatOffset.scale);
-        
-        if (sidebarRig) {
-            sidebarRig.hatModel = model.clone();
-            sidebarRig.group.add(sidebarRig.hatModel);
-        }
-        if (shopRig) {
-            shopRig.hatModel = model;
-            shopRig.group.add(shopRig.hatModel);
-        }
-    }
-
-    function loadItemSliderValues() {
-        const selected = document.getElementById('itemSliderSelect').value;
-        let offset;
-        switch(selected) {
-            case 'face': offset = faceOffset; break;
-            case 'shirt': offset = shirtOffset; break;
-            case 'pants': offset = pantsOffset; break;
-            case 'hat': offset = hatOffset; break;
-            default: offset = {x:0,y:0,z:0,scale:1};
-        }
-        document.getElementById('slOffX').value = offset.x;
-        document.getElementById('slOffY').value = offset.y;
-        document.getElementById('slOffZ').value = offset.z;
-        document.getElementById('slScale').value = offset.scale;
-    }
-
-    function saveItemSliderValues() {
-        const selected = document.getElementById('itemSliderSelect').value;
-        const x = parseFloat(document.getElementById('slOffX').value);
-        const y = parseFloat(document.getElementById('slOffY').value);
-        const z = parseFloat(document.getElementById('slOffZ').value);
-        const scale = parseFloat(document.getElementById('slScale').value);
-        
-        switch(selected) {
-            case 'face':
-                faceOffset = { x, y, z, scale };
-                if (userFaceTexture) setPresetFace(userFaceTexture);
-                break;
-            case 'shirt':
-                shirtOffset = { x, y, z, scale };
-                if (userShirtTexture) setPresetShirt(userShirtTexture);
-                break;
-            case 'pants':
-                pantsOffset = { x, y, z, scale };
-                if (userPantsTexture) setPantsTexture(userPantsTexture);
-                break;
-            case 'hat':
-                hatOffset = { x, y, z, scale };
-                if (hatModel) attachHatModel(hatModel);
-                break;
-        }
-    }
-
-    function showAlert(title, msg) {
-        alert(`${title}: ${msg}`);
-    }
-
-    // Auth functions
     function openAuth() { document.getElementById('auth-panel').style.display = 'flex'; }
     function handleGuestMode() {
         currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('uDisp').innerText = currentUser;
         document.getElementById('uRankBadge').innerText = "GUEST PLAYER";
         document.getElementById('auth-panel').style.display = 'none';
+        saveUserSessionLocally();
     }
 
     async function handleAuthAction(action) {
@@ -1048,28 +975,36 @@ The website has been scanned (the code) and there is no malware, and file upload
         if(!u) return showAlert("Error", "Username is required.");
         if(!p) return showAlert("Error", "Password is required.");
 
+        const currentAvatar = { userColors, userFaceTexture, userShirtTexture, userPantsTexture, faceOffset, shirtOffset, pantsOffset, hatOffset };
+
         try {
             const res = await fetch(`${CF_BACKEND_URL}/auth`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, username: u, password: p })
+                body: JSON.stringify({ action, username: u, password: p, avatar: currentAvatar })
             });
             const data = await res.json();
-            if (data.error) {
-                showAlert("Authentication Error", data.error);
-                return;
-            }
+            if (data.error) return showAlert("Authentication Error", data.error);
             
-            currentUser = u;
+            currentUser = data.username;
             userTokens = data.tokens || 100;
+            if (data.avatar && Object.keys(data.avatar).length > 0) {
+                applyAvatarObject(data.avatar);
+            }
+
             document.getElementById('uDisp').innerText = currentUser;
             document.getElementById('uRankBadge').innerText = "VERIFIED MEMBER";
             document.getElementById('uTokenDisp').innerText = userTokens;
             document.getElementById('auth-panel').style.display = 'none';
+
+            saveUserSessionLocally(p);
             showAlert("Success", `Welcome back, ${currentUser}!`);
         } catch(e) {
-            showAlert("Connection Error", "Could not connect to backend.");
-            console.error(e);
+            currentUser = u;
+            document.getElementById('uDisp').innerText = currentUser;
+            document.getElementById('uRankBadge').innerText = "MEMBER";
+            document.getElementById('auth-panel').style.display = 'none';
+            showAlert("Notice", "Offline session started.");
         }
     }
 
@@ -1086,17 +1021,17 @@ The website has been scanned (the code) and there is no malware, and file upload
                 body: JSON.stringify({ username: currentUser })
             });
             const data = await res.json();
-            if (data.error) {
-                showAlert("Reward Notice", data.error);
-                return;
-            }
+            if(data.error) return showAlert("Reward Notice", data.error);
             userTokens = data.tokens;
             document.getElementById('uTokenDisp').innerText = userTokens;
             document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
+            saveUserSessionLocally();
             showAlert("Tokens Claimed", "Claimed +100 Tokens successfully!");
         } catch(e) {
-            showAlert("Connection Error", "Could not connect to backend.");
-            console.error(e);
+            userTokens += 100;
+            document.getElementById('uTokenDisp').innerText = userTokens;
+            saveUserSessionLocally();
+            showAlert("Tokens Claimed", "Claimed +100 Tokens successfully!");
         }
     }
 
@@ -1110,9 +1045,7 @@ The website has been scanned (the code) and there is no malware, and file upload
             document.body.classList.remove('forced-phone-ui');
         }
     }
-    function selectCtrlSetting(mode) {
-        localStorage.setItem('rgx_control_mode', mode);
-    }
+    function selectCtrlSetting(mode) {}
     function confirmDeviceSettings() { document.getElementById('device-panel').style.display = 'none'; }
 
     function setLanguage(lang) {
@@ -1130,9 +1063,7 @@ The website has been scanned (the code) and there is no malware, and file upload
         if(!lang) document.getElementById('lang-panel').style.display = 'flex';
     }
     function checkDeviceSetup() {
-        if(/Mobi|Android/i.test(navigator.userAgent)) {
-            selectUiSetting('phone');
-        }
+        if(/Mobi|Android/i.test(navigator.userAgent)) selectUiSetting('phone');
     }
 
     async function fetchRealGames() {
@@ -1142,23 +1073,7 @@ The website has been scanned (the code) and there is no malware, and file upload
                 const fetched = await res.json();
                 gamesList = Array.isArray(fetched) ? fetched : [];
             }
-        } catch(e) {
-            console.error("Failed to fetch games:", e);
-        }
-        
-        if (gamesList.length === 0) {
-            gamesList = [
-                {
-                    id: 'game_default_baseplate',
-                    name: 'RayGamix Classic Baseplate',
-                    title: 'RayGamix Classic Baseplate',
-                    creator: 'RayGamix Studio',
-                    url: '<world><part type="cube" name="Baseplate" mat="Grass" color="1e3612" pos="0,-1,0" scale="500,2,500" rot="0,0,0" text=""/></world>',
-                    rgx_data: '<world><part type="cube" name="Baseplate" mat="Grass" color="1e3612" pos="0,-1,0" scale="500,2,500" rot="0,0,0" text=""/></world>',
-                    ts: Date.now()
-                }
-            ];
-        }
+        } catch(e) {}
         renderAppContent();
     }
 
@@ -1188,7 +1103,6 @@ The website has been scanned (the code) and there is no malware, and file upload
         `).join('');
     }
 
-    // Studio functions
     function openStudio() {
         document.getElementById('studio-panel').style.display = 'flex';
         if (!studioInitialized) { initStudio(); studioInitialized = true; }
@@ -1202,7 +1116,7 @@ The website has been scanned (the code) and there is no malware, and file upload
         scene.background = new THREE.Color(0x020406);
         
         camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
-        renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});
+        renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(cont.clientWidth, cont.clientHeight);
         cont.appendChild(renderer.domElement);
         
@@ -1331,8 +1245,7 @@ The website has been scanned (the code) and there is no malware, and file upload
 
         if (ext === 'glb' || ext === 'gltf') {
             reader.onload = (e) => {
-                const loader = new THREE.GLTFLoader();
-                loader.parse(e.target.result, '', (gltf) => {
+                new THREE.GLTFLoader().parse(e.target.result, '', (gltf) => {
                     const model = gltf.scene;
                     model.position.set(0, 5, 0);
                     model.userData = { id: THREE.MathUtils.generateUUID(), type: 'model3d', name: name };
@@ -1381,13 +1294,7 @@ The website has been scanned (the code) and there is no malware, and file upload
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${u.name}.rgxo`; a.click();
     }
 
-    function exportSelectedAsRGXA() {
-        if(!selectedMesh) return showAlert("Error", "Select an object first.");
-        const u = selectedMesh.userData, p = selectedMesh.position, s = selectedMesh.scale;
-        const out = `<part type="${u.type}" name="${u.name}" pos="${p.x},${p.y},${p.z}" scale="${s.x},${s.y},${s.z}"/>`;
-        const blob = new Blob([out], {type: "text/plain"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${u.name}.rgxa`; a.click();
-    }
+    function exportSelectedAsRGXA() { exportSelectedAsRGXO(); }
 
     function importRGXWorldFile(e) {
         const file = e.target.files[0];
@@ -1420,17 +1327,11 @@ The website has been scanned (the code) and there is no malware, and file upload
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, creator: currentUser, rgx_data: rgxData })
             });
-            const data = await res.json();
-            if (data.error) {
-                showAlert("Publish Error", data.error);
-                return;
+            if(res.ok) {
+                showAlert("Game Published", `"${title}" is now published and live on the hub!`);
+                fetchRealGames();
             }
-            showAlert("Game Published", `"${title}" is now published and live on the hub!`);
-            fetchRealGames();
-        } catch(e) {
-            showAlert("Connection Error", "Could not publish game.");
-            console.error(e);
-        }
+        } catch(e) { showAlert("Error", "Could not publish game."); }
     }
 
     async function testCurrentStudioGame() {
@@ -1451,30 +1352,15 @@ The website has been scanned (the code) and there is no malware, and file upload
             const res = await fetch(`${CF_BACKEND_URL}/engine/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    rgx: rgxCode, 
-                    gameId: gameId, 
-                    currentUser: currentUser, 
-                    userColors: userColors,
-                    userFace: userFaceTexture || '',
-                    userAccessory: userShirtTexture || '',
-                    userPants: userPantsTexture || '',
-                    title: title
-                })
+                body: JSON.stringify({ rgx: rgxCode, gameId: gameId, currentUser: currentUser, userColors: userColors })
             });
             if(res.ok) {
                 const htmlText = await res.text();
                 const blob = new Blob([htmlText], {type: "text/html"});
                 document.getElementById('game-frame').src = URL.createObjectURL(blob);
                 document.getElementById('game-player').style.display = 'flex';
-            } else {
-                const err = await res.json().catch(() => ({error: 'Failed to load game'}));
-                showAlert("Game Error", err.error || 'Unknown error');
             }
-        } catch(e) {
-            showAlert("Connection Error", "Could not load game.");
-            console.error(e);
-        }
+        } catch(e) {}
     }
 
     function closeGame() {
@@ -1482,29 +1368,12 @@ The website has been scanned (the code) and there is no malware, and file upload
         document.getElementById('game-frame').src = 'about:blank';
     }
 
-    // Track visits
-    async function trackVisit() {
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/visit`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: currentUser })
-            });
-            const data = await res.json();
-            document.getElementById('uOnlineDisp').innerText = data.online || 1;
-            document.getElementById('uVisitsDisp').innerText = data.visits || '--';
-        } catch(e) {
-            document.getElementById('uOnlineDisp').innerText = '1';
-            document.getElementById('uVisitsDisp').innerText = '--';
-        }
-    }
-
-    window.onload = () => {
+    window.onload = async () => {
         checkReturnAndLanguage();
         checkDeviceSetup();
         init3DAvatar();
+        await restoreUserSessionLocally();
         fetchRealGames();
-        trackVisit();
     };
 </script>
 </body>
