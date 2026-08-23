@@ -34,12 +34,12 @@
             overflow: hidden; touch-action: manipulation;
         }
 
-        body.forced-phone-ui { zoom: 0.85 !important; }
+        body.forced-phone-ui .app * { zoom: 0.80 !important; }
         body.forced-desktop-ui { zoom: 1 !important; }
 
         .app {
             display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 80px 1fr;
-            gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; margin-top: -40px;
+            gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box;
         }
 
         .sidebar {
@@ -55,7 +55,7 @@
         }
         .avatar-viewport canvas { width: 100% !important; height: 100% !important; display: block; border-radius: inherit; background-color: transparent !important; }
 
-        .topbar {grid-column: 2; display: flex; align-items: center; gap: 12px; }
+        .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
         .logo { height: 42.5px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
         .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; font-size: 15px; font-family: 'RayGamix Neue', sans-serif;}
@@ -107,7 +107,8 @@
         #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
 
         @media (max-width: 850px) {
-            html, body { overflow-y: auto; zoom: 0.85; }
+            html, body { overflow-y: auto; }
+            .app * { zoom: 0.80 !important; }
             .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100vh; padding: 12px; gap: 12px; }
             .sidebar { grid-row: auto; width: 100%; box-sizing: border-box; border-right: none; border-bottom: 1px solid rgba(0,183,255,0.1); }
             .topbar { grid-column: 1; flex-wrap: wrap; }
@@ -538,10 +539,10 @@ The website has been scanned (the code) and there is no malware, and file upload
     let currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
     let userTokens = 100;
     let userColors = { head: 0xffdbac, torso: 0x00b7ff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
-    let userFaceTexture = null;
+    let userFaceTexture = 'https://raygamix.github.io/hardcodedassets/happy.png';
     let userShirtTexture = null;
     let userPantsTexture = null;
-    let faceOffset = { x: 0, y: 0, z: 0, scale: 1.5 };
+    let faceOffset = { x: 0, y: 0, z: 0, scale: 1.5 }; // 1.5x zoomed in
     let shirtOffset = { x: 0, y: 0, z: 0, scale: 1 };
     let pantsOffset = { x: 0, y: 0, z: 0, scale: 1 };
     let hatOffset = { x: 0, y: 0, z: 0, scale: 1 };
@@ -743,6 +744,10 @@ The website has been scanned (the code) and there is no malware, and file upload
         avatarCamera.position.set(0, 3.2, 9.5);
         avatarCamera.lookAt(0, 3.0, 0);
 
+        // Automatically apply default happy face texture on startup
+        setPresetFace(userFaceTexture);
+
+        lastTime = performance.now();
         requestAnimationFrame(renderGlobalLoop);
     }
 
