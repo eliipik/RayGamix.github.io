@@ -45,7 +45,7 @@ We aim to provide a platform with very few restrictions while maintaining a safe
 
 <tr>
 <td>Operating System</td>
-<td>* Windows XP SP1, macOS 10.4, Linux Kernel 2.4</td>
+<td>* Windows XP SP3, macOS 10.4, Linux Kernel 2.4</td>
 <td>Windows 10/11, modern macOS, recent Linux</td>
 </tr>
 
@@ -82,7 +82,7 @@ We aim to provide a platform with very few restrictions while maintaining a safe
 
 <tr>
 <td>Operating System</td>
-<td>Windows XP SP1 (32-bit)</td>
+<td>Windows XP SP3 (32-bit)</td>
 <td>Windows 10/11 (64-bit)</td>
 </tr>
 
@@ -129,7 +129,7 @@ OpenGL is currently the only supported rendering backend.
 
 RayGamix is designed to work on as many computers as reasonably possible.
 
-Although support begins with **Windows XP SP1** for the desktop application, supporting older operating systems is **not** the primary goal. Instead, the focus is on making RayGamix accessible to as many people as possible without sacrificing modern capabilities.
+Although support begins with **Windows XP SP3** for the desktop application, supporting older operating systems is **not** the primary goal. Instead, the focus is on making RayGamix accessible to as many people as possible without sacrificing modern capabilities.
 
 
 
