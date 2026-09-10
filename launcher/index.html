@@ -1,1385 +1,219 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>RayGamix Launcher & Studio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
-    
-    <!-- Three.js and loaders -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
-
-    <style>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Our avatars are waiting!</title>
+        
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                font-family: Arial, sans-serif;
+                background-color: #212121;
+                color: white;
+                margin-top: 70px;
+                zoom: 1.2;
+                }
+                
+                h1 {
+                    font-size: clamp(1.5rem, 4vw, 1.75rem);
+                    font-weight: 700;
+                    }
+                    
+                    h3 {
+                    font-weight: 100;
+                    }
+                     </style>
+                     </head>
+                      
+                      <body>
+                           <h1 style="zoom:2">Please wait a moment!</h1><br><p style="zoom: 1.5;">RayGamix is getting updated. Version 1.2 will release in under 8 hours.</p><br>
+                           <h5 style="zoom:1.2;">Thank you for understanding!</h5>
+                               <style>
         @font-face {
             font-family: 'RayGamix Neue';
-            src: url('https://raygamix.com/RayGamix-Neue-Regular.ttf') format('truetype');
-            font-weight: normal; font-style: normal;
+            src: url('https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf') format('truetype');
         }
-
-        :root {
-            --bg: #03070b; --panel: #0a131c; --card: #111a24; --muted: #7d96b0;
-            --accent: #00b7ff; --glass: rgba(255, 255, 255, 0.05); --gold: #ffc107;
-            --red: #ff4444; --green: #00e676; --card-border: #162438; --accent-glow: rgba(0,183,255,0.4);
-        }
-        
-        html, body { 
-            height: 100%; width: 100%; margin: 0; 
-            background: var(--bg); color: #fff; 
-            font-family: 'RayGamix Neue', system-ui, -apple-system, sans-serif; 
-            overflow: hidden; touch-action: manipulation;
-        }
-
-        body.forced-phone-ui .app * { zoom: 0.80 !important; }
-        body.forced-desktop-ui { zoom: 1 !important; }
-
-        .app {
-            display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 80px 1fr;
-            gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box;
-        }
-
-        .sidebar {
-            grid-row: 1 / span 2; background: linear-gradient(180deg, var(--panel), transparent);
-            border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; border-right: 1px solid rgba(0,183,255,0.1); overflow-y: auto;
-        }
-        .avatar-viewport { 
-            width: 100%; height: 260px; max-height: 35vh; 
-            background: url('spinavatar.png') center/cover no-repeat #071018; 
-            border-radius: 12px; border: 1px solid rgba(0,183,255,0.3); 
-            overflow: hidden; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 0 20px rgba(0,183,255,0.15); position: relative; box-sizing: border-box; 
-        }
-        .avatar-viewport canvas { width: 100% !important; height: 100% !important; display: block; border-radius: inherit; background-color: transparent !important; }
-
-        .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
-        .logo { height: 42.5px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px rgba(0,183,255,0.3); }
-        .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .search input { background: transparent; border: 0; outline: none; color: #fff; width: 100%; font-size: 15px; font-family: 'RayGamix Neue', sans-serif;}
-        
-        .btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.15s; text-align: center; box-sizing: border-box; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; user-select: none; font-family: 'RayGamix Neue', sans-serif;}
-        .btn:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,183,255,0.3); }
-        .btn-alt { background: var(--glass); border: 1px solid #2a3d52; color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 13px; font-weight: bold; transition: 0.2s; user-select: none; font-family: 'RayGamix Neue', sans-serif;}
-        .btn-alt:hover { background: #111a24; border-color: var(--accent); }
-        
-        .badge-rank { background: linear-gradient(135deg, #cc66ff, #00b7ff); color: #000; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
-        .token-counter { display: flex; align-items: center; gap: 6px; background: rgba(255, 193, 7, 0.15); border: 1px solid var(--gold); color: var(--gold); font-weight: 900; padding: 6px 12px; border-radius: 20px; font-size: 13px; }
-
-        .lang-select { background: #0a1520; border: 1px solid #2a3d52; color: #fff; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; outline: none; font-family: 'RayGamix Neue', sans-serif; }
-        .lang-select:hover { border-color: var(--accent); }
-
-        .btn-tool { background: #1a2b3d; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; font-family: 'RayGamix Neue', sans-serif; }
-        .btn-tool:hover { background: var(--accent); color: #000; }
-        .tool-active { background: var(--accent) !important; color: #000 !important; }
-
-        .main { grid-column: 2; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 25px; overflow: hidden !important; border: 1px solid rgba(255,255,255,0.02);}
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid #1a2b3d; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column;}
-        .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .card-type-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,183,255,0.2); border: 1px solid var(--accent); color: var(--accent); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
-        .card-actions { display: flex; gap: 8px; margin-top: 15px; }
-
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .panel { background: var(--panel); padding: 35px; border-radius: 20px; border: 1px solid var(--accent); width: 520px; max-width: 92vw; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 50px rgba(0,183,255,0.1); box-sizing: border-box;}
-        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: #ff4444; font-weight: bold; transition: 0.2s;}
-        .close-btn:hover { transform: scale(1.2); }
-
-        .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
-        .studio-header { display:flex; justify-content:space-between; align-items: center; padding: 12px 25px; background: #071018; border-bottom: 1px solid #142536; gap: 10px; flex-wrap: wrap;}
-        .studio-toolbar { background: #0a1520; padding: 12px 25px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap;}
-        .studio-body { display: flex; flex: 1; min-height: 0; }
-        .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; }
-        .studio-sidebar { width: 340px; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; }
-        
-        .prop-section { padding: 15px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1;}
-        .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color:var(--muted); font-weight: bold;}
-        .prop-input { flex: 1; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px 8px; font-size: 12px; border-radius: 4px; width: 100%; box-sizing: border-box; transition: 0.2s; font-family: 'RayGamix Neue', sans-serif;}
-        .prop-input:focus { border-color: var(--accent); outline: none; }
-        .prop-vec3 { display: flex; gap: 6px; flex: 1; }
-        .prop-vec3 input { width: 33%; background: #020406; border: 1px solid #1a2b3d; color: #fff; padding: 6px; font-size: 12px; text-align: center; border-radius: 4px; font-family: 'RayGamix Neue', sans-serif;}
-
-        #game-player { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; padding: 0; margin: 0; flex-direction: column;}
-        .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10001; pointer-events: none;}
-        .player-header * { pointer-events: auto; }
-        #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
-
-        @media (max-width: 850px) {
-            html, body { overflow-y: auto; }
-            .app * { zoom: 0.80 !important; }
-            .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100vh; padding: 12px; gap: 12px; }
-            .sidebar { grid-row: auto; width: 100%; box-sizing: border-box; border-right: none; border-bottom: 1px solid rgba(0,183,255,0.1); }
-            .topbar { grid-column: 1; flex-wrap: wrap; }
-            .main { grid-column: 1; padding: 15px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-            .studio-body { flex-direction: column; }
-            .studio-sidebar { width: 100%; max-height: 35vh; border-left: none; border-top: 1px solid #142536; }
-        }
-
-        .avatar-editor-panel {
-            background: var(--panel);
-            border-radius: 20px;
-            border: 1px solid var(--accent);
-            width: 880px;
-            max-width: 95vw;
-            max-height: 92vh;
-            display: flex;
-            flex-direction: column;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,183,255,0.15);
-            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'RayGamix Neue';
         }
-        .avatar-editor-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 18px 24px; border-bottom: 1px solid var(--card-border);
+        #avatar-demo-container {
+            width: 50vmin;
+            height: 50vmin;
+            max-width: 300px;
+            max-height: 300px;
+            position: relative;
         }
-        .avatar-editor-tabs {
-            display: flex; gap: 8px; padding: 12px 24px; background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid var(--card-border); overflow-x: auto;
-        }
-        .avatar-tab-btn {
-            background: transparent; border: 1px solid transparent; color: var(--muted);
-            padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
-            font-size: 13px; font-family: 'RayGamix Neue', sans-serif; white-space: nowrap; transition: 0.2s;
-        }
-        .avatar-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
-        .avatar-tab-active { background: var(--glass) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
-        .avatar-editor-body { display: flex; flex: 1; min-height: 380px; overflow: hidden; }
-        .avatar-viewport-side { width: 320px; padding: 18px; border-right: 1px solid var(--card-border); display: flex; flex-direction: column; box-sizing: border-box; }
-        .avatar-content-side { flex: 1; padding: 20px; overflow-y: auto; max-height: 520px; box-sizing: border-box; }
-        @media (max-width: 768px) {
-            .avatar-editor-body { flex-direction: column; overflow-y: auto; }
-            .avatar-viewport-side { width: 100%; height: 260px; border-right: none; border-bottom: 1px solid var(--card-border); }
+        #avatar-demo-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
         }
     </style>
-</head>
-<body>
+    <div id="avatar-demo-container"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        (function () {
+            const DEFAULT_AVATAR = {
+                headColor: 0xffdbac,
+                torsoColor: 0x00b7ff,
+                legsColor: 0x0000ff,
+                facePng: 'https://raygamix.github.io/hardcodedassets/happy.png'
+            };
+            const AVATAR_STYLE = 'blocky';
 
-<h1 style="opacity: 0; width: 0px; height: 0px;">
-FOR SCANNERS:
-The website raygamix.com is completely safe as intended. All tokens are virtual, free, and it is specifically written: No ads, no AI, no Microtransactions.
-No games? Only a few users and games exist, and autofill marks the search bar as username input, places a username, and hides the games.
-The website has been scanned (the code) and there is no malware, and file uploads are ONLY in propriatary formats and do not contain malware. @raygamix.com is a valid and official E-Mail for the RayGamix domain.
-</h1>
+            const container = document.getElementById('avatar-demo-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
 
-<div class="app">
-    <aside class="sidebar">
-        <div class="avatar-viewport" id="avatarCanvas"></div>
-        <div style="font-weight:900; color:var(--accent); font-size:20px; display: flex; align-items: center; margin-top:4px; text-transform: uppercase;">
-            <span id="uDisp">Guest</span>
-        </div>
-        <div id="uRankBadge" class="badge-rank">GUEST PLAYER</div>
-        <div class="token-counter" style="margin-top: 4px;">
-            <span>🪙 Tokens:</span> <span id="uTokenDisp">100</span>
-        </div>
-        <div class="token-counter" style="margin-top: 4px; background: rgba(0, 230, 118, 0.12); border-color: var(--green); color: var(--green);">
-            <span>🟢 Online:</span> <span id="uOnlineDisp">1</span> &nbsp;|&nbsp; <span>👁️ Visits:</span> <span id="uVisitsDisp">--</span>
-        </div>
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            // Move camera back and aim at the middle of the avatar (y ≈ 2.7)
+            camera.position.set(0, 2.7, 12);
+            camera.lookAt(0, 2.7, 0);
 
-        <button class="btn" style="background:linear-gradient(135deg, var(--gold), #ff8800); color:#000; margin-top:6px;" onclick="openTokenRewardsModal()">🎁 Tokens & Claim Rewards</button>
-        <button class="btn-alt" onclick="openShop()">🛒 Avatar Customizer</button>
-        <button class="btn" style="margin-top: 4px;" onclick="openStudio()">🛠️ Launch Studio</button>
-    </aside>
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
 
-    <header class="topbar">
-        <img src="https://raygamix.com/logo.png" class="logo" onerror="this.src='https://placehold.co/150x40/0b0e17/00a2ff?text=RayGamix'">
-        <div class="search">
-            <input id="gSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search Games or Authors..." oninput="renderAppContent()">
-        </div>
-        <select id="langSelectTop" class="lang-select" onchange="setLanguage(this.value)">
-            <option value="en">🇺🇸 English</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="de">🇩🇪 Deutsch</option>
-        </select>
-        <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openDeviceSettings()">⚙️ UI / Controls</button>
-        <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openAuth()" id="btnAccountText">👤 Account</button>
-    </header>
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            keyLight.position.set(5, 10, 5);
+            keyLight.castShadow = true;
+            scene.add(keyLight);
+            const rimLight = new THREE.DirectionalLight(0x00b7ff, 0.5);
+            rimLight.position.set(-5, 5, -5);
+            scene.add(rimLight);
 
-    <main class="main" style="overflow: hidden !important;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;">
-            <h2 style="margin:0; color:#fff; font-size: 20px;" id="hubHeadingText">RayGamix Games Hub</h2>
-            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v6.5 RGX Engine</span>
-        </div>
-        <div class="grid" id="gameGrid"></div>
-    </main>
-</div>
-
-<div class="overlay" id="lang-panel">
-    <div class="panel" style="text-align: center;">
-        <div class="close-btn" onclick="document.getElementById('lang-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">🌐 Welcome to RayGamix</h2>
-        <p style="color:var(--muted); font-size:14px; margin-bottom: 25px;">Please select your language:</p>
-        <select id="langModalSelect" class="lang-select" style="width: 100%; margin-bottom: 25px; padding: 14px;">
-            <option value="en">🇺🇸 English</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="de">🇩🇪 Deutsch</option>
-        </select>
-        <button class="btn" onclick="confirmLangModal()">Continue</button>
-    </div>
-</div>
-
-<div class="overlay" id="device-panel">
-    <div class="panel" style="max-width: 480px; text-align: center;">
-        <div class="close-btn" onclick="document.getElementById('device-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 22px; font-weight:800;">⚙️ UI & Control Setup</h2>
-        <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Configure your layout and controls for mobile or desktop:</p>
-
-        <div style="margin-bottom: 20px; text-align: left;">
-            <label style="color:#fff; font-weight:bold; font-size:13px; display:block; margin-bottom:8px;">Interface Layout:</label>
-            <div style="display:flex; gap:10px;">
-                <button id="btnUiPhone" class="btn-alt" style="flex:1; padding:12px;" onclick="selectUiSetting('phone')">📱 Phone UI</button>
-                <button id="btnUiDesktop" class="btn-alt" style="flex:1; padding:12px;" onclick="selectUiSetting('desktop')">💻 Desktop UI</button>
-            </div>
-        </div>
-
-        <div style="margin-bottom: 25px; text-align: left;">
-            <label style="color:#fff; font-weight:bold; font-size:13px; display:block; margin-bottom:8px;">Controls Mode:</label>
-            <div style="display:flex; gap:10px;">
-                <button id="btnCtrlTouch" class="btn-alt" style="flex:1; padding:12px;" onclick="selectCtrlSetting('touch')">🕹️ Touch D-Pad</button>
-                <button id="btnCtrlKeyboard" class="btn-alt" style="flex:1; padding:12px;" onclick="selectCtrlSetting('keyboard')">⌨️ Keyboard & Mouse</button>
-            </div>
-        </div>
-
-        <button class="btn" style="width:100%; padding:14px;" onclick="confirmDeviceSettings()">Confirm Settings</button>
-    </div>
-</div>
-
-<div class="overlay" id="tokens-panel">
-    <div class="panel" style="text-align: center; max-width: 440px;">
-        <div class="close-btn" onclick="document.getElementById('tokens-panel').style.display='none'">×</div>
-        <h2 style="color:var(--gold); margin-top:0; font-size: 24px;">🪙 RayGamix Tokens</h2>
-        <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Tokens allow you to unlock custom cosmetics and features.</p>
-        
-        <div style="background:#081018; padding:20px; border-radius:12px; border:1px solid var(--card-border); margin-bottom:20px;">
-            <span style="font-size:14px; color:var(--muted); display:block; margin-bottom:6px;">Current Balance:</span>
-            <span style="font-size:32px; font-weight:900; color:var(--gold);" id="tokenModalDisp">100 🪙</span>
-        </div>
-
-        <button class="btn" style="background:linear-gradient(135deg, var(--gold), #ff8800); color:#000; padding:14px;" onclick="claimWeeklyTokens()">🎁 Claim Weekly Reward (+100 🪙)</button>
-    </div>
-</div>
-
-<div class="overlay" id="auth-panel">
-    <div class="panel">
-        <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Sign in or register with Username and Password:</p>
-        <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;">
-        <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;">
-        <div style="display:flex; gap:10px;">
-            <button class="btn" onclick="handleAuthAction('login')">Login</button>
-            <button class="btn-alt" onclick="handleAuthAction('register')">Register</button>
-        </div>
-        <button class="btn-alt" style="margin-top:12px; border-color:var(--muted);" onclick="handleGuestMode()">Continue as Guest</button>
-    </div>
-</div>
-
-<div class="overlay" id="shop-panel">
-    <div class="avatar-editor-panel">
-        <div class="avatar-editor-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:24px;">🛒</span>
-                <h2 style="margin:0; color:#fff; font-size:20px; font-weight:900;">RayGamix Avatar Editor</h2>
-            </div>
-            <button class="close-btn" onclick="closeShopModal()">×</button>
-        </div>
-
-        <div class="avatar-editor-tabs">
-            <button class="avatar-tab-btn avatar-tab-active" onclick="switchShopTab('skin')" id="tab-btn-skin">🎨 Skin Color</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('face')" id="tab-btn-face">🙂 Faces</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('shirts')" id="tab-btn-shirts">👕 Shirts & Pants</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('ugc')" id="tab-btn-ugc">🧢 UGC</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('positioners')" id="tab-btn-positioners">📐 Item Positioners</button>
-            <button class="avatar-tab-btn" onclick="switchShopTab('upload')" id="tab-btn-upload">📁 Upload Files</button>
-        </div>
-
-        <div class="avatar-editor-body">
-            <div class="avatar-viewport-side">
-                <div style="width:100%; height:100%; background:#000; border-radius:14px; border:1px solid var(--card-border); cursor:grab; position:relative;" id="shopAvatarCanvas">
-                    <button class="btn-alt" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); width:auto; padding:6px 14px; font-size:11px; z-index:10;" id="btnSpinToggle" onclick="toggleShopSpin()">⏸ Pause Spin</button>
-                </div>
-            </div>
-
-            <div class="avatar-content-side">
-                <!-- Skin Color Tab -->
-                <div id="tab-sec-skin">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Quick Presets</h3>
-                    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; margin-bottom:15px;">
-                        <div style="height:36px; background:#ffdbac; border-radius:8px; cursor:pointer; border:2px solid transparent;" onmouseover="this.style.borderColor='#00b7ff'" onmouseout="this.style.borderColor='transparent'" onclick="applyPresetSkin(0xffdbac)"></div>
-                        <div style="height:36px; background:#f1c27d; border-radius:8px; cursor:pointer; border:2px solid transparent;" onmouseover="this.style.borderColor='#00b7ff'" onmouseout="this.style.borderColor='transparent'" onclick="applyPresetSkin(0xf1c27d)"></div>
-                        <div style="height:36px; background:#e0ac69; border-radius:8px; cursor:pointer; border:2px solid transparent;" onmouseover="this.style.borderColor='#00b7ff'" onmouseout="this.style.borderColor='transparent'" onclick="applyPresetSkin(0xe0ac69)"></div>
-                        <div style="height:36px; background:#8d5524; border-radius:8px; cursor:pointer; border:2px solid transparent;" onmouseover="this.style.borderColor='#00b7ff'" onmouseout="this.style.borderColor='transparent'" onclick="applyPresetSkin(0x8d5524)"></div>
-                        <div style="height:36px; background:#0000ff; border-radius:8px; cursor:pointer; border:2px solid transparent;" onmouseover="this.style.borderColor='#00b7ff'" onmouseout="this.style.borderColor='transparent'" onclick="applyPresetSkin(0x0000ff)"></div>
-                        <div style="height:36px; background:#00e676; border-radius:8px; cursor:pointer; border:2px solid transparent;" onmouseover="this.style.borderColor='#00b7ff'" onmouseout="this.style.borderColor='transparent'" onclick="applyPresetSkin(0x00e676)"></div>
-                    </div>
-
-                    <h3 style="margin-top:20px; color:#fff; font-size:16px;">Custom Colors</h3>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <div>
-                            <label style="font-size:12px; font-weight:bold; color:var(--muted);">Head / Skin Color:</label>
-                            <input type="color" id="shop-col-head" value="#ffdbac" class="prop-input" style="height:36px; padding:2px; cursor:pointer; width:100%;" onchange="updateCustomizerColors()">
-                        </div>
-                        <div>
-                            <label style="font-size:12px; font-weight:bold; color:var(--muted);">Torso / Shirt Color:</label>
-                            <input type="color" id="shop-col-torso" value="#00b7ff" class="prop-input" style="height:36px; padding:2px; cursor:pointer; width:100%;" onchange="updateCustomizerColors()">
-                        </div>
-                        <div>
-                            <label style="font-size:12px; font-weight:bold; color:var(--muted);">Pants / Legs Color:</label>
-                            <input type="color" id="shop-col-legs" value="#0000ff" class="prop-input" style="height:36px; padding:2px; cursor:pointer; width:100%;" onchange="updateCustomizerColors()">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Faces Tab -->
-                <div id="tab-sec-face" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Hardcoded Github Expression Faces</h3>
-                    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:20px;">
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/happy.png')">🙂 Happy</button>
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/neutral.png')">😐 Neutral</button>
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/veryhappy.png')">😄 Very Happy</button>
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/sad.png')">🙁 Sad</button>
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/cry.png')">😢 Cry</button>
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/ohno.png')">😱 Oh No</button>
-                        <button class="btn-alt" onclick="setPresetFace('https://raygamix.github.io/hardcodedassets/wow.png')">😮 Wow</button>
-                        <button class="btn-alt" style="border-color:var(--red); color:var(--red);" onclick="setPresetFace('')">Unequip Face</button>
-                    </div>
-                    <h3 style="color:#fff; font-size:16px; margin-bottom:10px;">Upload Custom Face</h3>
-                    <button class="btn-alt" style="border-color: var(--accent); color: var(--accent); padding: 12px; margin-bottom:10px;" onclick="document.getElementById('customFaceInput').click()">📁 Upload Face Image</button>
-                    <input type="file" id="customFaceInput" accept="image/*" style="display:none;" onchange="uploadCustomFace(event)">
-                </div>
-
-                <!-- Shirts & Pants Tab -->
-                <div id="tab-sec-shirts" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Hardcoded Github Shirts</h3>
-                    <div style="display:grid; grid-template-columns: 1fr; gap:10px; margin-bottom:20px;">
-                        <button class="btn-alt" onclick="setPresetShirt('https://raygamix.github.io/hardcodedassets/classic-blue-shirt.png')">👔 Classic Blue Shirt</button>
-                        <button class="btn-alt" onclick="setPresetShirt('https://raygamix.github.io/hardcodedassets/RayGamix-Shirt-template.png')">👕 RayGamix Template Shirt</button>
-                        <button class="btn-alt" style="border-color:var(--red); color:var(--red);" onclick="setPresetShirt('')">Unequip Shirt</button>
-                    </div>
-                    <h3 style="color:#fff; font-size:16px; margin-bottom:10px;">Upload Custom Shirt</h3>
-                    <button class="btn-alt" style="border-color: var(--accent); color: var(--accent); padding: 12px; margin-bottom:10px;" onclick="document.getElementById('customShirtInput').click()">📁 Upload Shirt Image</button>
-                    <input type="file" id="customShirtInput" accept="image/*" style="display:none;" onchange="uploadCustomShirt(event)">
-                    
-                    <h3 style="color:#fff; font-size:16px; margin-top:20px;">Upload Pants Texture</h3>
-                    <button class="btn-alt" style="border-color: var(--accent); color: var(--accent); padding: 12px; margin-bottom:10px;" onclick="document.getElementById('customPantsInput').click()">📁 Upload Pants Image</button>
-                    <input type="file" id="customPantsInput" accept="image/*" style="display:none;" onchange="uploadCustomPants(event)">
-                </div>
-
-                <!-- UGC Tab -->
-                <div id="tab-sec-ugc" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">User Generated Content</h3>
-                    <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Upload 3D models to wear as accessories:</p>
-                    <button class="btn-alt" style="border-color: var(--accent); color: var(--accent); padding: 12px; margin-bottom:15px;" onclick="document.getElementById('uploadAvatarModelInput').click()">📁 Upload .GLB / .FBX / .OBJ</button>
-                    <input type="file" id="uploadAvatarModelInput" accept=".glb,.fbx,.obj,.rgxa" style="display:none;" onchange="handleAvatarModelUpload(event)">
-                    <p style="font-size:12px; color:var(--muted); margin-top:10px;">Uploaded model will be attached to head as a hat.</p>
-                </div>
-
-                <!-- Item Positioners Tab -->
-                <div id="tab-sec-positioners" style="display:none;">
-                    <h3 style="margin-top:0; color:var(--accent); font-size:16px;">📐 Item Positioners</h3>
-                    <div style="margin-bottom:12px;">
-                        <label style="font-size:12px; color:var(--muted);">Select Equipped Item:</label>
-                        <select id="itemSliderSelect" style="width:100%; background:#020406; border:1px solid #1a2b3d; color:#fff; padding:8px; border-radius:6px; margin-top:4px;" onchange="loadItemSliderValues()">
-                            <option value="face">Face Expression</option>
-                            <option value="shirt">Shirt</option>
-                            <option value="pants">Pants</option>
-                            <option value="hat">Hat / Accessory</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        <div><span style="font-size:12px; color:var(--muted);">Offset X:</span><input type="range" id="slOffX" min="-5" max="5" step="0.2" value="0" oninput="saveItemSliderValues()"></div>
-                        <div><span style="font-size:12px; color:var(--muted);">Offset Y:</span><input type="range" id="slOffY" min="-5" max="5" step="0.2" value="0" oninput="saveItemSliderValues()"></div>
-                        <div><span style="font-size:12px; color:var(--muted);">Offset Z:</span><input type="range" id="slOffZ" min="-5" max="5" step="0.2" value="0" oninput="saveItemSliderValues()"></div>
-                        <div><span style="font-size:12px; color:var(--muted);">Scale:</span><input type="range" id="slScale" min="0.2" max="3" step="0.1" value="1" oninput="saveItemSliderValues()"></div>
-                    </div>
-                </div>
-
-                <!-- Upload Files Tab -->
-                <div id="tab-sec-upload" style="display:none;">
-                    <h3 style="margin-top:0; color:#fff; font-size:16px;">Upload Files</h3>
-                    <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Upload custom textures or models for your avatar.</p>
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        <button class="btn-alt" onclick="document.getElementById('uploadFaceInput2').click()">📁 Upload Face Image</button>
-                        <input type="file" id="uploadFaceInput2" accept="image/*" style="display:none;" onchange="uploadCustomFace(event)">
-                        <button class="btn-alt" onclick="document.getElementById('uploadShirtInput2').click()">📁 Upload Shirt Image</button>
-                        <input type="file" id="uploadShirtInput2" accept="image/*" style="display:none;" onchange="uploadCustomShirt(event)">
-                        <button class="btn-alt" onclick="document.getElementById('uploadPantsInput2').click()">📁 Upload Pants Image</button>
-                        <input type="file" id="uploadPantsInput2" accept="image/*" style="display:none;" onchange="uploadCustomPants(event)">
-                        <button class="btn-alt" onclick="document.getElementById('uploadModelInput2').click()">📁 Upload 3D Model (.glb, .obj)</button>
-                        <input type="file" id="uploadModelInput2" accept=".glb,.gltf,.obj,.fbx" style="display:none;" onchange="handleAvatarModelUpload(event)">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="studio-panel" style="background:#000;">
-    <div class="studio-layout">
-        <div class="studio-header">
-            <h2 style="color:var(--accent); margin:0; font-weight:900;">RAYGAMIX STUDIO</h2>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <input type="text" id="gameTitle" class="prop-input" placeholder="ENTER NAME..." style="width: 160px; font-size: 13px; padding: 8px 10px; border-radius: 8px; font-weight:bold;">
-                
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="document.getElementById('rgxWorldImportInput').click()">📥 IMPORT RGX</button>
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="exportRGXFile()">📤 EXPORT RGX</button>
-                
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px; border-color:#cc66ff; color:#cc66ff;" onclick="document.getElementById('rgxObjectImportInput').click()">📦 IMPORT RGXA / RGXO</button>
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px; border-color:#cc66ff; color:#cc66ff;" onclick="exportSelectedAsRGXO()">✨ EXPORT RGXA / RGXO</button>
-                
-                <input type="file" id="rgxWorldImportInput" accept=".rgx" style="display:none;" onchange="importRGXWorldFile(event)">
-                <input type="file" id="rgxObjectImportInput" accept=".rgxo,.rgxa" style="display:none;" onchange="importRGXObjectFile(event)">
-                <input type="file" id="model3dImportInput" accept=".glb,.gltf,.obj,.fbx" style="display:none;" onchange="import3DModelFile(event)">
-                
-                <button class="btn" style="background:linear-gradient(135deg, #00e5ff, #0088ff); color:#000; width: auto; padding: 8px 14px; font-size:11px;" onclick="testCurrentStudioGame()">🕹️ TEST DEMO</button>
-                <button class="btn" id="btnPublish" style="background:linear-gradient(135deg, #cc66ff, #8800ff); color:#fff; width: auto; padding: 8px 14px; font-size:11px;" onclick="publishGame()">🌐 PUBLISH</button>
-                <button class="btn" style="background:var(--red); color:#fff; width: auto; padding: 8px 12px; font-size:11px;" onclick="closeStudio()">EXIT</button>
-            </div>
-        </div>
-        <div class="studio-toolbar">
-            <button id="tool-select" class="btn-tool tool-active" onclick="setTransformMode('select')">🖱️ Select</button>
-            <button id="tool-translate" class="btn-tool" onclick="setTransformMode('translate')">☩ Move</button>
-            <button id="tool-scale" class="btn-tool" onclick="setTransformMode('scale')">⤡ Scale</button>
-            <button id="tool-rotate" class="btn-tool" onclick="setTransformMode('rotate')">↻ Rotate</button>
-            <div style="width: 1px; height: 20px; background: #333; margin: 0 5px;"></div>
-            
-            <select id="addPartType" class="prop-input" style="width: auto; padding: 6px; font-weight:bold;">
-                <option value="cube">🧱 Block</option>
-                <option value="sphere">⚽ Sphere</option>
-                <option value="triangle">🔺 Triangle</option>
-                <option value="pentagon">⬟ Pentagon</option>
-                <option value="ladder">🪜 Ladder</option>
-                <option value="water">🌊 Water</option>
-                <option value="spawn">🏁 Spawn</option>
-                <option value="checkpoint">🚩 Checkpoint</option>
-                <option value="npc">🧍 NPC</option>
-                <option value="sign">🪧 Sign (Text)</option>
-                <option value="clickdtct">🖱️ Click Detector</option>
-            </select>
-            <button class="btn" style="width:auto; padding: 6px 15px;" onclick="addSelectedPart()">➕ Insert</button>
-        </div>
-        
-        <div class="studio-body">
-            <div id="studio-viewport" class="studio-viewport"></div>
-            <div class="studio-sidebar">
-                <div style="background: #050a12; padding: 12px 15px; font-size: 13px; font-weight: 800; color: #fff; border-bottom: 1px solid #162438; text-transform:uppercase;">Properties & Scripts</div>
-                <div class="prop-section" id="studioPropertiesPanel">
-                    <div id="prop-empty" style="color:var(--muted); text-align:center; margin-top:30px; font-weight:bold;">Select an object to edit properties</div>
-                    <div id="prop-content" style="display:none;">
-                        <div class="prop-row"><span style="width:80px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:80px;">Type</span><input type="text" id="prop-type" class="prop-input" disabled style="background:#03060a; color:#555;"></div>
-                        <div class="prop-row"><span style="width:80px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px; border:none;" onchange="applyPropertyChanges()"></div>
-                        
-                        <div class="prop-row">
-                            <span style="width:80px;">Material</span>
-                            <select id="prop-material" class="prop-input" onchange="applyPropertyChanges()">
-                                <option value="Plastic">Plastic</option><option value="Grass">Grass</option>
-                                <option value="Stone">Stone</option><option value="Dirt">Dirt</option>
-                                <option value="Glass">Glass</option><option value="Ice">Ice</option>
-                                <option value="Water">Water</option><option value="Lava">Lava</option>
-                                <option value="Obsidian">Obsidian</option>
-                            </select>
-                        </div>
-                        
-                        <div class="prop-row">
-                            <span style="width:80px;">Texture URL</span>
-                            <input type="text" id="prop-texture" class="prop-input" onchange="applyPropertyChanges()" placeholder="https://...">
-                        </div>
-                        
-                        <div class="prop-row">
-                            <span style="width:80px;">Effect</span>
-                            <select id="prop-effect" class="prop-input" onchange="applyPropertyChanges()">
-                                <option value="None">None</option>
-                                <option value="Fire">🔥 Fire</option>
-                                <option value="Smoke">💨 Smoke</option>
-                                <option value="Sparkles">✨ Sparkles</option>
-                            </select>
-                        </div>
-                        
-                        <div class="prop-row" id="row-text" style="display:none;">
-                            <span style="width:80px;">Sign Text</span>
-                            <input type="text" id="prop-text" class="prop-input" onchange="applyPropertyChanges()" placeholder="Enter text...">
-                        </div>
-
-                        <div style="border-top: 1px solid #1c2e46; margin: 15px 0; padding-top: 15px;"></div>
-
-                        <div class="prop-row"><span style="width:40px;">Pos</span><div class="prop-vec3"><input type="number" id="prop-pos-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
-                        <div class="prop-row"><span style="width:40px;">Scale</span><div class="prop-vec3"><input type="number" id="prop-scale-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
-                        <div class="prop-row"><span style="width:40px;">Rot</span><div class="prop-vec3"><input type="number" id="prop-rot-x" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-y" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-z" step="15" onchange="applyPropertyChanges()"></div></div>
-                        
-                        <div style="margin-top:20px; margin-bottom:8px; font-weight:bold; color:var(--accent);">Interaction RGX Script</div>
-                        <textarea id="prop-script" class="prop-input" style="height:80px; resize:vertical; font-family:monospace; background:#000;" onchange="applyPropertyChanges()" placeholder="player.position.y += 10;"></textarea>
-                        
-                        <button class="btn-alt" style="margin-top:10px; border-color:var(--accent); color:var(--accent);" onclick="exportSelectedAsRGXO()">📦 Export Object (.rgxo)</button>
-                        <button class="btn-alt" style="margin-top:5px; border-color:#cc66ff; color:#cc66ff;" onclick="exportSelectedAsRGXA()">✨ Export Avatar Item (.rgxa)</button>
-
-                        <button class="btn-alt" style="border-color:var(--red); color:var(--red); margin-top:20px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="game-player">
-    <div class="player-header">
-        <h3 id="player-title" style="margin:0; color:#00b7ff; font-size:18px;">RayGamix Game</h3>
-        <button class="btn" style="width:auto; padding:8px 16px; background:#ff4444; color:#fff;" onclick="closeGame()">Exit Game</button>
-    </div>
-    <iframe id="game-frame"></iframe>
-</div>
-
-<script>
-    const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
-    
-    let currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
-    let userTokens = 100;
-    let userColors = { head: 0xffdbac, torso: 0x00b7ff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
-    let userFaceTexture = 'https://raygamix.github.io/hardcodedassets/happy.png';
-    let userShirtTexture = null;
-    let userPantsTexture = null;
-    let faceOffset = { x: 0, y: 0, z: 0, scale: 1.5 }; // 1.5x zoomed in
-    let shirtOffset = { x: 0, y: 0, z: 0, scale: 1 };
-    let pantsOffset = { x: 0, y: 0, z: 0, scale: 1 };
-    let hatOffset = { x: 0, y: 0, z: 0, scale: 1 };
-
-    let avatarScene, avatarCamera, avatarRenderer, sidebarRig;
-    let shopScene, shopCamera, shopRenderer, shopRig;
-    let shopIsSpinning = true;
-    let lastTime = performance.now();
-    let animTimeGlobal = 0;
-
-    let studioObjects = [], selectedMesh = null, studioInitialized = false;
-    let scene, camera, renderer, orbit, transform;
-    let gamesList = [];
-
-    const RAD_45 = Math.PI / 4;
-    const RAD_90 = Math.PI / 2;
-    const RAD_180 = Math.PI;
-    const RAD_1_15 = 1 / 15;
-
-    function saveUserSessionLocally(pass = '') {
-        const sessionData = {
-            username: currentUser,
-            password: pass || (JSON.parse(localStorage.getItem('rgx_user_session') || '{}').password || ''),
-            tokens: userTokens,
-            userColors, userFaceTexture, userShirtTexture, userPantsTexture,
-            faceOffset, shirtOffset, pantsOffset, hatOffset
-        };
-        localStorage.setItem('rgx_user_session', JSON.stringify(sessionData));
-        saveAvatarToBackend();
-    }
-
-    async function restoreUserSessionLocally() {
-        const stored = localStorage.getItem('rgx_user_session');
-        if (!stored) return;
-
-        try {
-            const data = JSON.parse(stored);
-            if (data.username && data.password) {
-                const res = await fetch(`${CF_BACKEND_URL}/auth`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'login', username: data.username, password: data.password })
-                });
-                const authResult = await res.json();
-
-                if (authResult.success) {
-                    currentUser = authResult.username;
-                    userTokens = authResult.tokens || data.tokens || 100;
-
-                    if (authResult.avatar && Object.keys(authResult.avatar).length > 0) {
-                        applyAvatarObject(authResult.avatar);
-                    } else {
-                        applyAvatarObject(data);
-                    }
-
-                    document.getElementById('uDisp').innerText = currentUser;
-                    document.getElementById('uRankBadge').innerText = "VERIFIED MEMBER";
-                    document.getElementById('uTokenDisp').innerText = userTokens;
-                    return;
+            function createRoundedBoxGeometry(w, h, d, radius = 0.12, segments = 4) {
+                const geo = new THREE.BoxGeometry(w, h, d, segments, segments, segments);
+                const pos = geo.attributes.position;
+                const halfW = w / 2 - radius, halfH = h / 2 - radius, halfD = d / 2 - radius;
+                const v = new THREE.Vector3();
+                for (let i = 0; i < pos.count; i++) {
+                    v.fromBufferAttribute(pos, i);
+                    const x = Math.max(-halfW, Math.min(halfW, v.x));
+                    const y = Math.max(-halfH, Math.min(halfH, v.y));
+                    const z = Math.max(-halfD, Math.min(halfD, v.z));
+                    v.sub(new THREE.Vector3(x, y, z)).normalize().multiplyScalar(radius).add(new THREE.Vector3(x, y, z));
+                    pos.setXYZ(i, v.x, v.y, v.z);
                 }
+                geo.computeVertexNormals();
+                return geo;
+            }
+            const makeMat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, metalness: 0.1 });
+
+            function buildAvatarRig(config) {
+                const root = new THREE.Group();
+                const skin = config.headColor, torsoCol = config.torsoColor, legsCol = config.legsColor;
+
+                let torsoWidth, limbWidth, legWidth, headGeo;
+                if (AVATAR_STYLE === 'blocky') {
+                    torsoWidth = 1.85; limbWidth = 0.75; legWidth = 0.85;
+                    headGeo = createRoundedBoxGeometry(1.25, 1.25, 1.25, 0.1, 3);
+                } else if (AVATAR_STYLE === 'blockyNonRounded') {
+                    torsoWidth = 1.85; limbWidth = 0.75; legWidth = 0.85;
+                    headGeo = new THREE.BoxGeometry(1.25, 1.25, 1.25);
+                } else if (AVATAR_STYLE === 'round') {
+                    torsoWidth = 1.6; limbWidth = 0.6; legWidth = 0.7;
+                    headGeo = new THREE.SphereGeometry(0.65, 16, 16);
+                } else {
+                    torsoWidth = 1.7; limbWidth = 0.7; legWidth = 0.8;
+                    headGeo = createRoundedBoxGeometry(1.25, 1.25, 1.25, 0.1, 3);
+                }
+
+                const head = new THREE.Mesh(headGeo, makeMat(skin));
+                head.position.y = 4.8; head.castShadow = true;
+                if (config.facePng) {
+                    const tex = new THREE.TextureLoader().load(config.facePng);
+                    tex.transparent = true;
+                    const face = new THREE.Mesh(
+                        new THREE.PlaneGeometry(1, 1),
+                        new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.05 })
+                    );
+                    face.position.set(0, 0, 0.63);
+                    head.add(face);
+                }
+
+                let torsoGeo;
+                if (AVATAR_STYLE === 'round') torsoGeo = new THREE.SphereGeometry(1.0, 16, 16);
+                else if (AVATAR_STYLE === 'blockyNonRounded') torsoGeo = new THREE.BoxGeometry(torsoWidth, 2.2, 0.95);
+                else torsoGeo = createRoundedBoxGeometry(torsoWidth, 2.2, 0.95, 0.1, 3);
+                const torso = new THREE.Mesh(torsoGeo, makeMat(torsoCol));
+                torso.position.y = 3.1; torso.castShadow = true;
+
+                function makeLimb(color, x, y, isLeg) {
+                    let geo;
+                    const w = isLeg ? legWidth : limbWidth;
+                    const h = 2.0;
+                    const d = isLeg ? legWidth : limbWidth;
+                    if (AVATAR_STYLE === 'round') geo = new THREE.SphereGeometry(w / 2, 12, 12);
+                    else if (AVATAR_STYLE === 'blockyNonRounded') geo = new THREE.BoxGeometry(w, h, d);
+                    else geo = createRoundedBoxGeometry(w, h, d, 0.08, 3);
+                    const pivot = new THREE.Group();
+                    pivot.position.set(x, y, 0);
+                    const mesh = new THREE.Mesh(geo, makeMat(color));
+                    mesh.position.set(0, -h / 2, 0); mesh.castShadow = true;
+                    pivot.add(mesh);
+                    return pivot;
+                }
+
+                const lArm = makeLimb(skin, -1.3, 4.1, false);
+                const rArm = makeLimb(skin, 1.3, 4.1, false);
+                const lLeg = makeLimb(legsCol, -0.45, 2.0, true);
+                const rLeg = makeLimb(legsCol, 0.45, 2.0, true);
+
+                root.add(head, torso, lArm, rArm, lLeg, rLeg);
+                return { group: root, head, torso, leftArm: lArm, rightArm: rArm, leftLeg: lLeg, rightLeg: rLeg };
             }
 
-            if (data.username) {
-                currentUser = data.username;
-                userTokens = data.tokens || 100;
-                applyAvatarObject(data);
-                document.getElementById('uDisp').innerText = currentUser;
-                document.getElementById('uRankBadge').innerText = "GUEST PLAYER";
-                document.getElementById('uTokenDisp').innerText = userTokens;
+            // Avatar stays at origin – camera is aimed at its center
+            const rig = buildAvatarRig(DEFAULT_AVATAR);
+            scene.add(rig.group);
+
+            const waveStart = performance.now();
+            function animate() {
+                requestAnimationFrame(animate);
+                const t = performance.now();
+                const elapsed = t - waveStart;
+
+                // Wave the right arm
+                rig.rightArm.rotation.x = -2.8;
+                rig.rightArm.rotation.z = 0.5 + Math.sin(elapsed * 0.012) * 0.6;
+
+                // Gentle idle sway
+                rig.torso.rotation.y = Math.sin(t * 0.001) * 0.05;
+                rig.leftArm.rotation.x = Math.sin(t * 0.0015) * 0.1;
+
+                renderer.render(scene, camera);
             }
-        } catch(e) { console.error("Auto login error:", e); }
-    }
+            animate();
 
-    function applyAvatarObject(a) {
-        if (a.userColors) {
-            userColors = a.userColors;
-            if(document.getElementById('shop-col-head')) document.getElementById('shop-col-head').value = '#' + userColors.head.toString(16).padStart(6, '0');
-            if(document.getElementById('shop-col-torso')) document.getElementById('shop-col-torso').value = '#' + userColors.torso.toString(16).padStart(6, '0');
-            if(document.getElementById('shop-col-legs')) document.getElementById('shop-col-legs').value = '#' + userColors.lleg.toString(16).padStart(6, '0');
-            updateCustomizerColors();
-        }
-        if (a.userFaceTexture) userFaceTexture = a.userFaceTexture;
-        if (a.userShirtTexture) userShirtTexture = a.userShirtTexture;
-        if (a.userPantsTexture) userPantsTexture = a.userPantsTexture;
-        if (a.faceOffset) faceOffset = a.faceOffset;
-        if (a.shirtOffset) shirtOffset = a.shirtOffset;
-        if (a.pantsOffset) pantsOffset = a.pantsOffset;
-        if (a.hatOffset) hatOffset = a.hatOffset;
-    }
-
-    async function saveAvatarToBackend() {
-        try {
-            await fetch(`${CF_BACKEND_URL}/user/avatar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser,
-                    avatar: { userColors, userFaceTexture, userShirtTexture, userPantsTexture, faceOffset, shirtOffset, pantsOffset, hatOffset }
-                })
+            window.addEventListener('resize', () => {
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
             });
-        } catch(e){}
-    }
-
-    function createAvatarRig(colors) {
-        const group = new THREE.Group();
-        const createMat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, metalness: 0.1 });
-
-        const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), createMat(colors.head));
-        head.position.y = 4.8; head.castShadow = true;
-        head.name = "headMesh";
-
-        // Default 2D Decal Plane Face (No 3D Mesh Face)
-        const faceGeo = new THREE.PlaneGeometry(0.8, 0.8);
-        const faceMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: userFaceTexture ? 1 : 0 });
-        const facePlane = new THREE.Mesh(faceGeo, faceMat);
-        facePlane.name = "decalFacePlane";
-        facePlane.position.set(faceOffset.x, faceOffset.y, 0.61 + faceOffset.z);
-        facePlane.scale.set(faceOffset.scale, faceOffset.scale, 1);
-        head.add(facePlane);
-
-        if (userFaceTexture) {
-            new THREE.TextureLoader().load(userFaceTexture, (tex) => {
-                faceMat.map = tex;
-                faceMat.opacity = 1;
-                faceMat.needsUpdate = true;
-            });
-        }
-
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1.0), createMat(colors.torso));
-        torso.position.y = 3.1; torso.castShadow = true;
-        torso.name = "torsoMesh";
-
-        function buildPivotedLimb(color, x, y, isLeg, name) {
-            const limbGroup = new THREE.Group();
-            limbGroup.position.set(x, y, 0);
-            const width = isLeg ? 0.8 : 0.7, height = 2.0, depth = isLeg ? 0.8 : 0.7;
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), createMat(color));
-            mesh.position.set(0, -height / 2, 0); mesh.castShadow = true;
-            mesh.name = name;
-            limbGroup.add(mesh); return limbGroup;
-        }
-
-        const lArm = buildPivotedLimb(colors.larm, -1.4, 4.1, false, "lArm");
-        const rArm = buildPivotedLimb(colors.rarm, 1.4, 4.1, false, "rArm");
-        const lLeg = buildPivotedLimb(colors.lleg, -0.5, 2.0, true, "lLeg");
-        const rLeg = buildPivotedLimb(colors.rleg, 0.5, 2.0, true, "rLeg");
-
-        group.add(head, torso, lArm, rArm, lLeg, rLeg);
-        return { group, head, torso, lArm, rArm, lLeg, rLeg };
-    }
-
-    function applyIdleAnimation(rig, animTime) {
-        const currentPhase = Math.sin(animTime * Math.PI);
-        const armAngle = currentPhase * RAD_1_15;
-        
-        if (rig.lArm) rig.lArm.rotation.set(armAngle, 0, 0);
-        if (rig.rArm) rig.rArm.rotation.set(armAngle, 0, 0);
-        if (rig.lLeg) rig.lLeg.rotation.set(0, 0, 0);
-        if (rig.rLeg) rig.rLeg.rotation.set(0, 0, 0);
-        if (rig.head) rig.head.rotation.set(0, 0, 0);
-    }
-
-    function init3DAvatar() {
-        const cont = document.getElementById('avatarCanvas');
-        if (!cont) return;
-        
-        avatarScene = new THREE.Scene();
-        avatarScene.background = null;
-
-        avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-        avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
-        avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        avatarRenderer.shadowMap.enabled = true;
-        avatarRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        cont.appendChild(avatarRenderer.domElement);
-
-        avatarScene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        
-        const dl = new THREE.DirectionalLight(0xffffff, 0.9);
-        dl.position.set(5, 12, 8); dl.castShadow = true;
-        dl.shadow.mapSize.width = 1024; dl.shadow.mapSize.height = 1024;
-        avatarScene.add(dl);
-
-        const cyanLight = new THREE.PointLight(0x00b7ff, 0.8, 10);
-        cyanLight.position.set(0, 2, 3);
-        avatarScene.add(cyanLight);
-
-        const stage = new THREE.Mesh(
-            new THREE.CylinderGeometry(3.2, 3.4, 0.2, 32),
-            new THREE.MeshStandardMaterial({ color: 0x0a131c, roughness: 0.8, metalness: 0.2 })
-        );
-        stage.position.y = -0.1; stage.receiveShadow = true;
-        avatarScene.add(stage);
-
-        sidebarRig = createAvatarRig(userColors);
-        avatarScene.add(sidebarRig.group);
-
-        avatarCamera.position.set(0, 3.2, 9.5);
-        avatarCamera.lookAt(0, 3.0, 0);
-
-        // Automatically apply default happy face texture on startup
-        setPresetFace(userFaceTexture);
-
-        lastTime = performance.now();
-        requestAnimationFrame(renderGlobalLoop);
-    }
-
-    function openShop() {
-        document.getElementById('shop-panel').style.display = 'flex';
-        if (!shopRenderer) {
-            const cont = document.getElementById('shopAvatarCanvas');
-            shopScene = new THREE.Scene();
-            shopScene.background = null;
-
-            shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-            shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            shopRenderer.setSize(cont.clientWidth, cont.clientHeight);
-            shopRenderer.shadowMap.enabled = true;
-            shopRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            cont.appendChild(shopRenderer.domElement);
-
-            shopScene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(5, 12, 8); dl.castShadow = true; shopScene.add(dl);
-            
-            const stage = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.4, 0.2, 32), new THREE.MeshStandardMaterial({ color: 0x0a131c }));
-            stage.position.y = -0.1; stage.receiveShadow = true; shopScene.add(stage);
-
-            shopRig = createAvatarRig(userColors);
-            shopScene.add(shopRig.group);
-            shopCamera.position.set(0, 3.2, 9.5); shopCamera.lookAt(0, 3.0, 0);
-        }
-    }
-
-    function renderGlobalLoop(time) {
-        requestAnimationFrame(renderGlobalLoop);
-        
-        const dt = Math.min((time - lastTime) / 1000, 0.1);
-        lastTime = time;
-        animTimeGlobal += dt;
-
-        if (sidebarRig && sidebarRig.group) {
-            sidebarRig.group.rotation.y += 0.006;
-            applyIdleAnimation(sidebarRig, animTimeGlobal);
-            if (avatarRenderer && avatarScene && avatarCamera) avatarRenderer.render(avatarScene, avatarCamera);
-        }
-
-        if (shopRig && shopRig.group && document.getElementById('shop-panel').style.display !== 'none') {
-            if (shopIsSpinning) {
-                shopRig.group.rotation.y += 0.008;
-            }
-            applyIdleAnimation(shopRig, animTimeGlobal);
-            if (shopRenderer && shopScene && shopCamera) shopRenderer.render(shopScene, shopCamera);
-        }
-    }
-
-    function closeShopModal() {
-        document.getElementById('shop-panel').style.display = 'none';
-    }
-
-    function toggleShopSpin() {
-        shopIsSpinning = !shopIsSpinning;
-        const btn = document.getElementById('btnSpinToggle');
-        if (btn) btn.innerText = shopIsSpinning ? "⏸ Pause Spin" : "▶ Resume Spin";
-    }
-
-    function switchShopTab(tab) {
-        const tabs = ['skin', 'face', 'shirts', 'ugc', 'positioners', 'upload'];
-        tabs.forEach(t => {
-            const btn = document.getElementById(`tab-btn-${t}`);
-            const sec = document.getElementById(`tab-sec-${t}`);
-            if (btn) btn.classList.toggle('avatar-tab-active', t === tab);
-            if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
-        });
-        if (tab === 'positioners') loadItemSliderValues();
-    }
-
-    function applyPresetSkin(hexColor) {
-        userColors.head = hexColor;
-        userColors.larm = hexColor;
-        userColors.rarm = hexColor;
-        const colStr = '#' + hexColor.toString(16).padStart(6, '0');
-        if (document.getElementById('shop-col-head')) document.getElementById('shop-col-head').value = colStr;
-        updateCustomizerColors();
-    }
-
-    function setPresetFace(url) {
-        userFaceTexture = url || null;
-        applyDecalFaceToRig(sidebarRig);
-        applyDecalFaceToRig(shopRig);
-        saveUserSessionLocally();
-    }
-
-    function uploadCustomFace(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => { setPresetFace(ev.target.result); };
-        reader.readAsDataURL(file);
-    }
-
-    function setPresetShirt(url) {
-        userShirtTexture = url || null;
-        applyClothingToRig(sidebarRig);
-        applyClothingToRig(shopRig);
-        saveUserSessionLocally();
-    }
-
-    function uploadCustomShirt(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => { setPresetShirt(ev.target.result); };
-        reader.readAsDataURL(file);
-    }
-
-    function uploadCustomPants(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            userPantsTexture = ev.target.result;
-            applyClothingToRig(sidebarRig);
-            applyClothingToRig(shopRig);
-            saveUserSessionLocally();
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function handleAvatarModelUpload(e) {
-        importAvatarAccessoryFile(e);
-    }
-
-    function applyDecalFaceToRig(rig) {
-        if (!rig || !rig.head) return;
-        let facePlane = rig.head.getObjectByName("decalFacePlane");
-        if (!facePlane) return;
-
-        if (userFaceTexture) {
-            new THREE.TextureLoader().load(userFaceTexture, (tex) => {
-                facePlane.material.map = tex;
-                facePlane.material.opacity = 1;
-                facePlane.material.needsUpdate = true;
-            });
-        } else {
-            facePlane.material.map = null;
-            facePlane.material.opacity = 0;
-            facePlane.material.needsUpdate = true;
-        }
-        facePlane.position.set(faceOffset.x, faceOffset.y, 0.61 + faceOffset.z);
-        facePlane.scale.set(faceOffset.scale, faceOffset.scale, 1);
-    }
-
-    function applyClothingToRig(rig) {
-        if (!rig) return;
-        const loader = new THREE.TextureLoader();
-        if (userShirtTexture && rig.torso) {
-            loader.load(userShirtTexture, (t) => { rig.torso.material.map = t; rig.torso.material.needsUpdate = true; });
-        }
-        if (userPantsTexture) {
-            loader.load(userPantsTexture, (t) => {
-                if (rig.lLeg && rig.lLeg.children[0]) { rig.lLeg.children[0].material.map = t; rig.lLeg.children[0].material.needsUpdate = true; }
-                if (rig.rLeg && rig.rLeg.children[0]) { rig.rLeg.children[0].material.map = t; rig.rLeg.children[0].material.needsUpdate = true; }
-            });
-        }
-    }
-
-    function loadItemSliderValues() {
-        const type = document.getElementById('itemSliderSelect').value;
-        let target = faceOffset;
-        if (type === 'shirt') target = shirtOffset;
-        else if (type === 'pants') target = pantsOffset;
-        else if (type === 'hat') target = hatOffset;
-
-        document.getElementById('slOffX').value = target.x;
-        document.getElementById('slOffY').value = target.y;
-        document.getElementById('slOffZ').value = target.z;
-        document.getElementById('slScale').value = target.scale;
-    }
-
-    function saveItemSliderValues() {
-        const type = document.getElementById('itemSliderSelect').value;
-        let target = faceOffset;
-        if (type === 'shirt') target = shirtOffset;
-        else if (type === 'pants') target = pantsOffset;
-        else if (type === 'hat') target = hatOffset;
-
-        target.x = parseFloat(document.getElementById('slOffX').value) || 0;
-        target.y = parseFloat(document.getElementById('slOffY').value) || 0;
-        target.z = parseFloat(document.getElementById('slOffZ').value) || 0;
-        target.scale = parseFloat(document.getElementById('slScale').value) || 1;
-
-        if (type === 'face') {
-            applyDecalFaceToRig(sidebarRig);
-            applyDecalFaceToRig(shopRig);
-        }
-        saveUserSessionLocally();
-    }
-
-    function importAvatarAccessoryFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const ext = file.name.split('.').pop().toLowerCase();
-        const reader = new FileReader();
-
-        if (ext === 'glb' || ext === 'gltf') {
-            reader.onload = (e) => {
-                new THREE.GLTFLoader().parse(e.target.result, '', (gltf) => {
-                    const acc = gltf.scene; acc.position.set(0, 4.8, 0); acc.scale.set(0.5, 0.5, 0.5);
-                    if (sidebarRig) sidebarRig.group.add(acc.clone());
-                    if (shopRig) shopRig.group.add(acc);
-                    showAlert("Accessory Equipped", `Equipped ${file.name} to Avatar!`);
-                });
-            };
-            reader.readAsArrayBuffer(file);
-        } else {
-            showAlert("Accessory Uploaded", `Uploaded ${file.name} successfully!`);
-        }
-    }
-
-    function showAlert(title, msg) { alert(`${title}: ${msg}`); }
-
-    function openAuth() { document.getElementById('auth-panel').style.display = 'flex'; }
-    function handleGuestMode() {
-        currentUser = "Guest_" + Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('uDisp').innerText = currentUser;
-        document.getElementById('uRankBadge').innerText = "GUEST PLAYER";
-        document.getElementById('auth-panel').style.display = 'none';
-        saveUserSessionLocally();
-    }
-
-    async function handleAuthAction(action) {
-        const u = document.getElementById('authUsername').value.trim();
-        const p = document.getElementById('authPassword').value.trim();
-        if(!u) return showAlert("Error", "Username is required.");
-        if(!p) return showAlert("Error", "Password is required.");
-
-        const currentAvatar = { userColors, userFaceTexture, userShirtTexture, userPantsTexture, faceOffset, shirtOffset, pantsOffset, hatOffset };
-
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/auth`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, username: u, password: p, avatar: currentAvatar })
-            });
-            const data = await res.json();
-            if (data.error) return showAlert("Authentication Error", data.error);
-            
-            currentUser = data.username;
-            userTokens = data.tokens || 100;
-            if (data.avatar && Object.keys(data.avatar).length > 0) {
-                applyAvatarObject(data.avatar);
-            }
-
-            document.getElementById('uDisp').innerText = currentUser;
-            document.getElementById('uRankBadge').innerText = "VERIFIED MEMBER";
-            document.getElementById('uTokenDisp').innerText = userTokens;
-            document.getElementById('auth-panel').style.display = 'none';
-
-            saveUserSessionLocally(p);
-            showAlert("Success", `Welcome back, ${currentUser}!`);
-        } catch(e) {
-            currentUser = u;
-            document.getElementById('uDisp').innerText = currentUser;
-            document.getElementById('uRankBadge').innerText = "MEMBER";
-            document.getElementById('auth-panel').style.display = 'none';
-            showAlert("Notice", "Offline session started.");
-        }
-    }
-
-    function openTokenRewardsModal() {
-        document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
-        document.getElementById('tokens-panel').style.display = 'flex';
-    }
-
-    async function claimWeeklyTokens() {
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/claim`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser })
-            });
-            const data = await res.json();
-            if(data.error) return showAlert("Reward Notice", data.error);
-            userTokens = data.tokens;
-            document.getElementById('uTokenDisp').innerText = userTokens;
-            document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
-            saveUserSessionLocally();
-            showAlert("Tokens Claimed", "Claimed +100 Tokens successfully!");
-        } catch(e) {
-            userTokens += 100;
-            document.getElementById('uTokenDisp').innerText = userTokens;
-            saveUserSessionLocally();
-            showAlert("Tokens Claimed", "Claimed +100 Tokens successfully!");
-        }
-    }
-
-    function openDeviceSettings() { document.getElementById('device-panel').style.display = 'flex'; }
-    function selectUiSetting(mode) {
-        if(mode === 'phone') {
-            document.body.classList.add('forced-phone-ui');
-            document.body.classList.remove('forced-desktop-ui');
-        } else {
-            document.body.classList.add('forced-desktop-ui');
-            document.body.classList.remove('forced-phone-ui');
-        }
-    }
-    function selectCtrlSetting(mode) {}
-    function confirmDeviceSettings() { document.getElementById('device-panel').style.display = 'none'; }
-
-    function setLanguage(lang) {
-        const headings = { en: "RayGamix Games Hub", es: "Centro de Juegos RayGamix", fr: "Hub de Jeux RayGamix", de: "RayGamix Spiele Hub" };
-        const h = document.getElementById('hubHeadingText');
-        if(h) h.innerText = headings[lang] || headings['en'];
-        localStorage.setItem('rgx_lang', lang);
-    }
-    function confirmLangModal() {
-        setLanguage(document.getElementById('langModalSelect').value);
-        document.getElementById('lang-panel').style.display = 'none';
-    }
-    function checkReturnAndLanguage() {
-        const lang = localStorage.getItem('rgx_lang');
-        if(!lang) document.getElementById('lang-panel').style.display = 'flex';
-    }
-    function checkDeviceSetup() {
-        if(/Mobi|Android/i.test(navigator.userAgent)) selectUiSetting('phone');
-    }
-
-    async function fetchRealGames() {
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/games`);
-            if (res.ok) {
-                const fetched = await res.json();
-                gamesList = Array.isArray(fetched) ? fetched : [];
-            }
-        } catch(e) {}
-        renderAppContent();
-    }
-
-    function renderAppContent() {
-        const grid = document.getElementById('gameGrid');
-        if (!grid) return;
-        const q = (document.getElementById('gSearch')?.value || '').toLowerCase().trim();
-        const filtered = gamesList.filter(g => (g.name || g.title || '').toLowerCase().includes(q) || (g.creator || '').toLowerCase().includes(q));
-
-        if (filtered.length === 0) {
-            grid.innerHTML = '<p style="color:var(--muted); grid-column:1/-1; padding:20px; font-weight:bold;">No games found. Open Studio to create and publish one!</p>';
-            return;
-        }
-
-        grid.innerHTML = filtered.map(g => `
-            <div class="card">
-                <span class="card-type-tag">3D WORLD</span>
-                <div style="height:110px; background:#080a0e; border-radius:10px; margin-bottom:12px; display:flex; align-items:center; justify-content:center; border:1px solid var(--card-border);">
-                    <span style="font-size:38px;">🕹️</span>
-                </div>
-                <h3 style="margin:0 0 4px 0; font-size:16px; color:#fff;">${g.title || g.name || 'RayGamix World'}</h3>
-                <span style="font-size:12px; color:var(--muted); font-weight:bold;">By ${g.creator || 'Builder'}</span>
-                <div class="card-actions">
-                    <button class="btn" onclick="playGame('${g.id}')">Play Game</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function openStudio() {
-        document.getElementById('studio-panel').style.display = 'flex';
-        if (!studioInitialized) { initStudio(); studioInitialized = true; }
-        window.dispatchEvent(new Event('resize'));
-    }
-    function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
-
-    function initStudio() {
-        const cont = document.getElementById('studio-viewport');
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x020406);
-        
-        camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
-        renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setSize(cont.clientWidth, cont.clientHeight);
-        cont.appendChild(renderer.domElement);
-        
-        camera.position.set(0, 50, 100);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        const dl = new THREE.DirectionalLight(0xffffff, 0.8); dl.position.set(100, 200, 100); scene.add(dl);
-        scene.add(new THREE.GridHelper(2000, 100, 0x142536, 0x0a1520));
-
-        orbit = new THREE.OrbitControls(camera, renderer.domElement);
-        transform = new THREE.TransformControls(camera, renderer.domElement);
-        transform.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
-        transform.addEventListener('change', () => { if(selectedMesh) syncProperties(); });
-        scene.add(transform);
-
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        renderer.domElement.addEventListener('pointerdown', (e) => {
-            if(transform.dragging) return;
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(studioObjects);
-            if(intersects.length > 0) selectObject(intersects[0].object);
-            else selectObject(null);
-        });
-
-        createObject('Baseplate', { scale: [500, 2, 500], pos: [0, -1, 0], color: 0x1e3612 });
-
-        function animateStudio() {
-            requestAnimationFrame(animateStudio);
-            if(orbit) orbit.update();
-            if(renderer && scene && camera) renderer.render(scene, camera);
-        }
-        animateStudio();
-    }
-
-    function setTransformMode(mode) {
-        ['select','translate','scale','rotate'].forEach(m => document.getElementById(`tool-${m}`).classList.remove('tool-active'));
-        document.getElementById(`tool-${mode}`).classList.add('tool-active');
-        if(mode === 'select') transform.detach();
-        else { transform.setMode(mode); if(selectedMesh) transform.attach(selectedMesh); }
-    }
-
-    function addSelectedPart() { createObject(document.getElementById('addPartType').value, { pos: [0, 5, 0] }); }
-
-    function createObject(type, override = {}) {
-        let geo = new THREE.BoxGeometry(4, 4, 4);
-        if(type === 'sphere') geo = new THREE.SphereGeometry(2, 32, 16);
-        const mat = new THREE.MeshStandardMaterial({ color: override.color || 0xdddddd, roughness: 0.7 });
-        const mesh = new THREE.Mesh(geo, mat);
-        
-        if(override.pos) mesh.position.set(...override.pos);
-        if(override.scale) mesh.scale.set(...override.scale);
-        
-        mesh.userData = {
-            id: THREE.MathUtils.generateUUID(), type: type,
-            name: override.name || type + "_" + Math.floor(Math.random()*1000),
-            materialType: 'Plastic', textureUrl: '', effectType: 'None', interactScript: '', textValue: ''
-        };
-
-        scene.add(mesh); studioObjects.push(mesh); selectObject(mesh);
-    }
-
-    function selectObject(mesh) {
-        selectedMesh = mesh;
-        if(mesh) {
-            if(!document.getElementById('tool-select').classList.contains('tool-active')) transform.attach(mesh);
-            document.getElementById('prop-empty').style.display = 'none';
-            document.getElementById('prop-content').style.display = 'block';
-            syncProperties();
-        } else {
-            transform.detach();
-            document.getElementById('prop-empty').style.display = 'block';
-            document.getElementById('prop-content').style.display = 'none';
-        }
-    }
-
-    function syncProperties() {
-        if(!selectedMesh) return;
-        const u = selectedMesh.userData, p = selectedMesh.position, s = selectedMesh.scale, r = selectedMesh.rotation;
-        document.getElementById('prop-name').value = u.name;
-        document.getElementById('prop-type').value = u.type;
-        document.getElementById('prop-color').value = '#' + selectedMesh.material.color.getHexString();
-        
-        document.getElementById('prop-pos-x').value = p.x.toFixed(2);
-        document.getElementById('prop-pos-y').value = p.y.toFixed(2);
-        document.getElementById('prop-pos-z').value = p.z.toFixed(2);
-        document.getElementById('prop-scale-x').value = s.x.toFixed(2);
-        document.getElementById('prop-scale-y').value = s.y.toFixed(2);
-        document.getElementById('prop-scale-z').value = s.z.toFixed(2);
-        document.getElementById('prop-rot-x').value = THREE.MathUtils.radToDeg(r.x).toFixed(0);
-        document.getElementById('prop-rot-y').value = THREE.MathUtils.radToDeg(r.y).toFixed(0);
-        document.getElementById('prop-rot-z').value = THREE.MathUtils.radToDeg(r.z).toFixed(0);
-    }
-
-    function applyPropertyChanges() {
-        if(!selectedMesh) return;
-        selectedMesh.userData.name = document.getElementById('prop-name').value;
-        selectedMesh.material.color.set(document.getElementById('prop-color').value);
-        selectedMesh.position.set(
-            parseFloat(document.getElementById('prop-pos-x').value)||0,
-            parseFloat(document.getElementById('prop-pos-y').value)||0,
-            parseFloat(document.getElementById('prop-pos-z').value)||0
-        );
-        selectedMesh.scale.set(
-            parseFloat(document.getElementById('prop-scale-x').value)||1,
-            parseFloat(document.getElementById('prop-scale-y').value)||1,
-            parseFloat(document.getElementById('prop-scale-z').value)||1
-        );
-    }
-
-    function deleteSelectedObject() {
-        if(!selectedMesh) return;
-        transform.detach(); scene.remove(selectedMesh);
-        studioObjects = studioObjects.filter(o => o !== selectedMesh);
-        selectObject(null);
-    }
-
-    function import3DModelFile(event) {
-        const file = event.target.files[0];
-        if(!file) return;
-        const name = file.name;
-        const ext = name.split('.').pop().toLowerCase();
-        const reader = new FileReader();
-
-        if (ext === 'glb' || ext === 'gltf') {
-            reader.onload = (e) => {
-                new THREE.GLTFLoader().parse(e.target.result, '', (gltf) => {
-                    const model = gltf.scene;
-                    model.position.set(0, 5, 0);
-                    model.userData = { id: THREE.MathUtils.generateUUID(), type: 'model3d', name: name };
-                    scene.add(model); studioObjects.push(model); selectObject(model);
-                    showAlert("Import Complete", `Loaded GLB model: ${name}`);
-                });
-            };
-            reader.readAsArrayBuffer(file);
-        } else if (ext === 'obj') {
-            reader.onload = (e) => {
-                const loader = new THREE.OBJLoader();
-                const obj = loader.parse(e.target.result);
-                obj.position.set(0, 5, 0);
-                obj.userData = { id: THREE.MathUtils.generateUUID(), type: 'model3d', name: name };
-                scene.add(obj); studioObjects.push(obj); selectObject(obj);
-                showAlert("Import Complete", `Loaded OBJ model: ${name}`);
-            };
-            reader.readAsText(file);
-        }
-    }
-
-    function encodeRGX() {
-        let out = "<world>\n";
-        studioObjects.forEach(obj => {
-            const u = obj.userData; const p = obj.position; const s = obj.scale; const r = obj.rotation;
-            const c = obj.material ? obj.material.color.getHexString() : "dddddd";
-            out += `  <part type="${u.type}" name="${u.name}" color="${c}" pos="${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}" scale="${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)}" rot="${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)}"/>\n`;
-        });
-        out += "</world>";
-        return out;
-    }
-
-    function exportRGXFile() {
-        const blob = new Blob([encodeRGX()], {type: "text/plain"});
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `${document.getElementById('gameTitle').value || "RayGamixWorld"}.rgx`;
-        a.click();
-    }
-
-    function exportSelectedAsRGXO() {
-        if(!selectedMesh) return showAlert("Error", "Select an object first.");
-        const u = selectedMesh.userData, p = selectedMesh.position, s = selectedMesh.scale;
-        const out = `<part type="${u.type}" name="${u.name}" pos="${p.x},${p.y},${p.z}" scale="${s.x},${s.y},${s.z}"/>`;
-        const blob = new Blob([out], {type: "text/plain"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${u.name}.rgxo`; a.click();
-    }
-
-    function exportSelectedAsRGXA() { exportSelectedAsRGXO(); }
-
-    function importRGXWorldFile(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(ev.target.result, "text/xml");
-            const parts = xmlDoc.getElementsByTagName("part");
-            for(let i=0; i<parts.length; i++) {
-                const p = parts[i];
-                const pos = (p.getAttribute("pos")||"0,0,0").split(',').map(Number);
-                const scale = (p.getAttribute("scale")||"4,4,4").split(',').map(Number);
-                createObject(p.getAttribute("type")||"cube", { name: p.getAttribute("name"), pos, scale });
-            }
-            showAlert("Success", "World Imported!");
-        };
-        reader.readAsText(file);
-    }
-
-    function importRGXObjectFile(e) { importRGXWorldFile(e); }
-
-    async function publishGame() {
-        const title = document.getElementById('gameTitle').value.trim() || "Untitled World";
-        const rgxData = encodeRGX();
-
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/games`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, creator: currentUser, rgx_data: rgxData })
-            });
-            if(res.ok) {
-                showAlert("Game Published", `"${title}" is now published and live on the hub!`);
-                fetchRealGames();
-            }
-        } catch(e) { showAlert("Error", "Could not publish game."); }
-    }
-
-    async function testCurrentStudioGame() {
-        const rgxCode = encodeRGX();
-        const testId = "test_" + Date.now();
-        playGameWithData(rgxCode, testId, "Studio Test Demo");
-    }
-
-    async function playGame(gameId) {
-        const g = gamesList.find(item => item.id === gameId);
-        const rgxData = g ? (g.rgx_data || g.url) : encodeRGX();
-        playGameWithData(rgxData, gameId, g ? g.title || g.name : "RayGamix World");
-    }
-
-    async function playGameWithData(rgxCode, gameId, title) {
-        document.getElementById('player-title').innerText = title;
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/engine/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rgx: rgxCode, gameId: gameId, currentUser: currentUser, userColors: userColors })
-            });
-            if(res.ok) {
-                const htmlText = await res.text();
-                const blob = new Blob([htmlText], {type: "text/html"});
-                document.getElementById('game-frame').src = URL.createObjectURL(blob);
-                document.getElementById('game-player').style.display = 'flex';
-            }
-        } catch(e) {}
-    }
-
-    function closeGame() {
-        document.getElementById('game-player').style.display = 'none';
-        document.getElementById('game-frame').src = 'about:blank';
-    }
-
-    window.onload = async () => {
-        checkReturnAndLanguage();
-        checkDeviceSetup();
-        init3DAvatar();
-        await restoreUserSessionLocally();
-        fetchRealGames();
-    };
-</script>
-</body>
-</html>
+        })();
+    </script>
+
+                           </body>
+                           </html>
