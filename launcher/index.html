@@ -1,4 +1,3 @@
-<!-- <iframe src="//raygamix.com/launcher/updating.html" style="width: 100%; height: 100vh; overflow: hidden; border: none; outline: none;"> -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,7 +116,7 @@
             <img src="https://raygamix.com/logo.png" alt="RayGamix" onerror="this.onerror=null; this.src='https://placehold.co/180x45/0a131c/00b7ff?text=⚡+RAYGAMIX';">
         </div>
         <div class="search">
-            <input placeholder="Search RGX Games or Authors..." oninput="renderAppContent()">
+            <input id="gSearch" placeholder="Search RGX Games or Authors..." oninput="renderAppContent()">
         </div>
         <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openDirectChatModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -253,16 +252,15 @@
 <!-- Auth -->
 <div class="overlay" id="auth-panel">
     <div class="panel">
-        <form>
+        <form onsubmit="event.preventDefault();">
         <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
         <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
         <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Sign in or register with Username and Password:</p>
-        <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;">
-        <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;">
+        <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;" autocomplete="username">
+        <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;" autocomplete="current-password">
         <div style="display:flex; gap:10px;">
             <button class="btn" onclick="handleAuthAction('login')">Login</button>
             <button class="btn-alt" onclick="handleAuthAction('register')">Register</button>
-            
         </div>
         </form>
         <button class="btn-alt" style="margin-top:12px; border-color:var(--muted);" onclick="handleGuestMode()">Continue as Guest Account</button>
@@ -441,77 +439,133 @@
     <iframe id="game-frame"></iframe>
 </div>
 
-<script>const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
+<script>
+const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
 const HARDCODED_ASSETS_BASE = "https://raygamix.github.io/hardcodedassets/";
-const HOSTED_FACE_ASSETS = { happy: HARDCODED_ASSETS_BASE + "happy.png", veryhappy: HARDCODED_ASSETS_BASE + "veryhappy.png", neutral: HARDCODED_ASSETS_BASE + "neutral.png", sad: HARDCODED_ASSETS_BASE + "sad.png", cry: HARDCODED_ASSETS_BASE + "cry.png", ohno: HARDCODED_ASSETS_BASE + "ohno.png", wow: HARDCODED_ASSETS_BASE + "wow.png" };
+const HOSTED_FACE_ASSETS = {
+    happy: HARDCODED_ASSETS_BASE + "happy.png",
+    veryhappy: HARDCODED_ASSETS_BASE + "veryhappy.png",
+    neutral: HARDCODED_ASSETS_BASE + "neutral.png",
+    sad: HARDCODED_ASSETS_BASE + "sad.png",
+    cry: HARDCODED_ASSETS_BASE + "cry.png",
+    ohno: HARDCODED_ASSETS_BASE + "ohno.png",
+    wow: HARDCODED_ASSETS_BASE + "wow.png"
+};
 
 // ============================================================
-// SESSION STATE
+// SESSION STATE — persistent across tabs & reloads
 // ============================================================
-let SESSION_TOKEN = sessionStorage.getItem('rgx_session_token') || null;
-let SESSION_USERNAME = sessionStorage.getItem('rgx_session_username') || null;
+const _originalFetch = window.fetch.bind(window);
+
+let SESSION_TOKEN =
+    localStorage.getItem('rgx_session_token') ||
+    sessionStorage.getItem('rgx_session_token') ||
+    null;
+let SESSION_USERNAME =
+    localStorage.getItem('rgx_session_username') ||
+    sessionStorage.getItem('rgx_session_username') ||
+    null;
 let loggedInUser = localStorage.getItem('rgx_logged_in_user') || null;
 let currentUser = SESSION_USERNAME || loggedInUser || "Guest";
 
+function persistSession(token, username) {
+    SESSION_TOKEN = token;
+    SESSION_USERNAME = username;
+    if (token) {
+        localStorage.setItem('rgx_session_token', token);
+        localStorage.setItem('rgx_session_username', username || '');
+        sessionStorage.setItem('rgx_session_token', token);
+        sessionStorage.setItem('rgx_session_username', username || '');
+    } else {
+        localStorage.removeItem('rgx_session_token');
+        localStorage.removeItem('rgx_session_username');
+        sessionStorage.removeItem('rgx_session_token');
+        sessionStorage.removeItem('rgx_session_username');
+    }
+    if (username) currentUser = username;
+}
+
+async function fetchWithToken(url, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({}, opts.headers || {});
+    if (SESSION_TOKEN) opts.headers['X-Session-Token'] = SESSION_TOKEN;
+    return _originalFetch(url, opts);
+}
+
 // ============================================================
-// DEVICE IDENTITY — no login required
+// DEVICE IDENTITY — never demote an existing session on
+// transient failures; never overwrite a registered account.
 // ============================================================
 async function ensureDeviceIdentity() {
+    // 1) Try to validate any existing token (registered OR guest)
     if (SESSION_TOKEN) {
-        try {
-            const res = await fetch(`${CF_BACKEND_URL}/auth/me`, {
-                headers: { 'X-Session-Token': SESSION_TOKEN }
-            });
-            if (res.ok) {
-                const d = await res.json();
-                currentUser = d.username;
-                return;
+        let ok = false, transient = false, data = null;
+        for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+            try {
+                const res = await fetchWithToken(`${CF_BACKEND_URL}/auth/me`);
+                if (res.ok) {
+                    data = await res.json();
+                    ok = true;
+                } else if (res.status === 401) {
+                    break; // definitively invalid
+                } else {
+                    transient = true;
+                }
+            } catch (e) { transient = true; }
+            if (!ok && transient) await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
+        }
+        if (ok && data) {
+            // Registered user? Keep them registered — never demote.
+            if (!data.isGuest) {
+                loggedInUser = data.username;
+                localStorage.setItem('rgx_logged_in_user', loggedInUser);
             }
-        } catch (e) {}
-        SESSION_TOKEN = null;
-        sessionStorage.removeItem('rgx_session_token');
+            currentUser = data.username;
+            persistSession(SESSION_TOKEN, data.username);
+            return;
+        }
+        if (transient) {
+            // Backend is flaky — do NOT mint a guest token, keep the existing one
+            console.warn('[RGX] /auth/me transient failure; preserving session');
+            return;
+        }
+        // Definitively invalid — clear and (if anonymous) re-mint
+        persistSession(null, null);
     }
 
+    // 2) Registered user exists in localStorage but no token? Do NOT silently
+    //    overwrite with a guest. Ask them to log in again to avoid the
+    //    "forced guest" experience.
+    if (loggedInUser && !SESSION_TOKEN) {
+        currentUser = loggedInUser;
+        return;
+    }
+
+    // 3) Truly anonymous — mint device guest
     let deviceId = localStorage.getItem('rgx_device_id');
     if (!deviceId) {
         const bytes = crypto.getRandomValues(new Uint8Array(16));
         deviceId = 'dev_' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
         localStorage.setItem('rgx_device_id', deviceId);
     }
-
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/auth/device`, {
+        const res = await _originalFetch(`${CF_BACKEND_URL}/auth/device`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ deviceId })
         });
         if (res.ok) {
-            const data = await res.json();
-            SESSION_TOKEN = data.token;
-            SESSION_USERNAME = data.username;
-            sessionStorage.setItem('rgx_session_token', SESSION_TOKEN);
-            sessionStorage.setItem('rgx_session_username', SESSION_USERNAME);
-            currentUser = SESSION_USERNAME;
+            const d = await res.json();
+            persistSession(d.token, d.username);
+            if (d.guest) {
+                loggedInUser = null;
+                localStorage.removeItem('rgx_logged_in_user');
+            }
         } else {
             console.error('Device auth failed:', await res.text());
         }
     } catch (e) { console.error('Device auth error', e); }
 }
-
-// Auto-attach token to all backend fetches
-const _originalFetch = window.fetch.bind(window);
-window.fetch = function(url, opts) {
-    opts = opts || {};
-    if (typeof url === 'string' && url.startsWith(CF_BACKEND_URL) && SESSION_TOKEN) {
-        opts.headers = opts.headers || {};
-        if (opts.headers instanceof Headers) {
-            opts.headers.set('X-Session-Token', SESSION_TOKEN);
-        } else {
-            opts.headers['X-Session-Token'] = SESSION_TOKEN;
-        }
-    }
-    return _originalFetch(url, opts);
-};
 
 // ============================================================
 // OTHER STATE
@@ -535,7 +589,9 @@ let selectedGameForModal = null;
 let devKeyBuffer = "";
 let doWarmedUp = false;
 
-function createRoundedBoxGeometry(width, height, depth, radius = 0.12, segments = 4) {
+function createRoundedBoxGeometry(width, height, depth, radius, segments) {
+    radius = (radius === undefined) ? 0.12 : radius;
+    segments = segments || 4;
     const geo = new THREE.BoxGeometry(width, height, depth, segments, segments, segments);
     const pos = geo.attributes.position;
     const halfW = width / 2 - radius, halfH = height / 2 - radius, halfD = depth / 2 - radius;
@@ -591,9 +647,23 @@ function updateFaceTextureOnRigs() {
 async function loadUserData(user) {
     if (user) currentUser = user;
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/auth/me`);
+        const res = await fetchWithToken(`${CF_BACKEND_URL}/auth/me`);
         if (res.ok) {
             const data = await res.json();
+
+            // Guard: if we think we're logged in but the backend says guest,
+            // do NOT overwrite the account identity. Keep the user logged in
+            // and surface a warning instead.
+            if (loggedInUser && data.isGuest) {
+                console.warn('[RGX] Backend returned guest for a logged-in user — session mismatch.');
+                showNotification(
+                    "Session Warning",
+                    "Your session could not be refreshed. Re-open Account → Login if your profile looks wrong.",
+                    "warning"
+                );
+                return;
+            }
+
             userTokens = data.tokens !== undefined ? data.tokens : 100;
             if (data.avatar) {
                 userColors.head = data.avatar.headColor || 0xffdbac;
@@ -604,15 +674,37 @@ async function loadUserData(user) {
                 activeFacePngData = data.avatar.facePng || HOSTED_FACE_ASSETS.happy;
             }
             friendsList = Array.isArray(data.friends) ? data.friends : [];
+
+            if (!data.isGuest) {
+                loggedInUser = data.username;
+                localStorage.setItem('rgx_logged_in_user', loggedInUser);
+            }
+            currentUser = data.username;
+            persistSession(SESSION_TOKEN, data.username);
         }
-    } catch (e) {}
+    } catch (e) { /* keep current state */ }
     document.getElementById('uTokenDisp').innerText = userTokens;
     updateFaceTextureOnRigs();
 }
 
 async function saveUserData() {
-    const payload = { tokens: userTokens, avatar: { headColor: userColors.head, torsoColor: userColors.torso, legsColor: userColors.lleg, facePng: activeFacePngData }, friends: friendsList };
-    try { await fetch(`${CF_BACKEND_URL}/user/save`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); } catch (e) {}
+    const payload = {
+        tokens: userTokens,
+        avatar: {
+            headColor: userColors.head,
+            torsoColor: userColors.torso,
+            legsColor: userColors.lleg,
+            facePng: activeFacePngData
+        },
+        friends: friendsList
+    };
+    try {
+        await fetchWithToken(`${CF_BACKEND_URL}/user/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {}
 }
 
 function syncUserAccountUI() {
@@ -628,7 +720,8 @@ function syncUserAccountUI() {
     }
 }
 
-function showNotification(title, message, type = "info") {
+function showNotification(title, message, type) {
+    type = type || "info";
     const container = document.getElementById('notification-toast-container');
     if (!container) return;
     const toast = document.createElement('div');
@@ -680,8 +773,16 @@ function openGameDetailModal(gameId) {
     document.getElementById('game-detail-panel').style.display = 'flex';
 }
 
-function likeCurrentGame() { if (!selectedGameForModal) return; selectedGameForModal.likes = (selectedGameForModal.likes || 0) + 1; document.getElementById('detailLikeCount').innerText = selectedGameForModal.likes; showNotification("Liked!", `You liked "${selectedGameForModal.title}"`, "success"); }
-function toggleFavoriteCurrentGame() { if (!selectedGameForModal) return; showNotification("Favorite Saved", `Added "${selectedGameForModal.title}" to favorites!`, "success"); }
+function likeCurrentGame() {
+    if (!selectedGameForModal) return;
+    selectedGameForModal.likes = (selectedGameForModal.likes || 0) + 1;
+    document.getElementById('detailLikeCount').innerText = selectedGameForModal.likes;
+    showNotification("Liked!", `You liked "${selectedGameForModal.title}"`, "success");
+}
+function toggleFavoriteCurrentGame() {
+    if (!selectedGameForModal) return;
+    showNotification("Favorite Saved", `Added "${selectedGameForModal.title}" to favorites!`, "success");
+}
 function openReportModal() { document.getElementById('report-panel').style.display = 'flex'; }
 function submitReportForm() {
     const target = document.getElementById('repTarget').value.trim();
@@ -689,13 +790,22 @@ function submitReportForm() {
     showNotification("Report Submitted", "Thank you. Moderation team will review this case.", "success");
     document.getElementById('report-panel').style.display = 'none';
 }
-function openTokenRewardsModal() { document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙'; document.getElementById('tokens-panel').style.display = 'flex'; }
+function openTokenRewardsModal() {
+    document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
+    document.getElementById('tokens-panel').style.display = 'flex';
+}
 
 async function claimWeeklyTokens() {
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+        const res = await fetchWithToken(`${CF_BACKEND_URL}/claim`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
         if (res.ok) {
-            const data = await res.json(); userTokens = data.tokens; saveUserData();
+            const data = await res.json();
+            userTokens = data.tokens;
+            saveUserData();
             document.getElementById('uTokenDisp').innerText = userTokens;
             document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
             showNotification("Tokens Claimed", "Claimed +100 Weekly Tokens!", "success");
@@ -731,12 +841,20 @@ function renderFriendsListUI() {
     if (sel) sel.innerHTML = C + 'option value="">-- Select Friend / Recipient --' + C + '/option>' + friendsList.map(f => C + 'option value="' + f + '">' + f + C + '/option>').join('');
 }
 function openDirectChatModal() { document.getElementById('dm-panel').style.display = 'flex'; renderFriendsListUI(); }
-function openDirectChatWithUser(username) { document.getElementById('dm-panel').style.display = 'flex'; renderFriendsListUI(); document.getElementById('dmRecipientSelect').value = username; loadDirectChatHistory(); }
+function openDirectChatWithUser(username) {
+    document.getElementById('dm-panel').style.display = 'flex';
+    renderFriendsListUI();
+    document.getElementById('dmRecipientSelect').value = username;
+    loadDirectChatHistory();
+}
 function loadDirectChatHistory() {
     const recipient = document.getElementById('dmRecipientSelect').value;
     const cont = document.getElementById('dmChatMessagesContainer');
     const C = '\x3C';
-    if (!recipient) { cont.innerHTML = C + 'div style="color:var(--muted); text-align:center; margin-top:80px;">Select a user above to start chatting...' + C + '/div>'; return; }
+    if (!recipient) {
+        cont.innerHTML = C + 'div style="color:var(--muted); text-align:center; margin-top:80px;">Select a user above to start chatting...' + C + '/div>';
+        return;
+    }
     const filtered = directChatMessages.filter(m => (m.from === currentUser && m.to === recipient) || (m.from === recipient && m.to === currentUser));
     if (filtered.length === 0) {
         cont.innerHTML = C + 'div style="color:var(--muted); text-align:center; margin-top:80px;">No messages with ' + recipient + ' yet.' + C + '/div>';
@@ -754,16 +872,32 @@ function sendDirectMessage() {
     const text = input.value.trim();
     if (!recipient || !text) return;
     directChatMessages.push({ from: currentUser, to: recipient, text: text, time: Date.now() });
-    input.value = ''; loadDirectChatHistory();
+    input.value = '';
+    loadDirectChatHistory();
 }
 function openSettingsModal() { document.getElementById('settings-panel').style.display = 'flex'; }
-function setAppTheme(theme) { currentAppTheme = theme; localStorage.setItem('rgx_app_theme', theme); if (theme === 'light') document.body.classList.add('light-theme'); else document.body.classList.remove('light-theme'); showNotification("Theme Updated", `Switched to ${theme} theme.`, "info"); }
-function selectUiSetting(mode) { if (mode === 'phone') { document.body.classList.add('forced-phone-ui'); document.body.classList.remove('forced-desktop-ui'); } else { document.body.classList.add('forced-desktop-ui'); document.body.classList.remove('forced-phone-ui'); } showNotification("Interface Scale", `Layout set to ${mode} mode.`, "info"); }
+function setAppTheme(theme) {
+    currentAppTheme = theme;
+    localStorage.setItem('rgx_app_theme', theme);
+    if (theme === 'light') document.body.classList.add('light-theme');
+    else document.body.classList.remove('light-theme');
+    showNotification("Theme Updated", `Switched to ${theme} theme.`, "info");
+}
+function selectUiSetting(mode) {
+    if (mode === 'phone') {
+        document.body.classList.add('forced-phone-ui');
+        document.body.classList.remove('forced-desktop-ui');
+    } else {
+        document.body.classList.add('forced-desktop-ui');
+        document.body.classList.remove('forced-phone-ui');
+    }
+    showNotification("Interface Scale", `Layout set to ${mode} mode.`, "info");
+}
 function resetDeviceGuestAccount() {
-    SESSION_TOKEN = null;
-    sessionStorage.removeItem('rgx_session_token');
-    sessionStorage.removeItem('rgx_session_username');
+    persistSession(null, null);
     localStorage.removeItem('rgx_device_id');
+    loggedInUser = null;
+    localStorage.removeItem('rgx_logged_in_user');
     ensureDeviceIdentity().then(() => {
         loadUserData(currentUser);
         syncUserAccountUI();
@@ -781,7 +915,7 @@ async function handleAuthAction(action) {
 
     const endpoint = action === 'register' ? '/auth/register' : '/auth/login';
     try {
-        const res = await fetch(`${CF_BACKEND_URL}${endpoint}`, {
+        const res = await _originalFetch(`${CF_BACKEND_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
@@ -791,16 +925,17 @@ async function handleAuthAction(action) {
             showNotification("Auth Failed", data.error || "Invalid credentials.", "danger");
             return;
         }
-        SESSION_TOKEN = data.token;
-        SESSION_USERNAME = data.username;
-        sessionStorage.setItem('rgx_session_token', SESSION_TOKEN);
-        sessionStorage.setItem('rgx_session_username', SESSION_USERNAME);
+
+        // Critical: adopt the registered token & clear the old guest one
         loggedInUser = data.username;
         localStorage.setItem('rgx_logged_in_user', loggedInUser);
-        currentUser = data.username;
-        await loadUserData(currentUser);
+        persistSession(data.token, data.username);
+
+        await loadUserData(data.username);
         syncUserAccountUI();
         document.getElementById('auth-panel').style.display = 'none';
+        document.getElementById('authUsername').value = '';
+        document.getElementById('authPassword').value = '';
         showNotification("Welcome", `Signed in as ${u}!`, "success");
     } catch (e) {
         showNotification("Auth Error", e.message, "danger");
@@ -810,8 +945,7 @@ async function handleAuthAction(action) {
 function handleGuestMode() {
     loggedInUser = null;
     localStorage.removeItem('rgx_logged_in_user');
-    SESSION_TOKEN = null;
-    sessionStorage.removeItem('rgx_session_token');
+    persistSession(null, null);
     ensureDeviceIdentity().then(() => {
         loadUserData(currentUser);
         syncUserAccountUI();
@@ -820,46 +954,91 @@ function handleGuestMode() {
     });
 }
 
-function handleLogout() {
+async function handleLogout() {
     loggedInUser = null;
     localStorage.removeItem('rgx_logged_in_user');
-    SESSION_TOKEN = null;
-    sessionStorage.removeItem('rgx_session_token');
-    ensureDeviceIdentity().then(() => {
-        loadUserData(currentUser);
-        syncUserAccountUI();
-        showNotification("Logged Out", `Switched back to Guest identity ${currentUser}`, "info");
-    });
+    persistSession(null, null);
+
+    // Explicitly mint a fresh guest token (previous one was tied to the account)
+    let deviceId = localStorage.getItem('rgx_device_id');
+    if (!deviceId) {
+        const bytes = crypto.getRandomValues(new Uint8Array(16));
+        deviceId = 'dev_' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        localStorage.setItem('rgx_device_id', deviceId);
+    }
+    try {
+        const res = await _originalFetch(`${CF_BACKEND_URL}/auth/device`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deviceId })
+        });
+        if (res.ok) {
+            const d = await res.json();
+            persistSession(d.token, d.username);
+        }
+    } catch (e) {}
+
+    await loadUserData(currentUser);
+    syncUserAccountUI();
+    showNotification("Logged Out", `Switched back to Guest identity ${currentUser}`, "info");
 }
 
-function changeAvatarFacePreset(face) { if (HOSTED_FACE_ASSETS[face]) { activeFacePngData = HOSTED_FACE_ASSETS[face]; updateFaceTextureOnRigs(); } }
+function changeAvatarFacePreset(face) {
+    if (HOSTED_FACE_ASSETS[face]) {
+        activeFacePngData = HOSTED_FACE_ASSETS[face];
+        updateFaceTextureOnRigs();
+    }
+}
 function importCustomFacePNG(e) {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
-    reader.onload = (evt) => { activeFacePngData = evt.target.result; updateFaceTextureOnRigs(); showNotification("Custom Face Uploaded", "Applied custom face PNG!", "success"); };
+    reader.onload = (evt) => {
+        activeFacePngData = evt.target.result;
+        updateFaceTextureOnRigs();
+        showNotification("Custom Face Uploaded", "Applied custom face PNG!", "success");
+    };
     reader.readAsDataURL(file);
 }
-function importAvatarAccessoryFile(e) { const file = e.target.files[0]; if (!file) return; showNotification("3D Accessory Loaded", `Equipped ${file.name}!`, "success"); }
+function importAvatarAccessoryFile(e) {
+    const file = e.target.files[0]; if (!file) return;
+    showNotification("3D Accessory Loaded", `Equipped ${file.name}!`, "success");
+}
 function updateCustomizerColors() {
     userColors.head = parseInt(document.getElementById('shop-col-head').value.replace('#',''), 16);
     userColors.larm = userColors.head; userColors.rarm = userColors.head;
     userColors.torso = parseInt(document.getElementById('shop-col-torso').value.replace('#',''), 16);
     userColors.lleg = parseInt(document.getElementById('shop-col-legs').value.replace('#',''), 16);
     userColors.rleg = userColors.lleg;
-    const updateRigMats = (r) => { if (!r) return; r.head.material.color.setHex(userColors.head); r.torso.material.color.setHex(userColors.torso); r.lArm.children[0].material.color.setHex(userColors.larm); r.rArm.children[0].material.color.setHex(userColors.rarm); r.lLeg.children[0].material.color.setHex(userColors.lleg); r.rLeg.children[0].material.color.setHex(userColors.rleg); };
+    const updateRigMats = (r) => {
+        if (!r) return;
+        r.head.material.color.setHex(userColors.head);
+        r.torso.material.color.setHex(userColors.torso);
+        r.lArm.children[0].material.color.setHex(userColors.larm);
+        r.rArm.children[0].material.color.setHex(userColors.rarm);
+        r.lLeg.children[0].material.color.setHex(userColors.lleg);
+        r.rLeg.children[0].material.color.setHex(userColors.rleg);
+    };
     updateRigMats(sidebarRig); updateRigMats(shopRig);
 }
-function saveAvatarCustomizationAndClose() { saveUserData(); document.getElementById('shop-panel').style.display = 'none'; showNotification("Avatar Saved", "Your customization has been saved!", "success"); }
+function saveAvatarCustomizationAndClose() {
+    saveUserData();
+    document.getElementById('shop-panel').style.display = 'none';
+    showNotification("Avatar Saved", "Your customization has been saved!", "success");
+}
 function submitBanAppeal() {
     const input = document.getElementById('appealSecretInput');
     const txt = input.value.trim(); if (!txt) return;
     const chat = document.getElementById('appealAgentChatBox');
     chat.innerHTML += `<div style="color:var(--text); font-weight:bold;">You: ${txt}</div>`;
     if (txt === "!!4PP3@7-K3Y.25.GIT.RGXAPPEAL!!" || txt === "StoicalRaybod9") {
-        userWarnings = 0; banUntil = 0; localStorage.setItem('rgx_warnings', '0'); localStorage.removeItem('rgx_ban_until');
+        userWarnings = 0; banUntil = 0;
+        localStorage.setItem('rgx_warnings', '0');
+        localStorage.removeItem('rgx_ban_until');
         chat.innerHTML += `<div style="color:var(--green); font-weight:bold;">Agent: ✅ Appeal Key Accepted!</div>`;
         setTimeout(() => { document.getElementById('warning-panel').style.display = 'none'; }, 2000);
-    } else chat.innerHTML += `<div style="color:var(--muted);">Agent: Your appeal has been logged for review.</div>`;
+    } else {
+        chat.innerHTML += `<div style="color:var(--muted);">Agent: Your appeal has been logged for review.</div>`;
+    }
     input.value = ''; chat.scrollTop = chat.scrollHeight;
 }
 
@@ -876,14 +1055,18 @@ function hideGameLoader() {
     setTimeout(function () {
         loader.style.opacity = '0';
         loader.style.transition = 'opacity 0.4s';
-        setTimeout(function () { loader.style.display = 'none'; loader.style.opacity = '1'; loader.style.transition = ''; }, 450);
+        setTimeout(function () {
+            loader.style.display = 'none';
+            loader.style.opacity = '1';
+            loader.style.transition = '';
+        }, 450);
     }, 250);
 }
 
 function warmupDO() {
     if (doWarmedUp) return;
     doWarmedUp = true;
-    fetch(`${CF_BACKEND_URL}/mp-warmup?gameId=1&serverId=global_v2`)
+    fetchWithToken(`${CF_BACKEND_URL}/mp-warmup?gameId=1&serverId=global_v2`)
         .then(function (r) { return r.text(); })
         .then(function (t) { console.log('[RGX] warmup:', t); })
         .catch(function (e) { console.log('[RGX] warmup failed:', e.message); });
@@ -895,8 +1078,9 @@ async function playGame(gameId) {
     document.getElementById('player-title').innerText = g.title || "RayGamix World";
     showGameLoader('Fetching world data...');
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/launcher`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+        const res = await fetchWithToken(`${CF_BACKEND_URL}/launcher`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id: gameId,
                 rgx_data: g.rgx_data,
@@ -920,20 +1104,34 @@ async function playGame(gameId) {
             const frame = document.getElementById('game-frame');
             frame.src = fallbackUrl;
             hideGameLoader();
-        } catch (err) { hideGameLoader(); showNotification("Play Error", e.message, "danger"); }
+        } catch (err) {
+            hideGameLoader();
+            showNotification("Play Error", e.message, "danger");
+        }
     }
 }
-function closeGame() { document.getElementById('game-player').style.display = 'none'; const f = document.getElementById('game-frame'); f.src = 'about:blank'; f.srcdoc = ''; }
+function closeGame() {
+    document.getElementById('game-player').style.display = 'none';
+    const f = document.getElementById('game-frame');
+    f.src = 'about:blank';
+    f.srcdoc = '';
+}
 
-function openStudio() { document.getElementById('studio-panel').style.display = 'flex'; if (!studioInitialized) { initStudio(); studioInitialized = true; } }
+function openStudio() {
+    document.getElementById('studio-panel').style.display = 'flex';
+    if (!studioInitialized) { initStudio(); studioInitialized = true; }
+}
 function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
+
 function initStudio() {
     const cont = document.getElementById('studio-viewport');
     scene = new THREE.Scene(); scene.background = new THREE.Color(0x020406);
     camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
     renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize(cont.clientWidth, cont.clientHeight); cont.appendChild(renderer.domElement);
-    camera.position.set(0, 30, 60); scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    renderer.setSize(cont.clientWidth, cont.clientHeight);
+    cont.appendChild(renderer.domElement);
+    camera.position.set(0, 30, 60);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
     scene.add(new THREE.GridHelper(500, 50, 0x00b7ff, 0x142536));
     orbit = new THREE.OrbitControls(camera, renderer.domElement);
     transform = new THREE.TransformControls(camera, renderer.domElement);
@@ -948,17 +1146,98 @@ function initStudio() {
         mouse.y = -((e.clientY - rect.top) / cont.clientHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(studioObjects, false);
-        if (intersects.length > 0) selectStudioObject(intersects[0].object); else selectStudioObject(null);
+        if (intersects.length > 0) selectStudioObject(intersects[0].object);
+        else selectStudioObject(null);
     });
     createStudioObject('cube', { name: "Baseplate", pos: [0, -1, 0], scale: [200, 2, 200], color: 0x111a24, materialType: 'Obsidian' });
-    function animateStudio() { requestAnimationFrame(animateStudio); if (orbit) orbit.update(); if (renderer && scene && camera) renderer.render(scene, camera); }
+    function animateStudio() {
+        requestAnimationFrame(animateStudio);
+        if (orbit) orbit.update();
+        if (renderer && scene && camera) renderer.render(scene, camera);
+    }
     animateStudio();
 }
+
 function setTransformMode(mode) {
     ['select','translate','scale','rotate'].forEach(m => document.getElementById(`tool-${m}`).classList.remove('tool-active'));
     document.getElementById(`tool-${mode}`).classList.add('tool-active');
-    if (mode === 'select') transform.detach(); else { transform.setMode(mode); if (selectedMesh) transform.attach(selectedMesh); }
+    if (mode === 'select') transform.detach();
+    else { transform.setMode(mode); if (selectedMesh) transform.attach(selectedMesh); }
 }
+
+// ============================================================
+// SHARED PART FACTORY — MUST stay textually identical to the
+// backend's makePartMaterial / makePartGeometry / makeSignSprite
+// so Studio preview == in-game render.
+// ============================================================
+function buildPartMaterial(colorHex, matType) {
+    const m = String(matType || 'Plastic');
+    switch (m) {
+        case 'Glass':
+            return new THREE.MeshPhysicalMaterial({
+                color: colorHex, transparent: true, opacity: 0.55,
+                transmission: 0.5, roughness: 0.1, metalness: 0.0
+            });
+        case 'Neon':
+            return new THREE.MeshStandardMaterial({
+                color: colorHex, emissive: colorHex, emissiveIntensity: 0.85,
+                roughness: 0.35
+            });
+        case 'Lava':
+            return new THREE.MeshStandardMaterial({
+                color: colorHex || 0xff2200, emissive: 0xff1100,
+                emissiveIntensity: 0.9, roughness: 0.6
+            });
+        case 'Obsidian':
+            return new THREE.MeshStandardMaterial({
+                color: colorHex || 0x11161d, roughness: 0.18, metalness: 0.85
+            });
+        case 'Water':
+            return new THREE.MeshStandardMaterial({
+                color: colorHex || 0x0099ff, transparent: true, opacity: 0.55,
+                roughness: 0.1, metalness: 0.0
+            });
+        default:
+            return new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.5 });
+    }
+}
+function buildPartGeometry(type, scaleArr) {
+    const sx = scaleArr[0], sy = scaleArr[1], sz = scaleArr[2];
+    switch (String(type || 'cube').toLowerCase()) {
+        case 'sphere':   return new THREE.SphereGeometry(sx / 2, 20, 20);
+        case 'cylinder': return new THREE.CylinderGeometry(sx / 2, sx / 2, sy, 20);
+        case 'wedge':    return new THREE.ConeGeometry(sx / 2, sy, 4);
+        default:         return new THREE.BoxGeometry(sx, sy, sz);
+    }
+}
+function makeSignSprite(text) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(0, 0, 512, 256);
+    ctx.strokeStyle = '#00b7ff'; ctx.lineWidth = 6;
+    ctx.strokeRect(6, 6, 500, 244);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 40px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const words = String(text || '').split(/\s+/);
+    const lines = []; let cur = '';
+    for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        if ((cur + ' ' + w).trim().length > 20) { lines.push(cur); cur = w; }
+        else cur = (cur + ' ' + w).trim();
+    }
+    if (cur) lines.push(cur);
+    const maxLines = Math.min(lines.length, 5);
+    for (let i = 0; i < maxLines; i++) {
+        ctx.fillText(lines[i], 256, 128 + (i - (maxLines - 1) / 2) * 48);
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    return new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+}
+
 function addSelectedPart() {
     const type = document.getElementById('addPartType').value;
     const opts = { pos: [0, 4, 0] };
@@ -970,24 +1249,52 @@ function addSelectedPart() {
     else if (type === 'sign') { opts.color = 0xffffff; opts.scale = [6, 3, 1]; opts.textValue = "Signboard Text"; }
     createStudioObject(type, opts);
 }
-function createStudioObject(type, override = {}) {
-    let scaleArr = override.scale || [4, 4, 4];
-    let geo = new THREE.BoxGeometry(scaleArr[0], scaleArr[1], scaleArr[2]);
-    if (type === 'sphere') geo = new THREE.SphereGeometry(scaleArr[0] / 2, 20, 20);
-    else if (type === 'cylinder') geo = new THREE.CylinderGeometry(scaleArr[0] / 2, scaleArr[0] / 2, scaleArr[1], 20);
-    else if (type === 'wedge') geo = new THREE.ConeGeometry(scaleArr[0] / 2, scaleArr[1], 4);
-    let matColor = override.color || 0x00b7ff; let matType = override.materialType || 'Plastic';
-    let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.5 });
-    if (matType === 'Water' || type === 'water') mat = new THREE.MeshStandardMaterial({ color: 0x0099ff, transparent: true, opacity: 0.6 });
-    else if (matType === 'Lava' || type === 'lava') mat = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff1100, emissiveIntensity: 0.6 });
-    else if (matType === 'Neon') mat = new THREE.MeshStandardMaterial({ color: matColor, emissive: matColor, emissiveIntensity: 0.8 });
-    else if (matType === 'Obsidian') mat = new THREE.MeshStandardMaterial({ color: 0x11161d, roughness: 0.2, metalness: 0.8 });
+
+function createStudioObject(type, override) {
+    override = override || {};
+    const scaleArr = override.scale || [4, 4, 4];
+    const rotArr   = override.rot   || [0, 0, 0];
+    const matColor = override.color || 0x00b7ff;
+    const matType  = override.materialType || 'Plastic';
+
+    const geo  = buildPartGeometry(type, scaleArr);
+    const mat  = buildPartMaterial(matColor, matType);
     const mesh = new THREE.Mesh(geo, mat);
+
     if (override.pos) mesh.position.set(override.pos[0], override.pos[1], override.pos[2]);
-    if (override.rot) mesh.rotation.set(THREE.MathUtils.degToRad(override.rot[0]), THREE.MathUtils.degToRad(override.rot[1]), THREE.MathUtils.degToRad(override.rot[2]));
-    mesh.userData = { id: THREE.MathUtils.generateUUID(), type: type, name: override.name || (type + "_" + Math.floor(Math.random()*1000)), materialType: matType, textValue: override.textValue || "" };
-    scene.add(mesh); mesh.updateMatrixWorld(true); studioObjects.push(mesh); selectStudioObject(mesh);
+    mesh.rotation.set(
+        THREE.MathUtils.degToRad(rotArr[0]),
+        THREE.MathUtils.degToRad(rotArr[1]),
+        THREE.MathUtils.degToRad(rotArr[2])
+    );
+    mesh.userData = {
+        id: THREE.MathUtils.generateUUID(),
+        type: type,
+        name: override.name || (type + "_" + Math.floor(Math.random() * 1000)),
+        materialType: matType,
+        textValue: override.textValue || ""
+    };
+
+    scene.add(mesh);
+    mesh.updateMatrixWorld(true);
+    studioObjects.push(mesh);
+
+    // Sign sprite — identical to the engine's rendering
+    if (type === 'sign' && mesh.userData.textValue) {
+        const sp = makeSignSprite(mesh.userData.textValue);
+        sp.position.set(
+            mesh.position.x,
+            mesh.position.y + scaleArr[1] / 2 + 2,
+            mesh.position.z
+        );
+        sp.scale.set(Math.max(6, scaleArr[0]), Math.max(3, scaleArr[1] / 2), 1);
+        mesh.userData.signSprite = sp;
+        scene.add(sp);
+    }
+
+    selectStudioObject(mesh);
 }
+
 function selectStudioObject(mesh) {
     selectedMesh = mesh;
     if (mesh) {
@@ -1001,13 +1308,19 @@ function selectStudioObject(mesh) {
         document.getElementById('prop-content').style.display = 'none';
     }
 }
+
 function syncPropertiesToInputs() {
     if (!selectedMesh) return;
     const u = selectedMesh.userData;
     document.getElementById('prop-name').value = u.name;
     document.getElementById('prop-color').value = '#' + selectedMesh.material.color.getHexString();
     document.getElementById('prop-material').value = u.materialType || 'Plastic';
-    if (u.type === 'sign') { document.getElementById('row-text-val').style.display = 'flex'; document.getElementById('prop-text-val').value = u.textValue || ''; } else document.getElementById('row-text-val').style.display = 'none';
+    if (u.type === 'sign') {
+        document.getElementById('row-text-val').style.display = 'flex';
+        document.getElementById('prop-text-val').value = u.textValue || '';
+    } else {
+        document.getElementById('row-text-val').style.display = 'none';
+    }
     document.getElementById('prop-pos-x').value = selectedMesh.position.x.toFixed(1);
     document.getElementById('prop-pos-y').value = selectedMesh.position.y.toFixed(1);
     document.getElementById('prop-pos-z').value = selectedMesh.position.z.toFixed(1);
@@ -1018,20 +1331,54 @@ function syncPropertiesToInputs() {
     document.getElementById('prop-rot-y').value = THREE.MathUtils.radToDeg(selectedMesh.rotation.y).toFixed(0);
     document.getElementById('prop-rot-z').value = THREE.MathUtils.radToDeg(selectedMesh.rotation.z).toFixed(0);
 }
+
 function applyPropertyChanges() {
     if (!selectedMesh) return;
     selectedMesh.userData.name = document.getElementById('prop-name').value;
     const colHex = parseInt(document.getElementById('prop-color').value.replace('#',''), 16);
-    selectedMesh.material.color.setHex(colHex);
     selectedMesh.userData.materialType = document.getElementById('prop-material').value;
     if (selectedMesh.userData.type === 'sign') selectedMesh.userData.textValue = document.getElementById('prop-text-val').value;
-    selectedMesh.position.set(parseFloat(document.getElementById('prop-pos-x').value)||0, parseFloat(document.getElementById('prop-pos-y').value)||0, parseFloat(document.getElementById('prop-pos-z').value)||0);
-    selectedMesh.scale.set(parseFloat(document.getElementById('prop-scale-x').value)||1, parseFloat(document.getElementById('prop-scale-y').value)||1, parseFloat(document.getElementById('prop-scale-z').value)||1);
-    selectedMesh.rotation.set(THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-x').value)||0), THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-y').value)||0), THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-z').value)||0));
+
+    // Rebuild material & geometry so changes match the game engine exactly
+    const s = selectedMesh.scale;
+    const newGeo = buildPartGeometry(selectedMesh.userData.type, [s.x, s.y, s.z]);
+    const newMat = buildPartMaterial(colHex, selectedMesh.userData.materialType);
+    selectedMesh.geometry.dispose();
+    selectedMesh.material.dispose();
+    selectedMesh.geometry = newGeo;
+    selectedMesh.material = newMat;
+
+    selectedMesh.position.set(
+        parseFloat(document.getElementById('prop-pos-x').value) || 0,
+        parseFloat(document.getElementById('prop-pos-y').value) || 0,
+        parseFloat(document.getElementById('prop-pos-z').value) || 0
+    );
+    selectedMesh.rotation.set(
+        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-x').value) || 0),
+        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-y').value) || 0),
+        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-z').value) || 0)
+    );
+
+    // Keep sign sprite in sync
+    if (selectedMesh.userData.signSprite) {
+        scene.remove(selectedMesh.userData.signSprite);
+        selectedMesh.userData.signSprite.material.map.dispose();
+        selectedMesh.userData.signSprite.material.dispose();
+        const sp = makeSignSprite(selectedMesh.userData.textValue);
+        sp.position.set(selectedMesh.position.x, selectedMesh.position.y + s.y / 2 + 2, selectedMesh.position.z);
+        sp.scale.set(Math.max(6, s.x), Math.max(3, s.y / 2), 1);
+        selectedMesh.userData.signSprite = sp;
+        scene.add(sp);
+    }
 }
+
 function deleteSelectedObject() {
     if (!selectedMesh) return;
-    transform.detach(); scene.remove(selectedMesh);
+    transform.detach();
+    if (selectedMesh.userData.signSprite) {
+        scene.remove(selectedMesh.userData.signSprite);
+    }
+    scene.remove(selectedMesh);
     studioObjects = studioObjects.filter(o => o !== selectedMesh);
     selectStudioObject(null);
 }
@@ -1065,12 +1412,16 @@ function serializeStudioWorldToRGX() {
     xml += C + '/world>';
     return xml;
 }
+
 function exportRGXFile() {
     const xml = serializeStudioWorldToRGX();
     const blob = new Blob([xml], {type: "text/xml"});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = (document.getElementById('gameTitle').value.trim() || "world") + ".rgx"; a.click();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (document.getElementById('gameTitle').value.trim() || "world") + ".rgx";
+    a.click();
 }
+
 function importRGXWorldFile(event) {
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader();
@@ -1080,7 +1431,10 @@ function importRGXWorldFile(event) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(xml, "text/xml");
             const parts = doc.getElementsByTagName("part");
-            studioObjects.forEach(obj => { scene.remove(obj); });
+            studioObjects.forEach(obj => {
+                if (obj.userData && obj.userData.signSprite) scene.remove(obj.userData.signSprite);
+                scene.remove(obj);
+            });
             studioObjects = []; selectedMesh = null; transform.detach();
             document.getElementById('prop-empty').style.display = 'block';
             document.getElementById('prop-content').style.display = 'none';
@@ -1097,79 +1451,136 @@ function importRGXWorldFile(event) {
                 createStudioObject(type, { name, pos, scale, color, materialType: matType, textValue: text, rot });
             }
             showNotification("RGX Imported", `Loaded ${parts.length} objects from ${file.name}`, "success");
-        } catch(err) { showNotification("Import Error", "Failed to parse RGX file: " + err.message, "danger"); }
+        } catch(err) {
+            showNotification("Import Error", "Failed to parse RGX file: " + err.message, "danger");
+        }
     };
-    reader.readAsText(file); event.target.value = '';
+    reader.readAsText(file);
+    event.target.value = '';
 }
+
 function testCurrentStudioGame() {
     const title = document.getElementById('gameTitle').value.trim() || "Studio Test World";
     const xml = serializeStudioWorldToRGX();
     const testId = "test_" + Date.now();
     playGameWithData(xml, testId, title);
 }
+
 async function playGameWithData(rgxCode, gameId, title) {
     document.getElementById('player-title').innerText = title;
     showGameLoader('Loading test world...');
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/launcher`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: gameId, title: title, rgx_data: rgxCode, serverId: "global", avatarStyle: avatarStyle })
+        const res = await fetchWithToken(`${CF_BACKEND_URL}/launcher`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: gameId,
+                title: title,
+                rgx_data: rgxCode,
+                serverId: "global",
+                avatarStyle: avatarStyle
+            })
         });
         if (res.ok) {
             const html = await res.text();
             const frame = document.getElementById('game-frame');
             frame.srcdoc = html;
             hideGameLoader();
-            setTimeout(() => { if (frame.contentWindow) frame.contentWindow.postMessage({ type: 'tokensUpdate', tokens: userTokens }, '*'); }, 1000);
-        } else { hideGameLoader(); const err = await res.text(); showNotification("Test Error", "Server: " + err, "danger"); }
-    } catch(e) { hideGameLoader(); showNotification("Engine Error", "Failed to launch game engine.", "danger"); }
+            setTimeout(() => {
+                if (frame.contentWindow) frame.contentWindow.postMessage({ type: 'tokensUpdate', tokens: userTokens }, '*');
+            }, 1000);
+        } else {
+            hideGameLoader();
+            const err = await res.text();
+            showNotification("Test Error", "Server: " + err, "danger");
+        }
+    } catch(e) {
+        hideGameLoader();
+        showNotification("Engine Error", "Failed to launch game engine.", "danger");
+    }
 }
+
 async function confirmPublishGame() {
     const title = document.getElementById('gameTitle').value.trim() || "Untitled World";
     const xml = serializeStudioWorldToRGX();
     const partCount = (xml.match(new RegExp('\x3Cpart', 'g')) || []).length;
-    if (partCount <= 1) { showNotification("Publish Error", "Your world is empty!", "warning"); return; }
+    if (partCount <= 1) {
+        showNotification("Publish Error", "Your world is empty!", "warning");
+        return;
+    }
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/games`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title, rgx_data: xml, description: `Custom RGX 3D world created in RayGamix Studio by ${currentUser}` })
+        const res = await fetchWithToken(`${CF_BACKEND_URL}/games`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: title,
+                rgx_data: xml,
+                description: `Custom RGX 3D world created in RayGamix Studio by ${currentUser}`
+            })
         });
         if (res.ok) {
             const data = await res.json();
             const newGame = data.game;
-            await fetchRealGames(); closeStudio();
+            await fetchRealGames();
+            closeStudio();
             showNotification("Game Published!", `"${title}" is now live on RayGamix Hub!`, "success");
             if (newGame) openGameDetailModal(newGame.id.toString());
-        } else { const err = await res.text(); showNotification("Publish Error", `Server responded: ${err}`, "danger"); }
-    } catch(e) { showNotification("Publish Error", "Failed to publish RGX game.", "danger"); }
+        } else {
+            const err = await res.text();
+            showNotification("Publish Error", `Server responded: ${err}`, "danger");
+        }
+    } catch(e) {
+        showNotification("Publish Error", "Failed to publish RGX game.", "danger");
+    }
 }
+
 function initSidebarAvatarScene() {
     const cont = document.getElementById('avatarCanvas'); if (!cont) return;
     avatarScene = new THREE.Scene();
     avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
     avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    avatarRenderer.setSize(cont.clientWidth, cont.clientHeight); cont.appendChild(avatarRenderer.domElement);
+    avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
+    cont.appendChild(avatarRenderer.domElement);
     avatarScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const dl = new THREE.DirectionalLight(0xffffff, 1.0); dl.position.set(5, 10, 5); avatarScene.add(dl);
-    sidebarRig = createAvatarRig(userColors); avatarScene.add(sidebarRig.group);
-    avatarCamera.position.set(0, 3.2, 9.5); avatarCamera.lookAt(0, 3.0, 0);
-    function animLoop() { requestAnimationFrame(animLoop); if (sidebarRig) sidebarRig.group.rotation.y += 0.008; avatarRenderer.render(avatarScene, avatarCamera); }
+    const dl = new THREE.DirectionalLight(0xffffff, 1.0);
+    dl.position.set(5, 10, 5);
+    avatarScene.add(dl);
+    sidebarRig = createAvatarRig(userColors);
+    avatarScene.add(sidebarRig.group);
+    avatarCamera.position.set(0, 3.2, 9.5);
+    avatarCamera.lookAt(0, 3.0, 0);
+    function animLoop() {
+        requestAnimationFrame(animLoop);
+        if (sidebarRig) sidebarRig.group.rotation.y += 0.008;
+        avatarRenderer.render(avatarScene, avatarCamera);
+    }
     animLoop();
 }
+
 function initShopAvatarScene() {
     if (shopRenderer) return;
     const cont = document.getElementById('shopAvatarCanvas'); if (!cont) return;
     shopScene = new THREE.Scene();
     shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
     shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    shopRenderer.setSize(cont.clientWidth, cont.clientHeight); cont.appendChild(shopRenderer.domElement);
+    shopRenderer.setSize(cont.clientWidth, cont.clientHeight);
+    cont.appendChild(shopRenderer.domElement);
     shopScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const dl = new THREE.DirectionalLight(0xffffff, 1.0); dl.position.set(5, 10, 5); shopScene.add(dl);
-    shopRig = createAvatarRig(userColors); shopScene.add(shopRig.group);
-    shopCamera.position.set(0, 3.2, 9.5); shopCamera.lookAt(0, 3.0, 0);
-    function shopAnimLoop() { requestAnimationFrame(shopAnimLoop); if (shopRig) shopRig.group.rotation.y += 0.01; shopRenderer.render(shopScene, shopCamera); }
+    const dl = new THREE.DirectionalLight(0xffffff, 1.0);
+    dl.position.set(5, 10, 5);
+    shopScene.add(dl);
+    shopRig = createAvatarRig(userColors);
+    shopScene.add(shopRig.group);
+    shopCamera.position.set(0, 3.2, 9.5);
+    shopCamera.lookAt(0, 3.0, 0);
+    function shopAnimLoop() {
+        requestAnimationFrame(shopAnimLoop);
+        if (shopRig) shopRig.group.rotation.y += 0.01;
+        shopRenderer.render(shopScene, shopCamera);
+    }
     shopAnimLoop();
 }
+
 document.addEventListener('keydown', (e) => {
     if (e.key && e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
         devKeyBuffer += e.key.toLowerCase();
@@ -1200,8 +1611,12 @@ window.onload = async () => {
     const styleSelect = document.getElementById('avatar-style-select');
     if (styleSelect) {
         styleSelect.value = avatarStyle;
-        styleSelect.addEventListener('change', (e) => { avatarStyle = e.target.value; localStorage.setItem('rgx_avatar_style', avatarStyle); });
+        styleSelect.addEventListener('change', (e) => {
+            avatarStyle = e.target.value;
+            localStorage.setItem('rgx_avatar_style', avatarStyle);
+        });
     }
-};</script>
+};
+</script>
 </body>
 </html>
