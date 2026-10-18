@@ -66,7 +66,7 @@
         .studio-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 25px; background: #071018; border-bottom: 1px solid #142536; gap: 10px; flex-wrap: wrap; }
         .studio-toolbar { background: #0a1520; padding: 12px 25px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap; }
         .studio-body { display: flex; flex: 1; min-height: 0; }
-        .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; cursor: crosshair; }
+        .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; cursor: crosshair; min-height: 200px; }
         .studio-sidebar { width: 340px; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; }
         .prop-section { padding: 15px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1; }
         .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color: var(--muted); font-weight: bold; }
@@ -369,6 +369,7 @@
                 <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="document.getElementById('rgxWorldImportInput').click()">📥 IMPORT .RGX</button>
                 <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="exportRGXFile()">📤 EXPORT .RGX</button>
                 <input type="file" id="rgxWorldImportInput" accept=".rgx" style="display:none;" onchange="importRGXWorldFile(event)">
+                <button class="btn-alt" style="width:auto; padding:8px 12px; font-size:11px;" onclick="resetStudioCameraToGameplay()">🎯 Match Gameplay Camera</button>
                 <button class="btn" style="background:linear-gradient(135deg, #00e5ff, #0088ff); color:#000; width: auto; padding: 8px 14px; font-size:11px;" onclick="testCurrentStudioGame()">🕹️ TEST PLAY</button>
                 <button class="btn" id="btnPublish" style="background:linear-gradient(135deg, #cc66ff, #8800ff); color:#fff; width: auto; padding: 8px 14px; font-size:11px;" onclick="confirmPublishGame()">🌐 PUBLISH RGX</button>
                 <button class="btn" style="background:var(--red); color:#fff; width: auto; padding: 8px 12px; font-size:11px;" onclick="closeStudio()">EXIT STUDIO</button>
@@ -453,6 +454,32 @@ const HOSTED_FACE_ASSETS = {
 };
 
 // ============================================================
+// ENGINE CAMERA (mirrors backend /engine-config)
+// ============================================================
+const ENGINE_CAMERA = {
+    fov: 60,
+    near: 0.1,
+    far: 600,
+    restDistance: 40,
+    restPitch: 0.3,
+    restYaw: 0,
+    eyeOffsetY: 4,
+    targetOffsetY: 2,
+    minDistance: 6,
+    maxDistance: 80,
+    maxPitch: 1.5,
+    minPitch: -0.8,
+    ambientIntensity: 0.5,
+    sunIntensity: 1.2,
+    fillColor: 0x00b7ff,
+    fillIntensity: 0.3,
+    skyColor: 0x87ceeb,
+    fogDensity: 0.0055,
+    toneMappingExposure: 1.1,
+    pixelRatioCap: 1.5
+};
+
+// ============================================================
 // SESSION STATE — persistent across tabs & reloads
 // ============================================================
 const _originalFetch = window.fetch.bind(window);
@@ -493,11 +520,9 @@ async function fetchWithToken(url, opts) {
 }
 
 // ============================================================
-// DEVICE IDENTITY — never demote an existing session on
-// transient failures; never overwrite a registered account.
+// DEVICE IDENTITY — never demote an existing session
 // ============================================================
 async function ensureDeviceIdentity() {
-    // 1) Try to validate any existing token (registered OR guest)
     if (SESSION_TOKEN) {
         let ok = false, transient = false, data = null;
         for (let attempt = 0; attempt < 3 && !ok; attempt++) {
@@ -507,7 +532,7 @@ async function ensureDeviceIdentity() {
                     data = await res.json();
                     ok = true;
                 } else if (res.status === 401) {
-                    break; // definitively invalid
+                    break;
                 } else {
                     transient = true;
                 }
@@ -515,7 +540,6 @@ async function ensureDeviceIdentity() {
             if (!ok && transient) await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
         }
         if (ok && data) {
-            // Registered user? Keep them registered — never demote.
             if (!data.isGuest) {
                 loggedInUser = data.username;
                 localStorage.setItem('rgx_logged_in_user', loggedInUser);
@@ -525,23 +549,17 @@ async function ensureDeviceIdentity() {
             return;
         }
         if (transient) {
-            // Backend is flaky — do NOT mint a guest token, keep the existing one
             console.warn('[RGX] /auth/me transient failure; preserving session');
             return;
         }
-        // Definitively invalid — clear and (if anonymous) re-mint
         persistSession(null, null);
     }
 
-    // 2) Registered user exists in localStorage but no token? Do NOT silently
-    //    overwrite with a guest. Ask them to log in again to avoid the
-    //    "forced guest" experience.
     if (loggedInUser && !SESSION_TOKEN) {
         currentUser = loggedInUser;
         return;
     }
 
-    // 3) Truly anonymous — mint device guest
     let deviceId = localStorage.getItem('rgx_device_id');
     if (!deviceId) {
         const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -651,9 +669,6 @@ async function loadUserData(user) {
         if (res.ok) {
             const data = await res.json();
 
-            // Guard: if we think we're logged in but the backend says guest,
-            // do NOT overwrite the account identity. Keep the user logged in
-            // and surface a warning instead.
             if (loggedInUser && data.isGuest) {
                 console.warn('[RGX] Backend returned guest for a logged-in user — session mismatch.');
                 showNotification(
@@ -926,7 +941,6 @@ async function handleAuthAction(action) {
             return;
         }
 
-        // Critical: adopt the registered token & clear the old guest one
         loggedInUser = data.username;
         localStorage.setItem('rgx_logged_in_user', loggedInUser);
         persistSession(data.token, data.username);
@@ -959,7 +973,6 @@ async function handleLogout() {
     localStorage.removeItem('rgx_logged_in_user');
     persistSession(null, null);
 
-    // Explicitly mint a fresh guest token (previous one was tied to the account)
     let deviceId = localStorage.getItem('rgx_device_id');
     if (!deviceId) {
         const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -1119,26 +1132,108 @@ function closeGame() {
 
 function openStudio() {
     document.getElementById('studio-panel').style.display = 'flex';
-    if (!studioInitialized) { initStudio(); studioInitialized = true; }
+    if (!studioInitialized) {
+        // Defer one frame so the viewport has real dimensions before we build the camera
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                initStudio();
+                studioInitialized = true;
+            });
+        });
+    }
 }
 function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
 
 function initStudio() {
     const cont = document.getElementById('studio-viewport');
-    scene = new THREE.Scene(); scene.background = new THREE.Color(0x020406);
-    camera = new THREE.PerspectiveCamera(60, cont.clientWidth/cont.clientHeight, 0.1, 20000);
-    renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize(cont.clientWidth, cont.clientHeight);
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(ENGINE_CAMERA.skyColor);
+    scene.fog = new THREE.FogExp2(ENGINE_CAMERA.skyColor, ENGINE_CAMERA.fogDensity);
+
+    const vw = Math.max(1, cont.clientWidth);
+    const vh = Math.max(1, cont.clientHeight);
+
+    camera = new THREE.PerspectiveCamera(
+        ENGINE_CAMERA.fov,
+        vw / vh,
+        ENGINE_CAMERA.near,
+        ENGINE_CAMERA.far
+    );
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
+    renderer.setSize(vw, vh, false);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = ENGINE_CAMERA.toneMappingExposure;
     cont.appendChild(renderer.domElement);
-    camera.position.set(0, 30, 60);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-    scene.add(new THREE.GridHelper(500, 50, 0x00b7ff, 0x142536));
+
+    scene.add(new THREE.AmbientLight(0xffffff, ENGINE_CAMERA.ambientIntensity));
+
+    const sun = new THREE.DirectionalLight(0xffffff, ENGINE_CAMERA.sunIntensity);
+    sun.position.set(50, 100, 50);
+    scene.add(sun);
+
+    const fillLight = new THREE.DirectionalLight(ENGINE_CAMERA.fillColor, ENGINE_CAMERA.fillIntensity);
+    fillLight.position.set(-50, 30, -50);
+    scene.add(fillLight);
+
+    const grid = new THREE.GridHelper(500, 50, 0x00b7ff, 0x142536);
+    grid.position.y = -2.01;
+    scene.add(grid);
+
+    const REST_DIST  = ENGINE_CAMERA.restDistance;
+    const REST_PITCH = ENGINE_CAMERA.restPitch;
+    const REST_YAW   = ENGINE_CAMERA.restYaw;
+    const restTarget = new THREE.Vector3(0, ENGINE_CAMERA.targetOffsetY, 0);
+    camera.position.set(
+        Math.sin(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST,
+        ENGINE_CAMERA.eyeOffsetY + Math.sin(REST_PITCH) * REST_DIST,
+        Math.cos(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST
+    );
+    camera.lookAt(restTarget);
+
     orbit = new THREE.OrbitControls(camera, renderer.domElement);
+    orbit.target.copy(restTarget);
+    orbit.minDistance = ENGINE_CAMERA.minDistance;
+    orbit.maxDistance = ENGINE_CAMERA.maxDistance;
+    orbit.maxPolarAngle = Math.PI * 0.5;
+    orbit.update();
+
     transform = new THREE.TransformControls(camera, renderer.domElement);
-    transform.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
-    transform.addEventListener('change', () => { if (selectedMesh) syncPropertiesToInputs(); });
+    transform.addEventListener('dragging-changed', (e) => { orbit.enabled = !e.value; });
+
+    transform.addEventListener('objectChange', () => {
+        if (!selectedMesh) return;
+
+        selectedMesh.userData.posArr = [
+            selectedMesh.position.x,
+            selectedMesh.position.y,
+            selectedMesh.position.z
+        ];
+
+        selectedMesh.userData.rotArr = [
+            THREE.MathUtils.radToDeg(selectedMesh.rotation.x),
+            THREE.MathUtils.radToDeg(selectedMesh.rotation.y),
+            THREE.MathUtils.radToDeg(selectedMesh.rotation.z)
+        ];
+
+        const s = selectedMesh.scale;
+        if (Math.abs(s.x - 1) > 0.0001 || Math.abs(s.y - 1) > 0.0001 || Math.abs(s.z - 1) > 0.0001) {
+            selectedMesh.userData.scaleArr = [
+                Math.max(0.05, selectedMesh.userData.scaleArr[0] * s.x),
+                Math.max(0.05, selectedMesh.userData.scaleArr[1] * s.y),
+                Math.max(0.05, selectedMesh.userData.scaleArr[2] * s.z)
+            ];
+            rebuildPartMesh(selectedMesh);
+        }
+
+        syncPropertiesToInputs();
+    });
     scene.add(transform);
-    const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
     cont.addEventListener('pointerdown', (e) => {
         if (transform.dragging) return;
         const rect = cont.getBoundingClientRect();
@@ -1149,13 +1244,45 @@ function initStudio() {
         if (intersects.length > 0) selectStudioObject(intersects[0].object);
         else selectStudioObject(null);
     });
-    createStudioObject('cube', { name: "Baseplate", pos: [0, -1, 0], scale: [200, 2, 200], color: 0x111a24, materialType: 'Obsidian' });
+
+    const _resizeObs = new ResizeObserver(() => {
+        const w = cont.clientWidth, h = cont.clientHeight;
+        if (!w || !h) return;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
+        renderer.setSize(w, h, false);
+    });
+    _resizeObs.observe(cont);
+
+    createStudioObject('cube', {
+        name: "Baseplate",
+        pos: [0, -1, 0],
+        scale: [200, 2, 200],
+        color: 0x111a24,
+        materialType: 'Obsidian'
+    });
+
     function animateStudio() {
         requestAnimationFrame(animateStudio);
         if (orbit) orbit.update();
         if (renderer && scene && camera) renderer.render(scene, camera);
     }
     animateStudio();
+}
+
+function resetStudioCameraToGameplay() {
+    if (!camera || !orbit) return;
+    const REST_DIST = ENGINE_CAMERA.restDistance;
+    const REST_PITCH = ENGINE_CAMERA.restPitch;
+    const REST_YAW = ENGINE_CAMERA.restYaw;
+    camera.position.set(
+        Math.sin(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST,
+        ENGINE_CAMERA.eyeOffsetY + Math.sin(REST_PITCH) * REST_DIST,
+        Math.cos(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST
+    );
+    orbit.target.set(0, ENGINE_CAMERA.targetOffsetY, 0);
+    orbit.update();
 }
 
 function setTransformMode(mode) {
@@ -1166,9 +1293,7 @@ function setTransformMode(mode) {
 }
 
 // ============================================================
-// SHARED PART FACTORY — MUST stay textually identical to the
-// backend's makePartMaterial / makePartGeometry / makeSignSprite
-// so Studio preview == in-game render.
+// SHARED PART FACTORY — must match backend exactly
 // ============================================================
 function buildPartMaterial(colorHex, matType) {
     const m = String(matType || 'Plastic');
@@ -1261,38 +1386,60 @@ function createStudioObject(type, override) {
     const mat  = buildPartMaterial(matColor, matType);
     const mesh = new THREE.Mesh(geo, mat);
 
-    if (override.pos) mesh.position.set(override.pos[0], override.pos[1], override.pos[2]);
-    mesh.rotation.set(
-        THREE.MathUtils.degToRad(rotArr[0]),
-        THREE.MathUtils.degToRad(rotArr[1]),
-        THREE.MathUtils.degToRad(rotArr[2])
-    );
     mesh.userData = {
         id: THREE.MathUtils.generateUUID(),
         type: type,
         name: override.name || (type + "_" + Math.floor(Math.random() * 1000)),
         materialType: matType,
-        textValue: override.textValue || ""
+        textValue: override.textValue || "",
+        scaleArr: [scaleArr[0], scaleArr[1], scaleArr[2]],
+        rotArr: [rotArr[0], rotArr[1], rotArr[2]],
+        posArr: override.pos ? [override.pos[0], override.pos[1], override.pos[2]] : [0, 0, 0]
     };
+
+    mesh.scale.set(1, 1, 1);
+    mesh.position.set(mesh.userData.posArr[0], mesh.userData.posArr[1], mesh.userData.posArr[2]);
+    mesh.rotation.set(
+        THREE.MathUtils.degToRad(rotArr[0]),
+        THREE.MathUtils.degToRad(rotArr[1]),
+        THREE.MathUtils.degToRad(rotArr[2])
+    );
 
     scene.add(mesh);
     mesh.updateMatrixWorld(true);
     studioObjects.push(mesh);
 
-    // Sign sprite — identical to the engine's rendering
     if (type === 'sign' && mesh.userData.textValue) {
-        const sp = makeSignSprite(mesh.userData.textValue);
-        sp.position.set(
-            mesh.position.x,
-            mesh.position.y + scaleArr[1] / 2 + 2,
-            mesh.position.z
-        );
-        sp.scale.set(Math.max(6, scaleArr[0]), Math.max(3, scaleArr[1] / 2), 1);
-        mesh.userData.signSprite = sp;
-        scene.add(sp);
+        refreshSignSprite(mesh);
     }
 
     selectStudioObject(mesh);
+}
+
+function refreshSignSprite(mesh) {
+    if (!mesh) return;
+    if (mesh.userData.signSprite) {
+        scene.remove(mesh.userData.signSprite);
+        if (mesh.userData.signSprite.material.map) mesh.userData.signSprite.material.map.dispose();
+        mesh.userData.signSprite.material.dispose();
+        mesh.userData.signSprite = null;
+    }
+    if (mesh.userData.type !== 'sign') return;
+    const s = mesh.userData.scaleArr;
+    const sp = makeSignSprite(mesh.userData.textValue);
+    sp.position.set(mesh.position.x, mesh.position.y + s[1] / 2 + 2, mesh.position.z);
+    sp.scale.set(Math.max(6, s[0]), Math.max(3, s[1] / 2), 1);
+    mesh.userData.signSprite = sp;
+    scene.add(sp);
+}
+
+function rebuildPartMesh(mesh) {
+    if (!mesh) return;
+    const newGeo = buildPartGeometry(mesh.userData.type, mesh.userData.scaleArr);
+    mesh.geometry.dispose();
+    mesh.geometry = newGeo;
+    mesh.scale.set(1, 1, 1);
+    refreshSignSprite(mesh);
 }
 
 function selectStudioObject(mesh) {
@@ -1321,66 +1468,69 @@ function syncPropertiesToInputs() {
     } else {
         document.getElementById('row-text-val').style.display = 'none';
     }
-    document.getElementById('prop-pos-x').value = selectedMesh.position.x.toFixed(1);
-    document.getElementById('prop-pos-y').value = selectedMesh.position.y.toFixed(1);
-    document.getElementById('prop-pos-z').value = selectedMesh.position.z.toFixed(1);
-    document.getElementById('prop-scale-x').value = selectedMesh.scale.x.toFixed(1);
-    document.getElementById('prop-scale-y').value = selectedMesh.scale.y.toFixed(1);
-    document.getElementById('prop-scale-z').value = selectedMesh.scale.z.toFixed(1);
-    document.getElementById('prop-rot-x').value = THREE.MathUtils.radToDeg(selectedMesh.rotation.x).toFixed(0);
-    document.getElementById('prop-rot-y').value = THREE.MathUtils.radToDeg(selectedMesh.rotation.y).toFixed(0);
-    document.getElementById('prop-rot-z').value = THREE.MathUtils.radToDeg(selectedMesh.rotation.z).toFixed(0);
+    document.getElementById('prop-pos-x').value = u.posArr[0].toFixed(2);
+    document.getElementById('prop-pos-y').value = u.posArr[1].toFixed(2);
+    document.getElementById('prop-pos-z').value = u.posArr[2].toFixed(2);
+    document.getElementById('prop-scale-x').value = u.scaleArr[0].toFixed(2);
+    document.getElementById('prop-scale-y').value = u.scaleArr[1].toFixed(2);
+    document.getElementById('prop-scale-z').value = u.scaleArr[2].toFixed(2);
+    document.getElementById('prop-rot-x').value = u.rotArr[0].toFixed(0);
+    document.getElementById('prop-rot-y').value = u.rotArr[1].toFixed(0);
+    document.getElementById('prop-rot-z').value = u.rotArr[2].toFixed(0);
 }
 
 function applyPropertyChanges() {
     if (!selectedMesh) return;
+
     selectedMesh.userData.name = document.getElementById('prop-name').value;
     const colHex = parseInt(document.getElementById('prop-color').value.replace('#',''), 16);
     selectedMesh.userData.materialType = document.getElementById('prop-material').value;
-    if (selectedMesh.userData.type === 'sign') selectedMesh.userData.textValue = document.getElementById('prop-text-val').value;
+    if (selectedMesh.userData.type === 'sign') {
+        selectedMesh.userData.textValue = document.getElementById('prop-text-val').value;
+    }
 
-    // Rebuild material & geometry so changes match the game engine exactly
-    const s = selectedMesh.scale;
-    const newGeo = buildPartGeometry(selectedMesh.userData.type, [s.x, s.y, s.z]);
-    const newMat = buildPartMaterial(colHex, selectedMesh.userData.materialType);
-    selectedMesh.geometry.dispose();
     selectedMesh.material.dispose();
-    selectedMesh.geometry = newGeo;
-    selectedMesh.material = newMat;
+    selectedMesh.material = buildPartMaterial(colHex, selectedMesh.userData.materialType);
 
-    selectedMesh.position.set(
+    selectedMesh.userData.posArr = [
         parseFloat(document.getElementById('prop-pos-x').value) || 0,
         parseFloat(document.getElementById('prop-pos-y').value) || 0,
         parseFloat(document.getElementById('prop-pos-z').value) || 0
-    );
-    selectedMesh.rotation.set(
-        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-x').value) || 0),
-        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-y').value) || 0),
-        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-z').value) || 0)
+    ];
+    selectedMesh.position.set(
+        selectedMesh.userData.posArr[0],
+        selectedMesh.userData.posArr[1],
+        selectedMesh.userData.posArr[2]
     );
 
-    // Keep sign sprite in sync
-    if (selectedMesh.userData.signSprite) {
-        scene.remove(selectedMesh.userData.signSprite);
-        selectedMesh.userData.signSprite.material.map.dispose();
-        selectedMesh.userData.signSprite.material.dispose();
-        const sp = makeSignSprite(selectedMesh.userData.textValue);
-        sp.position.set(selectedMesh.position.x, selectedMesh.position.y + s.y / 2 + 2, selectedMesh.position.z);
-        sp.scale.set(Math.max(6, s.x), Math.max(3, s.y / 2), 1);
-        selectedMesh.userData.signSprite = sp;
-        scene.add(sp);
-    }
+    selectedMesh.userData.rotArr = [
+        parseFloat(document.getElementById('prop-rot-x').value) || 0,
+        parseFloat(document.getElementById('prop-rot-y').value) || 0,
+        parseFloat(document.getElementById('prop-rot-z').value) || 0
+    ];
+    selectedMesh.rotation.set(
+        THREE.MathUtils.degToRad(selectedMesh.userData.rotArr[0]),
+        THREE.MathUtils.degToRad(selectedMesh.userData.rotArr[1]),
+        THREE.MathUtils.degToRad(selectedMesh.userData.rotArr[2])
+    );
+
+    selectedMesh.userData.scaleArr = [
+        parseFloat(document.getElementById('prop-scale-x').value) || 1,
+        parseFloat(document.getElementById('prop-scale-y').value) || 1,
+        parseFloat(document.getElementById('prop-scale-z').value) || 1
+    ];
+    rebuildPartMesh(selectedMesh);
 }
 
 function deleteSelectedObject() {
     if (!selectedMesh) return;
     transform.detach();
-    if (selectedMesh.userData.signSprite) {
-        scene.remove(selectedMesh.userData.signSprite);
-    }
+    if (selectedMesh.userData.signSprite) scene.remove(selectedMesh.userData.signSprite);
     scene.remove(selectedMesh);
     studioObjects = studioObjects.filter(o => o !== selectedMesh);
-    selectStudioObject(null);
+    selectedMesh = null;
+    document.getElementById('prop-empty').style.display = 'block';
+    document.getElementById('prop-content').style.display = 'none';
 }
 
 function xmlEscape(str) {
@@ -1401,13 +1551,22 @@ function serializeStudioWorldToRGX() {
     const C = '\x3C';
     let xml = C + 'world>\n';
     studioObjects.forEach(obj => {
-        const p = obj.position, s = obj.scale, r = obj.rotation;
+        const p = obj.position;
+        const s = obj.userData.scaleArr;
+        const r = obj.userData.rotArr;
         const c = obj.material.color.getHexString();
         const matType = xmlEscape(obj.userData.materialType || 'Plastic');
-        const type = xmlEscape(obj.userData.type || 'cube');
-        const name = xmlEscape(obj.userData.name || ('part_' + Math.random().toString(36).slice(2, 8)));
+        const type    = xmlEscape(obj.userData.type || 'cube');
+        const name    = xmlEscape(obj.userData.name || ('part_' + Math.random().toString(36).slice(2, 8)));
         const signTxt = xmlEscape(obj.userData.textValue || '');
-        xml += '  ' + C + 'part type="' + type + '" name="' + name + '" color="' + c + '" material="' + matType + '" pos="' + safeNum(p.x).toFixed(2) + ',' + safeNum(p.y).toFixed(2) + ',' + safeNum(p.z).toFixed(2) + '" scale="' + safeNum(s.x).toFixed(2) + ',' + safeNum(s.y).toFixed(2) + ',' + safeNum(s.z).toFixed(2) + '" rot="' + safeNum(THREE.MathUtils.radToDeg(r.x)).toFixed(0) + ',' + safeNum(THREE.MathUtils.radToDeg(r.y)).toFixed(0) + ',' + safeNum(THREE.MathUtils.radToDeg(r.z)).toFixed(0) + '" text="' + signTxt + '"/>\n';
+        xml += '  ' + C + 'part type="' + type +
+            '" name="' + name +
+            '" color="' + c +
+            '" material="' + matType +
+            '" pos="' + safeNum(p.x).toFixed(2) + ',' + safeNum(p.y).toFixed(2) + ',' + safeNum(p.z).toFixed(2) +
+            '" scale="' + safeNum(s[0]).toFixed(2) + ',' + safeNum(s[1]).toFixed(2) + ',' + safeNum(s[2]).toFixed(2) +
+            '" rot="' + safeNum(r[0]).toFixed(0) + ',' + safeNum(r[1]).toFixed(0) + ',' + safeNum(r[2]).toFixed(0) +
+            '" text="' + signTxt + '"/>\n';
     });
     xml += C + '/world>';
     return xml;
