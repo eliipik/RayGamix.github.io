@@ -607,6 +607,9 @@ let selectedGameForModal = null;
 let devKeyBuffer = "";
 let doWarmedUp = false;
 
+// === OPTIMIZATION: demand-based studio rendering flag ===
+let studioRenderDirty = true;
+
 function createRoundedBoxGeometry(width, height, depth, radius, segments) {
     radius = (radius === undefined) ? 0.12 : radius;
     segments = segments || 4;
@@ -1132,6 +1135,8 @@ function closeGame() {
 
 function openStudio() {
     document.getElementById('studio-panel').style.display = 'flex';
+    // OPTIMIZATION: force a redraw when reopening a demand-based scene
+    studioRenderDirty = true;
     if (!studioInitialized) {
         // Defer one frame so the viewport has real dimensions before we build the camera
         requestAnimationFrame(() => {
@@ -1142,7 +1147,10 @@ function openStudio() {
         });
     }
 }
-function closeStudio() { document.getElementById('studio-panel').style.display = 'none'; }
+function closeStudio() {
+    document.getElementById('studio-panel').style.display = 'none';
+    // No need to stop the loop explicitly — animateStudio() checks panel visibility.
+}
 
 function initStudio() {
     const cont = document.getElementById('studio-viewport');
@@ -1161,11 +1169,14 @@ function initStudio() {
         ENGINE_CAMERA.far
     );
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    // OPTIMIZATION: request high-performance GPU + stable pixel ratio
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
     renderer.setSize(vw, vh, false);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = ENGINE_CAMERA.toneMappingExposure;
+    // NOTE: Studio scene currently has NO shadow-casting objects, so we keep shadows OFF
+    // (matches original behavior; the game engine handles its own shadows).
     cont.appendChild(renderer.domElement);
 
     scene.add(new THREE.AmbientLight(0xffffff, ENGINE_CAMERA.ambientIntensity));
@@ -1199,11 +1210,17 @@ function initStudio() {
     orbit.maxDistance = ENGINE_CAMERA.maxDistance;
     orbit.maxPolarAngle = Math.PI * 0.5;
     orbit.update();
+    // OPTIMIZATION: mark scene dirty whenever the orbit changes
+    orbit.addEventListener('change', () => { studioRenderDirty = true; });
 
     transform = new THREE.TransformControls(camera, renderer.domElement);
-    transform.addEventListener('dragging-changed', (e) => { orbit.enabled = !e.value; });
+    transform.addEventListener('dragging-changed', (e) => {
+        orbit.enabled = !e.value;
+        studioRenderDirty = true;
+    });
 
     transform.addEventListener('objectChange', () => {
+        studioRenderDirty = true;
         if (!selectedMesh) return;
 
         selectedMesh.userData.posArr = [
@@ -1252,6 +1269,7 @@ function initStudio() {
         camera.updateProjectionMatrix();
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
         renderer.setSize(w, h, false);
+        studioRenderDirty = true;
     });
     _resizeObs.observe(cont);
 
@@ -1263,10 +1281,17 @@ function initStudio() {
         materialType: 'Obsidian'
     });
 
+    // OPTIMIZATION: demand-based rendering — only draw when something changed.
+    // This also skips rendering entirely when the studio panel is closed.
     function animateStudio() {
         requestAnimationFrame(animateStudio);
+        const panel = document.getElementById('studio-panel');
+        if (!panel || panel.style.display === 'none') return;
         if (orbit) orbit.update();
-        if (renderer && scene && camera) renderer.render(scene, camera);
+        if (studioRenderDirty && renderer && scene && camera) {
+            renderer.render(scene, camera);
+            studioRenderDirty = false;
+        }
     }
     animateStudio();
 }
@@ -1283,6 +1308,7 @@ function resetStudioCameraToGameplay() {
     );
     orbit.target.set(0, ENGINE_CAMERA.targetOffsetY, 0);
     orbit.update();
+    studioRenderDirty = true;
 }
 
 function setTransformMode(mode) {
@@ -1290,6 +1316,7 @@ function setTransformMode(mode) {
     document.getElementById(`tool-${mode}`).classList.add('tool-active');
     if (mode === 'select') transform.detach();
     else { transform.setMode(mode); if (selectedMesh) transform.attach(selectedMesh); }
+    studioRenderDirty = true;
 }
 
 // ============================================================
@@ -1385,6 +1412,8 @@ function createStudioObject(type, override) {
     const geo  = buildPartGeometry(type, scaleArr);
     const mat  = buildPartMaterial(matColor, matType);
     const mesh = new THREE.Mesh(geo, mat);
+    // Frustum culling is ON by default — the studio only draws what the camera sees.
+    mesh.frustumCulled = true;
 
     mesh.userData = {
         id: THREE.MathUtils.generateUUID(),
@@ -1414,6 +1443,7 @@ function createStudioObject(type, override) {
     }
 
     selectStudioObject(mesh);
+    studioRenderDirty = true;
 }
 
 function refreshSignSprite(mesh) {
@@ -1440,6 +1470,7 @@ function rebuildPartMesh(mesh) {
     mesh.geometry = newGeo;
     mesh.scale.set(1, 1, 1);
     refreshSignSprite(mesh);
+    studioRenderDirty = true;
 }
 
 function selectStudioObject(mesh) {
@@ -1454,6 +1485,7 @@ function selectStudioObject(mesh) {
         document.getElementById('prop-empty').style.display = 'block';
         document.getElementById('prop-content').style.display = 'none';
     }
+    studioRenderDirty = true;
 }
 
 function syncPropertiesToInputs() {
@@ -1520,6 +1552,7 @@ function applyPropertyChanges() {
         parseFloat(document.getElementById('prop-scale-z').value) || 1
     ];
     rebuildPartMesh(selectedMesh);
+    studioRenderDirty = true;
 }
 
 function deleteSelectedObject() {
@@ -1531,6 +1564,7 @@ function deleteSelectedObject() {
     selectedMesh = null;
     document.getElementById('prop-empty').style.display = 'block';
     document.getElementById('prop-content').style.display = 'none';
+    studioRenderDirty = true;
 }
 
 function xmlEscape(str) {
@@ -1609,6 +1643,7 @@ function importRGXWorldFile(event) {
                 const rot = (p.getAttribute("rot") || "0,0,0").split(',').map(Number);
                 createStudioObject(type, { name, pos, scale, color, materialType: matType, textValue: text, rot });
             }
+            studioRenderDirty = true;
             showNotification("RGX Imported", `Loaded ${parts.length} objects from ${file.name}`, "success");
         } catch(err) {
             showNotification("Import Error", "Failed to parse RGX file: " + err.message, "danger");
@@ -1698,6 +1733,8 @@ function initSidebarAvatarScene() {
     avatarScene = new THREE.Scene();
     avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
     avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // OPTIMIZATION: cap pixel ratio on HiDPI screens for the small sidebar preview
+    avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
     cont.appendChild(avatarRenderer.domElement);
     avatarScene.add(new THREE.AmbientLight(0xffffff, 0.8));
@@ -1708,12 +1745,16 @@ function initSidebarAvatarScene() {
     avatarScene.add(sidebarRig.group);
     avatarCamera.position.set(0, 3.2, 9.5);
     avatarCamera.lookAt(0, 3.0, 0);
-    function animLoop() {
+    // OPTIMIZATION: throttle to ~30 Hz — this is a tiny preview, no need for 60 fps
+    let _lastSidebarTick = 0;
+    function animLoop(now) {
         requestAnimationFrame(animLoop);
-        if (sidebarRig) sidebarRig.group.rotation.y += 0.008;
+        if (now - _lastSidebarTick < 33) return;
+        _lastSidebarTick = now;
+        if (sidebarRig) sidebarRig.group.rotation.y += 0.016;
         avatarRenderer.render(avatarScene, avatarCamera);
     }
-    animLoop();
+    requestAnimationFrame(animLoop);
 }
 
 function initShopAvatarScene() {
@@ -1722,6 +1763,7 @@ function initShopAvatarScene() {
     shopScene = new THREE.Scene();
     shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
     shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    shopRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     shopRenderer.setSize(cont.clientWidth, cont.clientHeight);
     cont.appendChild(shopRenderer.domElement);
     shopScene.add(new THREE.AmbientLight(0xffffff, 0.8));
@@ -1732,8 +1774,10 @@ function initShopAvatarScene() {
     shopScene.add(shopRig.group);
     shopCamera.position.set(0, 3.2, 9.5);
     shopCamera.lookAt(0, 3.0, 0);
+    // OPTIMIZATION: skip rendering when the shop panel is hidden (offsetParent === null)
     function shopAnimLoop() {
         requestAnimationFrame(shopAnimLoop);
+        if (shopRenderer.domElement.offsetParent === null) return;
         if (shopRig) shopRig.group.rotation.y += 0.01;
         shopRenderer.render(shopScene, shopCamera);
     }
