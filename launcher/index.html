@@ -520,7 +520,7 @@ async function fetchWithToken(url, opts) {
 }
 
 // ============================================================
-// DEVICE IDENTITY — never demote an existing session
+// DEVICE IDENTITY — always ensure we have *some* valid session
 // ============================================================
 async function ensureDeviceIdentity() {
     if (SESSION_TOKEN) {
@@ -532,7 +532,7 @@ async function ensureDeviceIdentity() {
                     data = await res.json();
                     ok = true;
                 } else if (res.status === 401) {
-                    break;
+                    break; // token expired/invalid — fall through to device auth
                 } else {
                     transient = true;
                 }
@@ -552,16 +552,15 @@ async function ensureDeviceIdentity() {
             console.warn('[RGX] /auth/me transient failure; preserving session');
             return;
         }
+        // Token expired/invalid — clear and continue to device auth
         persistSession(null, null);
     }
 
-    if (loggedInUser && !SESSION_TOKEN) {
-        currentUser = loggedInUser;
-        return;
-    }
-
+    // Always ensure *some* valid session exists before returning.
+    // (Previously this function returned early when loggedInUser was set
+    //  but SESSION_TOKEN was null — leaving Play with no token → 401.)
     let deviceId = localStorage.getItem('rgx_device_id');
-    if (!deviceId) {
+    if (!deviceId || !/^dev_[0-9a-f]{32}$/.test(deviceId)) {
         const bytes = crypto.getRandomValues(new Uint8Array(16));
         deviceId = 'dev_' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
         localStorage.setItem('rgx_device_id', deviceId);
@@ -575,14 +574,24 @@ async function ensureDeviceIdentity() {
         if (res.ok) {
             const d = await res.json();
             persistSession(d.token, d.username);
-            if (d.guest) {
+            if (d.guest && loggedInUser) {
                 loggedInUser = null;
                 localStorage.removeItem('rgx_logged_in_user');
+                setTimeout(() => showNotification(
+                    "Session Expired",
+                    "Your login session expired. You're playing as guest — open Account → Login to restore your profile.",
+                    "warning"
+                ), 800);
             }
         } else {
-            console.error('Device auth failed:', await res.text());
+            const err = await res.text();
+            console.error('Device auth failed:', err);
+            showNotification("Auth Error", "Device auth failed: " + err, "danger");
         }
-    } catch (e) { console.error('Device auth error', e); }
+    } catch (e) {
+        console.error('Device auth error', e);
+        showNotification("Network Error", "Could not reach RayGamix backend. Check your connection.", "danger");
+    }
 }
 
 // ============================================================
@@ -977,7 +986,7 @@ async function handleLogout() {
     persistSession(null, null);
 
     let deviceId = localStorage.getItem('rgx_device_id');
-    if (!deviceId) {
+    if (!deviceId || !/^dev_[0-9a-f]{32}$/.test(deviceId)) {
         const bytes = crypto.getRandomValues(new Uint8Array(16));
         deviceId = 'dev_' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
         localStorage.setItem('rgx_device_id', deviceId);
@@ -1091,6 +1100,16 @@ function warmupDO() {
 async function playGame(gameId) {
     const g = gamesList.find(x => x.id.toString() === gameId.toString());
     if (!g) { showNotification("Error", "Game not found.", "danger"); return; }
+
+    // Ensure we have a valid session BEFORE requesting the launcher.
+    if (!SESSION_TOKEN) {
+        await ensureDeviceIdentity();
+        if (!SESSION_TOKEN) {
+            showNotification("Session Error", "Could not establish a session. Please refresh the page.", "danger");
+            return;
+        }
+    }
+
     document.getElementById('player-title').innerText = g.title || "RayGamix World";
     showGameLoader('Fetching world data...');
     try {
@@ -1105,7 +1124,10 @@ async function playGame(gameId) {
                 avatarStyle: avatarStyle
             })
         });
-        if (!res.ok) throw new Error('Engine load failed');
+        if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error('Engine load failed (' + res.status + '): ' + errBody.slice(0, 160));
+        }
         document.getElementById('loader-sub').textContent = 'Rendering world...';
         const html = await res.text();
         const frame = document.getElementById('game-frame');
@@ -1661,6 +1683,15 @@ function testCurrentStudioGame() {
 }
 
 async function playGameWithData(rgxCode, gameId, title) {
+    // Ensure we have a valid session BEFORE requesting the launcher.
+    if (!SESSION_TOKEN) {
+        await ensureDeviceIdentity();
+        if (!SESSION_TOKEN) {
+            showNotification("Session Error", "Could not establish a session. Please refresh the page.", "danger");
+            return;
+        }
+    }
+
     document.getElementById('player-title').innerText = title;
     showGameLoader('Loading test world...');
     try {
@@ -1695,6 +1726,14 @@ async function playGameWithData(rgxCode, gameId, title) {
 }
 
 async function confirmPublishGame() {
+    if (!SESSION_TOKEN) {
+        await ensureDeviceIdentity();
+        if (!SESSION_TOKEN) {
+            showNotification("Session Error", "Could not establish a session. Please refresh the page.", "danger");
+            return;
+        }
+    }
+
     const title = document.getElementById('gameTitle').value.trim() || "Untitled World";
     const xml = serializeStudioWorldToRGX();
     const partCount = (xml.match(new RegExp('\x3Cpart', 'g')) || []).length;
