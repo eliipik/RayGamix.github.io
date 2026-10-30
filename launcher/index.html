@@ -2,1863 +2,318 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RayGamix Launcher & Studio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="icon" type="image/png" href="https://raygamix.com/favicon.png">
-    <link rel="preload" as="script" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
-    <link rel="dns-prefetch" href="https://raygamix-backend.raybod8765.workers.dev">
-    <link rel="preconnect" href="https://raygamix-backend.raybod8765.workers.dev" crossorigin>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RayGamix - 3D Web Gaming Platform</title>
     <style>
-        @font-face { font-family: 'RayGamix Neue'; src: url('https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-        :root { --bg:#03070b; --panel:#0a131c; --card:#111a24; --muted:#7d96b0; --accent:#00b7ff; --glass:rgba(255,255,255,0.05); --gold:#ffc107; --red:#ff4444; --green:#00e676; --card-border:#162438; --accent-glow:rgba(0,183,255,0.4); --text:#ffffff; --subtext:#cbd5e1; }
-        body.light-theme { --bg:#f0f4f8; --panel:#ffffff; --card:#e2e8f0; --muted:#64748b; --accent:#0088cc; --glass:rgba(0,0,0,0.04); --gold:#d97706; --red:#dc2626; --green:#16a34a; --card-border:#cbd5e1; --accent-glow:rgba(0,136,204,0.3); --text:#0f172a; --subtext:#334155; }
-        * { box-sizing: border-box; font-family: 'RayGamix Neue', system-ui, -apple-system, sans-serif !important; }
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); color: var(--text); overflow: hidden; touch-action: manipulation; transition: background 0.3s, color 0.3s; }
-        body.forced-phone-ui { zoom: 0.85 !important; }
-        body.forced-desktop-ui { zoom: 1 !important; }
-        .app { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: 80px 1fr; gap: 16px; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; }
-        .sidebar { grid-row: 1 / span 2; background: linear-gradient(180deg, var(--panel), transparent); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; border-right: 1px solid var(--card-border); overflow-y: auto; }
-        .avatar-viewport { width: 100%; height: 260px; max-height: 35vh; background: var(--panel); border-radius: 12px; border: 1px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--accent-glow); position: relative; box-sizing: border-box; }
-        .avatar-viewport canvas { width: 100% !important; height: 100% !important; display: block; border-radius: inherit; background-color: transparent !important; }
-        .topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; }
-        .logo { height: 42px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-right: 5px; text-shadow: 0 0 10px var(--accent-glow); display: flex; align-items: center; gap: 6px; }
-        .logo img { height: 100%; object-fit: contain; }
-        .search { flex: 1; display: flex; align-items: center; background: var(--glass); padding: 14px 18px; border-radius: 10px; border: 1px solid var(--card-border); }
-        .search input { background: transparent; border: 0; outline: none; color: var(--text); width: 100%; font-size: 15px; }
-        .btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.15s; text-align: center; box-sizing: border-box; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; user-select: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 5px 15px var(--accent-glow); }
-        .btn-alt { background: var(--glass); border: 1px solid var(--card-border); color: var(--text); padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 13px; font-weight: bold; transition: 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-alt:hover { background: var(--card); border-color: var(--accent); }
-        .badge-rank { background: linear-gradient(135deg, #cc66ff, var(--accent)); color: #000; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
-        .token-counter { display: flex; align-items: center; gap: 6px; background: rgba(255,193,7,0.15); border: 1px solid var(--gold); color: var(--gold); font-weight: 900; padding: 6px 12px; border-radius: 20px; font-size: 13px; }
-        .btn-tool { background: var(--card); color: var(--text); border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-tool:hover { background: var(--accent); color: #000; }
-        .tool-active { background: var(--accent) !important; color: #000 !important; }
-        .main { grid-column: 2; background: rgba(0,0,0,0.1); border-radius: 12px; padding: 25px; overflow-y: auto; border: 1px solid var(--card-border); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid var(--card-border); position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; cursor: pointer; }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .card-type-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,183,255,0.2); border: 1px solid var(--accent); color: var(--accent); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
-        .card-actions { display: flex; gap: 8px; margin-top: 15px; }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .panel { background: var(--panel); padding: 35px; border-radius: 20px; border: 1px solid var(--accent); width: 540px; max-width: 92vw; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 50px var(--accent-glow); box-sizing: border-box; }
-        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 24px; color: var(--red); font-weight: bold; transition: 0.2s; }
-        .close-btn:hover { transform: scale(1.2); }
-        #notification-toast-container { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast-notification { pointer-events: auto; background: var(--panel); border: 1px solid var(--accent); color: var(--text); padding: 14px 18px; border-radius: 10px; font-weight: bold; box-shadow: 0 5px 20px var(--accent-glow); width: 320px; max-width: 90vw; animation: toastIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275); display: flex; align-items: center; gap: 12px; font-size: 13px; line-height: 1.4; }
-        .toast-notification.toast-success { border-color: var(--green); box-shadow: 0 5px 20px rgba(0,230,118,0.3); }
-        .toast-notification.toast-warning { border-color: var(--gold); box-shadow: 0 5px 20px rgba(255,193,7,0.3); }
-        .toast-notification.toast-danger { border-color: var(--red); box-shadow: 0 5px 20px rgba(255,68,68,0.3); }
-        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .game-detail-header-bar { background: #000; border-bottom: 2px solid var(--card-border); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; border-radius: 12px 12px 0 0; }
-        .game-detail-img-box { width: 120px; height: 75px; background: #111a24; border: 2px solid var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: var(--accent); overflow: hidden; flex-shrink: 0; }
-        .game-detail-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .game-detail-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .game-detail-body { background: #070d14; padding: 25px; border-radius: 0 0 12px 12px; color: var(--subtext); }
-        .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
-        .studio-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 25px; background: #071018; border-bottom: 1px solid #142536; gap: 10px; flex-wrap: wrap; }
-        .studio-toolbar { background: #0a1520; padding: 12px 25px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap; }
-        .studio-body { display: flex; flex: 1; min-height: 0; }
-        .studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; cursor: crosshair; min-height: 200px; }
-        .studio-sidebar { width: 340px; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; }
-        .prop-section { padding: 15px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1; }
-        .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color: var(--muted); font-weight: bold; }
-        .prop-input { flex: 1; background: var(--bg); border: 1px solid var(--card-border); color: var(--text); padding: 8px 10px; font-size: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; transition: 0.2s; }
-        .prop-input:focus { border-color: var(--accent); outline: none; }
-        .prop-vec3 { display: flex; gap: 6px; flex: 1; }
-        .prop-vec3 input { width: 33%; background: var(--bg); border: 1px solid var(--card-border); color: var(--text); padding: 6px; font-size: 12px; text-align: center; border-radius: 4px; }
-        #game-player { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; padding: 0; margin: 0; flex-direction: column; }
-        .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10001; pointer-events: none; }
-        .player-header * { pointer-events: auto; }
-        #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
-        #game-loader { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #0a131c 0%, #000 100%); z-index: 10002; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 20px; pointer-events: none; }
-        #game-loader .spinner { width: 70px; height: 70px; border-radius: 50%; border: 4px solid rgba(0,183,255,0.15); border-top-color: #00b7ff; animation: rgxspin 0.9s linear infinite; box-shadow: 0 0 30px rgba(0,183,255,0.4); }
-        #game-loader .loader-text { color: #00b7ff; font-weight: 900; font-size: 18px; letter-spacing: 1px; text-shadow: 0 0 12px rgba(0,183,255,0.6); }
-        #game-loader .loader-sub { color: #7d96b0; font-size: 12px; font-weight: bold; margin-top: 6px; }
-        @keyframes rgxspin { to { transform: rotate(360deg); } }
-        @media (max-width: 850px) {
-            html, body { overflow-y: auto; zoom: 0.85; }
-            .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100vh; padding: 12px; gap: 12px; }
-            .sidebar { grid-row: auto; width: 100%; box-sizing: border-box; border-right: none; border-bottom: 1px solid var(--card-border); }
-            .topbar { grid-column: 1; flex-wrap: wrap; }
-            .main { grid-column: 1; padding: 15px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-            .studio-body { flex-direction: column; }
-            .studio-sidebar { width: 100%; max-height: 35vh; border-left: none; border-top: 1px solid #142536; }
+        @font-face {
+            font-family: 'RayGamix Neue';
+            src: url('https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf') format('truetype');
         }
+        @font-face {
+            font-family: 'RayGamix Neue';
+            font-weight: bold;
+            src: url('https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_bold.ttf') format('truetype');
+        }
+
+        * { box-sizing: border-box; font-family: 'RayGamix Neue', system-ui, sans-serif; user-select: none; }
+        body { margin: 0; background: #03070b; color: #fff; height: 100vh; overflow: hidden; display: flex; }
+
+        /* SIDEBAR */
+        #sidebar { width: 260px; background: #0a131c; border-right: 1px solid rgba(0,183,255,0.2); display: flex; flex-direction: column; padding: 24px; gap: 20px; z-index: 10; }
+        .logo-area { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: bold; color: #00b7ff; text-shadow: 0 0 15px rgba(0,183,255,0.4); }
+        .nav-links { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-btn { background: transparent; border: none; color: #7d96b0; padding: 12px 16px; border-radius: 12px; font-size: 15px; font-weight: bold; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
+        .nav-btn:hover, .nav-btn.active { background: rgba(0,183,255,0.12); color: #00b7ff; box-shadow: inset 3px 0 0 #00b7ff; }
+
+        /* USER PROFILE CARD IN SIDEBAR */
+        .user-card { background: rgba(0,0,0,0.4); border: 1px solid rgba(0,183,255,0.3); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; }
+        .avatar-preview { width: 42px; height: 42px; background: #00b7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; border: 2px solid #fff; }
+        .user-info { display: flex; flex-direction: column; overflow: hidden; }
+        .username { font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-tokens { font-size: 12px; color: #ffc107; font-weight: bold; }
+
+        /* MAIN CONTENT AREA */
+        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: radial-gradient(circle at top right, #0a1b2a 0%, #03070b 60%); }
+        .header { height: 70px; border-bottom: 1px solid rgba(0,183,255,0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: rgba(10,19,28,0.5); backdrop-filter: blur(10px); }
+        .page-title { font-size: 20px; font-weight: bold; color: #fff; }
+        
+        .content-scroll { flex: 1; overflow-y: auto; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+        .tab-view { display: none; flex-direction: column; gap: 24px; animation: fadeIn 0.3s ease; }
+        .tab-view.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS & GRIDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .game-card { background: #0a131c; border: 1px solid rgba(0,183,255,0.2); border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; }
+        .game-card:hover { transform: translateY(-4px); border-color: #00b7ff; box-shadow: 0 10px 30px rgba(0,183,255,0.2); }
+        .game-thumb { width: 100%; height: 150px; background: #03070b; object-fit: cover; }
+        .game-details { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .game-title { font-size: 16px; font-weight: bold; color: #fff; }
+        .game-creator { font-size: 12px; color: #7d96b0; }
+        
+        /* BUTTONS */
+        .btn { background: linear-gradient(135deg, #00b7ff, #0088cc); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; font-size: 14px; text-transform: uppercase; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: linear-gradient(135deg, #ffc107, #ff9800); }
+        .btn-outline { background: transparent; border: 1px solid #00b7ff; color: #00b7ff; }
+
+        /* STUDIO EDITOR */
+        .studio-container { display: flex; gap: 20px; height: calc(100vh - 160px); }
+        .studio-sidebar { width: 300px; background: #0a131c; border: 1px solid rgba(0,183,255,0.2); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+        .studio-canvas-wrap { flex: 1; background: #03070b; border: 1px solid rgba(0,183,255,0.2); border-radius: 16px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        input, textarea, select { width: 100%; background: #03070b; border: 1px solid rgba(0,183,255,0.3); border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; outline: none; }
+        input:focus, textarea:focus { border-color: #00b7ff; }
+
+        /* ACCOUNT PANEL (OPTIONAL SIGN-IN) */
+        .account-panel { background: #0a131c; border: 1px solid rgba(0,183,255,0.2); padding: 24px; border-radius: 16px; width: 420px; display: flex; flex-direction: column; gap: 14px; }
     </style>
 </head>
 <body>
 
-<div id="notification-toast-container"></div>
-
-<div class="app">
-    <aside class="sidebar">
-        <div class="avatar-viewport" id="avatarCanvas"></div>
-        <div style="font-weight:900; color:var(--accent); font-size:18px; display: flex; align-items: center; margin-top:4px; text-transform: uppercase;"><span id="uDisp">Guest</span></div>
-        <div id="uRankBadge" class="badge-rank">GUEST</div>
-        <div class="token-counter" style="margin-top: 4px;"><span>🪙 Tokens:</span> <span id="uTokenDisp">100</span></div>
-        <button class="btn" style="background:linear-gradient(135deg, var(--gold), #ff8800); color:#000; margin-top:6px;" onclick="openTokenRewardsModal()">🎁 Tokens & Rewards</button>
-        <button class="btn-alt" onclick="openShop()">🛒 Avatar Customizer</button>
-        <button class="btn-alt" style="border-color:#cc66ff; color:#cc66ff;" onclick="openFriendsModal()">👥 Friends & DM Chat</button>
-        <button class="btn" style="margin-top: 4px;" onclick="openStudio()">🛠️ Launch Studio</button>
-    </aside>
-
-    <header class="topbar">
-        <div class="logo">
-            <img src="https://raygamix.com/logo.png" alt="RayGamix" onerror="this.onerror=null; this.src='https://placehold.co/180x45/0a131c/00b7ff?text=⚡+RAYGAMIX';">
+    <!-- SIDEBAR NAVIGATION -->
+    <div id="sidebar">
+        <div class="logo-area">
+            <span>⚡</span> RayGamix
         </div>
-        <div class="search">
-            <input id="gSearch" placeholder="Search RGX Games or Authors..." oninput="renderAppContent()">
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="switchTab('games', this)">🎮 Games</button>
+            <button class="nav-btn" onclick="switchTab('studio', this)">🛠️ Studio</button>
+            <button class="nav-btn" onclick="switchTab('avatar', this)">👕 Avatar Shop</button>
+            <button class="nav-btn" onclick="switchTab('profile', this)">👤 Profile & Account</button>
         </div>
-        <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openDirectChatModal()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            Direct Chat
-        </button>
-        <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openSettingsModal()">⚙️ Settings</button>
-        <button class="btn-alt" style="width: auto; padding: 12px 18px;" onclick="openAuth()" id="btnAccountText">👤 Account</button>
-        <button class="btn-alt" id="btnLogoutBtn" style="width: auto; padding: 12px 18px; border-color:var(--red); color:var(--red); display:none;" onclick="handleLogout()">🚪 Log Out</button>
-    </header>
-
-    <main class="main">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;">
-            <h2 style="margin:0; color:var(--text); font-size: 20px;" id="hubHeadingText">RayGamix Games Hub</h2>
-            <span style="font-size: 12px; color: var(--accent); font-weight: bold;">v12.5 RGX XML Engine</span>
-        </div>
-        <div class="grid" id="gameGrid"></div>
-    </main>
-</div>
-
-<!-- Game Detail Modal -->
-<div class="overlay" id="game-detail-panel">
-    <div class="panel" style="padding:0; width: 640px; max-width: 95vw; background:#070d14; border-color:var(--accent);">
-        <div class="close-btn" style="top:12px; right:15px; z-index:10;" onclick="document.getElementById('game-detail-panel').style.display='none'">×</div>
-        <div class="game-detail-header-bar">
-            <div class="game-detail-img-box" id="detailImgBox">[img]</div>
-            <div class="game-detail-actions">
-                <button class="btn" style="width:auto; padding:10px 22px; font-size:14px;" id="detailPlayBtn">[Play]</button>
-                <button class="btn-alt" style="width:auto; padding:10px 14px;" onclick="toggleFavoriteCurrentGame()" id="detailFavBtn">⭐️ Favorite</button>
-                <button class="btn-alt" style="width:auto; padding:10px 14px; border-color:var(--gold); color:var(--gold);" onclick="openReportModal()">🚩 Report</button>
-                <button class="btn-alt" style="width:auto; padding:10px 14px; border-color:var(--green); color:var(--green);" onclick="likeCurrentGame()" id="detailLikeBtn">👍 Like (<span id="detailLikeCount">0</span>)</button>
-            </div>
-        </div>
-        <div class="game-detail-body">
-            <h2 style="margin:0 0 8px 0; color:var(--text); font-size:24px; font-weight:900;" id="detailGameTitle">Game Name</h2>
-            <div style="font-size:13px; color:var(--accent); font-weight:bold; margin-bottom:15px;" id="detailGameCreator">Made by Builder</div>
-            <p style="font-size:14px; line-height:1.6; color:var(--subtext); margin-bottom:20px;" id="detailGameDesc">Description</p>
-            <div style="display:flex; gap:15px; font-size:12px; color:var(--muted); border-top:1px solid var(--card-border); padding-top:15px;">
-                <span>👁️ Visits: <strong id="detailVisits" style="color:var(--text);">0</strong></span>
-                <span>📅 Format: <strong style="color:var(--gold);">.RGX XML Markup</strong></span>
-                <span>⭐ Rating: <strong style="color:var(--gold);">4.9 / 5.0</strong></span>
+        <div class="user-card">
+            <div class="avatar-preview" id="sidebar-avatar-initial">G</div>
+            <div class="user-info">
+                <span class="username" id="sidebar-username">Guest Player</span>
+                <span class="user-tokens" id="sidebar-tokens">🪙 250 Tokens</span>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Settings Panel -->
-<div class="overlay" id="settings-panel">
-    <div class="panel" style="max-width: 520px;">
-        <div class="close-btn" onclick="document.getElementById('settings-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 24px; font-weight:800;">⚙️ RayGamix Settings</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Manage theme, layout, avatar style, and guest credentials:</p>
-        <div style="margin-bottom: 18px;">
-            <label style="color:var(--text); font-weight:bold; font-size:13px; display:block; margin-bottom:6px;">🎨 Color Theme Mode:</label>
-            <div style="display:flex; gap:10px;">
-                <button id="btnThemeDark" class="btn-alt" style="flex:1; padding:10px;" onclick="setAppTheme('dark')">🌙 Dark Mode</button>
-                <button id="btnThemeLight" class="btn-alt" style="flex:1; padding:10px;" onclick="setAppTheme('light')">☀️ Light Mode</button>
+    <!-- MAIN CONTENT -->
+    <div id="main-content">
+        <div class="header">
+            <div class="page-title" id="current-page-title">Games Hub</div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="btn btn-gold" onclick="claimDailyTokens()">🎁 Daily Bonus (+100)</button>
             </div>
         </div>
-        <div style="margin-bottom: 18px;">
-            <label style="color:var(--text); font-weight:bold; font-size:13px; display:block; margin-bottom:6px;">📱 Interface Layout:</label>
-            <div style="display:flex; gap:10px;">
-                <button id="btnUiPhone" class="btn-alt" style="flex:1; padding:10px;" onclick="selectUiSetting('phone')">📱 Phone UI</button>
-                <button id="btnUiDesktop" class="btn-alt" style="flex:1; padding:10px;" onclick="selectUiSetting('desktop')">💻 Desktop UI</button>
+
+        <div class="content-scroll">
+            
+            <!-- GAMES TAB -->
+            <div id="tab-games" class="tab-view active">
+                <h2>Featured Worlds</h2>
+                <div class="grid" id="games-grid">
+                    <!-- Populated dynamically -->
+                </div>
             </div>
-        </div>
-        <div style="margin-bottom: 20px;">
-            <label style="color:var(--text); font-weight:bold; font-size:13px; display:block; margin-bottom:6px;">🧑‍🎨 Avatar Style:</label>
-            <select id="avatar-style-select" class="prop-input" style="padding:8px;">
-                <option value="blocky">Blocky (Rounded)</option>
-                <option value="blockyNonRounded">Blocky (Non‑Rounded)</option>
-                <option value="round">Round (Circles)</option>
-                <option value="realistic">Realistic (Hands + Feet)</option>
-                <option value="gameRealistic">Game Realistic (Jelly R15)</option>
-            </select>
-        </div>
-        <div style="margin-bottom: 20px; border-top: 1px solid var(--card-border); padding-top: 15px;">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-alt" style="border-color:var(--gold); color:var(--gold);" onclick="openReportModal()">🚩 Report Content / Help</button>
-                <button class="btn-alt" style="border-color:var(--red); color:var(--red);" onclick="resetDeviceGuestAccount()">🗑️ Reset Guest Account</button>
-            </div>
-        </div>
-        <button class="btn" style="width:100%; padding:12px;" onclick="document.getElementById('settings-panel').style.display='none'">Save & Close Settings</button>
-    </div>
-</div>
 
-<!-- DM -->
-<div class="overlay" id="dm-panel">
-    <div class="panel" style="width: 540px; max-width: 95vw;">
-        <div class="close-btn" onclick="document.getElementById('dm-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 22px; font-weight:800;">Moderated Direct Messages</h2>
-        <p style="color:var(--muted); font-size:12px; margin-bottom: 12px;">Direct messages are monitored for community safety.</p>
-        <div style="display:flex; gap:10px; margin-bottom:12px;">
-            <select id="dmRecipientSelect" class="prop-input" style="padding:10px; font-weight:bold;" onchange="loadDirectChatHistory()">
-                <option value="">-- Select Friend / Recipient --</option>
-            </select>
-        </div>
-        <div id="dmChatMessagesContainer" style="height: 220px; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
-            <div style="color:var(--muted); text-align:center; margin-top:80px;">Select a user above to start chatting...</div>
-        </div>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="dmInputMessage" class="prop-input" placeholder="Type direct message..." onkeydown="if(event.key==='Enter') sendDirectMessage()">
-            <button class="btn" style="width:auto; padding:10px 20px;" onclick="sendDirectMessage()">Send DM</button>
-        </div>
-    </div>
-</div>
-
-<!-- Report -->
-<div class="overlay" id="report-panel">
-    <div class="panel" style="max-width: 450px;">
-        <div class="close-btn" onclick="document.getElementById('report-panel').style.display='none'">×</div>
-        <h2 style="color:var(--gold); margin-top:0; font-size: 22px; font-weight:800;">🚩 Report & Moderation Help</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 15px;">Report inappropriate users, games, or scam activity:</p>
-        <input type="text" id="repTarget" class="prop-input" placeholder="Target Username or Game Title" style="margin-bottom:10px; padding:10px;">
-        <textarea id="repReason" class="prop-input" placeholder="Reason for report..." style="height:80px; margin-bottom:15px; padding:10px; resize:none;"></textarea>
-        <button class="btn" style="background:var(--gold); color:#000;" onclick="submitReportForm()">Submit Report</button>
-    </div>
-</div>
-
-<!-- Tokens -->
-<div class="overlay" id="tokens-panel">
-    <div class="panel" style="text-align: center; max-width: 440px;">
-        <div class="close-btn" onclick="document.getElementById('tokens-panel').style.display='none'">×</div>
-        <h2 style="color:var(--gold); margin-top:0; font-size: 24px;">🪙 RayGamix Tokens</h2>
-        <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Tokens allow you to unlock custom cosmetics and features.</p>
-        <div style="background:var(--bg); padding:20px; border-radius:12px; border:1px solid var(--card-border); margin-bottom:20px;">
-            <span style="font-size:14px; color:var(--muted); display:block; margin-bottom:6px;">Current Balance:</span>
-            <span style="font-size:32px; font-weight:900; color:var(--gold);" id="tokenModalDisp">100 🪙</span>
-        </div>
-        <button class="btn" style="background:linear-gradient(135deg, var(--gold), #ff8800); color:#000; padding:14px;" onclick="claimWeeklyTokens()">🎁 Claim Weekly Reward (+100 🪙)</button>
-    </div>
-</div>
-
-<!-- Auth -->
-<div class="overlay" id="auth-panel">
-    <div class="panel">
-        <form onsubmit="event.preventDefault();">
-        <div class="close-btn" onclick="document.getElementById('auth-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 24px;">RayGamix Account</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Sign in or register with Username and Password:</p>
-        <input type="text" id="authUsername" class="prop-input" placeholder="Username" style="margin-bottom:12px; font-size:15px; padding:12px;" autocomplete="username">
-        <input type="password" id="authPassword" class="prop-input" placeholder="Password" style="margin-bottom:20px; font-size:15px; padding:12px;" autocomplete="current-password">
-        <div style="display:flex; gap:10px;">
-            <button class="btn" onclick="handleAuthAction('login')">Login</button>
-            <button class="btn-alt" onclick="handleAuthAction('register')">Register</button>
-        </div>
-        </form>
-        <button class="btn-alt" style="margin-top:12px; border-color:var(--muted);" onclick="handleGuestMode()">Continue as Guest Account</button>
-    </div>
-</div>
-
-<!-- Friends -->
-<div class="overlay" id="friends-panel">
-    <div class="panel" style="width: 520px; max-width: 95vw;">
-        <div class="close-btn" onclick="document.getElementById('friends-panel').style.display='none'">×</div>
-        <h2 style="color:#cc66ff; margin-top:0; font-size: 22px; font-weight: 800;">👥 Friends & Token Transfers</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 15px;">Send friend requests, chat directly, and transfer 🪙 Tokens:</p>
-        <div style="display:flex; gap:8px; margin-bottom:15px;">
-            <input type="text" id="addFriendInput" class="prop-input" placeholder="Enter Username to Add..." style="padding:10px;">
-            <button class="btn" style="width:auto; padding:10px 18px;" onclick="sendFriendRequestBtn()">Add Friend</button>
-        </div>
-        <div style="border-top: 1px solid var(--card-border); padding-top:15px;">
-            <h4 style="margin:0 0 10px 0; color:var(--text); font-size:14px;">Your Friends List:</h4>
-            <div id="friendsListContainer" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Shop -->
-<div class="overlay" id="shop-panel">
-    <div class="panel" style="width: 580px; max-width: 95vw;">
-        <div class="close-btn" onclick="document.getElementById('shop-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size: 22px; font-weight: 800;">🛒 Avatar Customizer</h2>
-        <p style="color:var(--muted); font-size:13px; margin-bottom: 20px;">Personalize skin, clothing, face decals, and import custom accessories:</p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-            <div class="avatar-viewport" id="shopAvatarCanvas" style="height: 260px;"></div>
-            <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
-                <label style="font-size:12px; font-weight:bold; color:var(--muted);">Head / Skin Color:</label>
-                <input type="color" id="shop-col-head" value="#ffdbac" class="prop-input" style="height:36px; padding:2px; cursor:pointer;" onchange="updateCustomizerColors()">
-                <label style="font-size:12px; font-weight:bold; color:var(--muted);">Torso / Shirt Color:</label>
-                <input type="color" id="shop-col-torso" value="#00b7ff" class="prop-input" style="height:36px; padding:2px; cursor:pointer;" onchange="updateCustomizerColors()">
-                <label style="font-size:12px; font-weight:bold; color:var(--muted);">Pants / Legs Color:</label>
-                <input type="color" id="shop-col-legs" value="#0000ff" class="prop-input" style="height:36px; padding:2px; cursor:pointer;" onchange="updateCustomizerColors()">
-                <label style="font-size:12px; font-weight:bold; color:var(--accent);">Face Expression:</label>
-                <select id="shop-face-select" class="prop-input" style="padding:8px; border-color:var(--accent);" onchange="changeAvatarFacePreset(this.value)">
-                    <option value="happy">🙂 Happy Face</option>
-                    <option value="veryhappy">😄 Very Happy</option>
-                    <option value="neutral">😐 Neutral</option>
-                    <option value="sad">🙁 Sad</option>
-                    <option value="cry">😢 Cry</option>
-                    <option value="ohno">😱 Oh No</option>
-                    <option value="wow">😲 Wow</option>
-                </select>
-            </div>
-        </div>
-        <div style="border-top:1px solid var(--card-border); padding-top:15px; margin-bottom:15px;">
-            <label style="font-size:12px; font-weight:bold; color:var(--accent); display:block; margin-bottom:8px;">Import Custom Face PNG or 3D Accessory:</label>
-            <div style="display:flex; gap:10px;">
-                <input type="file" id="avatarFaceInput" accept="image/png" style="display:none;" onchange="importCustomFacePNG(event)">
-                <button class="btn-alt" style="flex:1; border-color:var(--accent); color:var(--accent);" onclick="document.getElementById('avatarFaceInput').click()">😊 Upload Custom Face PNG</button>
-                <input type="file" id="avatarAccInput" accept=".glb,.gltf,.obj,.fbx" style="display:none;" onchange="importAvatarAccessoryFile(event)">
-                <button class="btn-alt" style="flex:1; border-color:var(--accent); color:var(--accent);" onclick="document.getElementById('avatarAccInput').click()">📦 Upload 3D Accessory</button>
-            </div>
-        </div>
-        <button class="btn" onclick="saveAvatarCustomizationAndClose()">Save & Apply Avatar</button>
-    </div>
-</div>
-
-<!-- Dev Links -->
-<div class="overlay" id="dev-links-panel">
-    <div class="panel" style="max-width:580px; border-color:var(--accent);">
-        <div class="close-btn" onclick="document.getElementById('dev-links-panel').style.display='none'">×</div>
-        <h2 style="color:var(--accent); margin-top:0; font-size:22px; font-weight:900;">💻 DEVELOPER GAME LINKS</h2>
-        <p style="color:var(--muted); font-size:12px; margin-bottom:15px;">Direct URL routes:</p>
-        <div id="devLinksList" style="display:flex; flex-direction:column; gap:10px; max-height:300px; overflow-y:auto; margin-bottom:15px;"></div>
-        <button class="btn" onclick="document.getElementById('dev-links-panel').style.display='none'">Close Developer Panel</button>
-    </div>
-</div>
-
-<!-- Warning -->
-<div class="overlay" id="warning-panel">
-    <div class="panel" style="border-color:#ff4444; box-shadow: 0 0 50px rgba(255,68,68,0.3); text-align:left; max-width:540px;">
-        <div class="close-btn" onclick="document.getElementById('warning-panel').style.display='none'">×</div>
-        <h2 style="color:#ff4444; margin-top:0; font-size:24px; font-weight:900;">⚠️ MODERATION NOTICE</h2>
-        <div style="background:rgba(255,68,68,0.1); border:1px solid #ff4444; border-radius:10px; padding:15px; margin-bottom:15px;">
-            <div style="font-size:22px; font-weight:900; color:#ff4444;" id="warnIncrementDisp">WARNINGS +0.5</div>
-            <div style="font-size:14px; font-weight:bold; color:var(--text);" id="warnReasonDisp">REASON: CHAT VIOLATION</div>
-        </div>
-        <div id="banBannerContainer" style="display:none; margin-top:15px;"></div>
-        <div style="margin-top:15px; border-top:1px solid var(--card-border); padding-top:12px;">
-            <strong style="color:var(--accent); font-size:12px; display:block; margin-bottom:6px;">🤖 AI Ban Appeal Direct Agent:</strong>
-            <div id="appealAgentChatBox" style="height:100px; background:var(--bg); border:1px solid var(--card-border); border-radius:6px; padding:8px; overflow-y:auto; margin-bottom:8px; font-size:12px; display:flex; flex-direction:column; gap:6px;">
-                <div style="color:var(--muted);">Agent: Explain your case or enter appeal key to reset stats...</div>
-            </div>
-            <div style="display:flex; gap:6px;">
-                <input type="password" id="appealSecretInput" class="prop-input" placeholder="Type message or key..." onkeydown="if(event.key==='Enter') submitBanAppeal()">
-                <button class="btn" style="width:auto; padding:8px 14px; font-size:11px;" onclick="submitBanAppeal()">Send Appeal</button>
-            </div>
-        </div>
-        <button class="btn" style="background:#ff4444; color:#fff; margin-top:15px;" onclick="document.getElementById('warning-panel').style.display='none'">Acknowledge Notice</button>
-    </div>
-</div>
-
-<!-- Studio -->
-<div class="overlay" id="studio-panel" style="background:#000;">
-    <div class="studio-layout">
-        <div class="studio-header">
-            <h2 style="color:var(--accent); margin:0; font-weight:900; display:flex; align-items:center; gap:8px;">⚡ RAYGAMIX STUDIO v12.5</h2>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <input type="text" id="gameTitle" class="prop-input" placeholder="ENTER WORLD NAME..." style="width: 180px; font-size: 13px; padding: 8px 10px; border-radius: 8px; font-weight:bold;">
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="document.getElementById('rgxWorldImportInput').click()">📥 IMPORT .RGX</button>
-                <button class="btn-alt" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="exportRGXFile()">📤 EXPORT .RGX</button>
-                <input type="file" id="rgxWorldImportInput" accept=".rgx" style="display:none;" onchange="importRGXWorldFile(event)">
-                <button class="btn-alt" style="width:auto; padding:8px 12px; font-size:11px;" onclick="resetStudioCameraToGameplay()">🎯 Match Gameplay Camera</button>
-                <button class="btn" style="background:linear-gradient(135deg, #00e5ff, #0088ff); color:#000; width: auto; padding: 8px 14px; font-size:11px;" onclick="testCurrentStudioGame()">🕹️ TEST PLAY</button>
-                <button class="btn" id="btnPublish" style="background:linear-gradient(135deg, #cc66ff, #8800ff); color:#fff; width: auto; padding: 8px 14px; font-size:11px;" onclick="confirmPublishGame()">🌐 PUBLISH RGX</button>
-                <button class="btn" style="background:var(--red); color:#fff; width: auto; padding: 8px 12px; font-size:11px;" onclick="closeStudio()">EXIT STUDIO</button>
-            </div>
-        </div>
-        <div class="studio-toolbar">
-            <button id="tool-select" class="btn-tool tool-active" onclick="setTransformMode('select')">🖱️ Select</button>
-            <button id="tool-translate" class="btn-tool" onclick="setTransformMode('translate')">☩ Move</button>
-            <button id="tool-scale" class="btn-tool" onclick="setTransformMode('scale')">⤡ Scale</button>
-            <button id="tool-rotate" class="btn-tool" onclick="setTransformMode('rotate')">↻ Rotate</button>
-            <div style="width: 1px; height: 20px; background: #333; margin: 0 5px;"></div>
-            <select id="addPartType" class="prop-input" style="width: auto; padding: 6px; font-weight:bold;">
-                <option value="cube">🧱 Block / Cube</option>
-                <option value="sphere">⚽ Sphere</option>
-                <option value="cylinder">🥫 Cylinder</option>
-                <option value="wedge">📐 Wedge / Triangle</option>
-                <option value="ladder">🪜 Ladder</option>
-                <option value="water">🌊 Water Volume</option>
-                <option value="lava">🔥 Lava Hazard</option>
-                <option value="spawn">🏁 Spawn Point</option>
-                <option value="checkpoint">🚩 Checkpoint Flag</option>
-                <option value="sign">🪧 Signboard</option>
-            </select>
-            <button class="btn" style="width:auto; padding: 6px 15px;" onclick="addSelectedPart()">➕ Insert Part</button>
-        </div>
-        <div class="studio-body">
-            <div id="studio-viewport" class="studio-viewport"></div>
-            <div class="studio-sidebar">
-                <div style="background: #050a12; padding: 12px 15px; font-size: 13px; font-weight: 800; color: #fff; border-bottom: 1px solid #162438;">OBJECT PROPERTIES</div>
-                <div class="prop-section" id="studioPropertiesPanel">
-                    <div id="prop-empty" style="color:var(--muted); text-align:center; margin-top:30px; font-weight:bold;">Click an object in 3D viewport to edit properties</div>
-                    <div id="prop-content" style="display:none;">
-                        <div class="prop-row"><span style="width:80px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:80px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px; border:none;" onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:80px;">Material</span>
-                            <select id="prop-material" class="prop-input" onchange="applyPropertyChanges()">
-                                <option value="Plastic">Plastic</option>
-                                <option value="Glass">Glass</option>
-                                <option value="Neon">Neon</option>
-                                <option value="Obsidian">Obsidian</option>
-                                <option value="Water">Water</option>
-                                <option value="Lava">Lava</option>
-                            </select>
-                        </div>
-                        <div class="prop-row" id="row-text-val" style="display:none;"><span style="width:80px;">Sign Text</span><input type="text" id="prop-text-val" class="prop-input" placeholder="Sign text..." onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:40px;">Pos</span><div class="prop-vec3"><input type="number" id="prop-pos-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
-                        <div class="prop-row"><span style="width:40px;">Scale</span><div class="prop-vec3"><input type="number" id="prop-scale-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
-                        <div class="prop-row"><span style="width:40px;">Rot</span><div class="prop-vec3"><input type="number" id="prop-rot-x" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-y" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-z" step="15" onchange="applyPropertyChanges()"></div></div>
-                        <button class="btn-alt" style="border-color:var(--red); color:var(--red); margin-top:20px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
+            <!-- STUDIO TAB -->
+            <div id="tab-studio" class="tab-view">
+                <h2>RayGamix 3D Studio</h2>
+                <div class="studio-container">
+                    <div class="studio-sidebar">
+                        <h3>Publish World</h3>
+                        <label>World Title</label>
+                        <input type="text" id="studio-title" value="My Awesome Obby">
+                        <label>Description</label>
+                        <textarea id="studio-desc" rows="3">Built in RayGamix Studio!</textarea>
+                        <label>RGX Markup</label>
+                        <textarea id="studio-markup" rows="6"><world><part type="cube" name="Base" color="111a24" pos="0,-1,0" scale="100,2,100" material="Obsidian"/><part type="spawn" name="Spawn" color="00b7ff" pos="0,1,0" scale="6,1,6" material="Neon"/></world></textarea>
+                        <button class="btn" onclick="publishGame()">Publish to RayGamix</button>
+                    </div>
+                    <div class="studio-canvas-wrap">
+                        <div style="color:#7d96b0; font-size:14px; text-align:center;">RayGamix 3D Editor Ready<br><span style="font-size:11px">Use launcher or studio tools to preview.</span></div>
                     </div>
                 </div>
             </div>
+
+            <!-- AVATAR TAB -->
+            <div id="tab-avatar" class="tab-view">
+                <h2>Avatar Customizer</h2>
+                <p style="color:#7d96b0">Customize your blocky 3D avatar colors. Saved instantly to your session.</p>
+                <div style="display:flex; gap:20px; align-items:center;">
+                    <div>
+                        <label>Head Color</label>
+                        <input type="color" id="avatar-head" value="#ffdbac" onchange="saveAvatarSettings()">
+                    </div>
+                    <div>
+                        <label>Torso Color</label>
+                        <input type="color" id="avatar-torso" value="#00b7ff" onchange="saveAvatarSettings()">
+                    </div>
+                    <div>
+                        <label>Legs Color</label>
+                        <input type="color" id="avatar-legs" value="#0033aa" onchange="saveAvatarSettings()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE TAB (OPTIONAL SIGN-IN / ACCOUNT SETTINGS) -->
+            <div id="tab-profile" class="tab-view">
+                <h2>Account & Guest Settings</h2>
+                <p style="color:#7d96b0; max-width: 600px;">
+                    You are currently playing as an autonomous guest. You can play, publish games, and customize your avatar instantly without an account. 
+                    If you want to secure a permanent username across devices, you can optionally register below.
+                </p>
+                <div class="account-panel">
+                    <h3>Optional Sign-In / Register</h3>
+                    <label>Username</label>
+                    <input type="text" id="profile-username" placeholder="Enter custom username">
+                    <label>Password</label>
+                    <input type="password" id="profile-password" placeholder="Create optional password">
+                    <div style="display: flex; gap: 10px; margin-top: 6px;">
+                        <button class="btn" onclick="handleRegisterOrLogin()">Save Account / Login</button>
+                        <button class="btn btn-outline" onclick="resetGuestSession()">Reset Guest Session</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
 
-<!-- WebGL Player -->
-<div id="game-player">
-    <div class="player-header">
-        <h3 id="player-title" style="margin:0; color:#00b7ff; font-size:18px;">RayGamix Game</h3>
-        <button class="btn" style="width:auto; padding:8px 16px; background:#ff4444; color:#fff;" onclick="closeGame()">Exit Game</button>
-    </div>
-    <div id="game-loader">
-        <div class="spinner"></div>
-        <div class="loader-text">⏳ LOADING WORLD...</div>
-        <div class="loader-sub" id="loader-sub">Fetching engine and assets</div>
-    </div>
-    <iframe id="game-frame"></iframe>
-</div>
+    <script>
+        const BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
+        let sessionToken = localStorage.getItem('rgx_token') || '';
+        let deviceId = localStorage.getItem('rgx_device');
+        
+        if (!deviceId) {
+            deviceId = 'dev_' + Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
+            localStorage.setItem('rgx_device', deviceId);
+        }
 
-<script>
-const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
-const HARDCODED_ASSETS_BASE = "https://raygamix.github.io/hardcodedassets/";
-const HOSTED_FACE_ASSETS = {
-    happy: HARDCODED_ASSETS_BASE + "happy.png",
-    veryhappy: HARDCODED_ASSETS_BASE + "veryhappy.png",
-    neutral: HARDCODED_ASSETS_BASE + "neutral.png",
-    sad: HARDCODED_ASSETS_BASE + "sad.png",
-    cry: HARDCODED_ASSETS_BASE + "cry.png",
-    ohno: HARDCODED_ASSETS_BASE + "ohno.png",
-    wow: HARDCODED_ASSETS_BASE + "wow.png"
-};
-
-// ============================================================
-// ENGINE CAMERA (mirrors backend /engine-config)
-// ============================================================
-const ENGINE_CAMERA = {
-    fov: 60,
-    near: 0.1,
-    far: 600,
-    restDistance: 40,
-    restPitch: 0.3,
-    restYaw: 0,
-    eyeOffsetY: 4,
-    targetOffsetY: 2,
-    minDistance: 6,
-    maxDistance: 80,
-    maxPitch: 1.5,
-    minPitch: -0.8,
-    ambientIntensity: 0.5,
-    sunIntensity: 1.2,
-    fillColor: 0x00b7ff,
-    fillIntensity: 0.3,
-    skyColor: 0x87ceeb,
-    fogDensity: 0.0055,
-    toneMappingExposure: 1.1,
-    pixelRatioCap: 1.5
-};
-
-// ============================================================
-// SESSION STATE — persistent across tabs & reloads
-// ============================================================
-const _originalFetch = window.fetch.bind(window);
-
-let SESSION_TOKEN =
-    localStorage.getItem('rgx_session_token') ||
-    sessionStorage.getItem('rgx_session_token') ||
-    null;
-let SESSION_USERNAME =
-    localStorage.getItem('rgx_session_username') ||
-    sessionStorage.getItem('rgx_session_username') ||
-    null;
-let loggedInUser = localStorage.getItem('rgx_logged_in_user') || null;
-let currentUser = SESSION_USERNAME || loggedInUser || "Guest";
-
-function persistSession(token, username) {
-    SESSION_TOKEN = token;
-    SESSION_USERNAME = username;
-    if (token) {
-        localStorage.setItem('rgx_session_token', token);
-        localStorage.setItem('rgx_session_username', username || '');
-        sessionStorage.setItem('rgx_session_token', token);
-        sessionStorage.setItem('rgx_session_username', username || '');
-    } else {
-        localStorage.removeItem('rgx_session_token');
-        localStorage.removeItem('rgx_session_username');
-        sessionStorage.removeItem('rgx_session_token');
-        sessionStorage.removeItem('rgx_session_username');
-    }
-    if (username) currentUser = username;
-}
-
-async function fetchWithToken(url, opts) {
-    opts = opts || {};
-    opts.headers = Object.assign({}, opts.headers || {});
-    if (SESSION_TOKEN) opts.headers['X-Session-Token'] = SESSION_TOKEN;
-    return _originalFetch(url, opts);
-}
-
-// ============================================================
-// DEVICE IDENTITY — always ensure we have *some* valid session
-// ============================================================
-async function ensureDeviceIdentity() {
-    if (SESSION_TOKEN) {
-        let ok = false, transient = false, data = null;
-        for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (sessionToken) headers['X-Session-Token'] = sessionToken;
+            const opts = { method, headers };
+            if (data) opts.body = JSON.stringify(data);
             try {
-                const res = await fetchWithToken(`${CF_BACKEND_URL}/auth/me`);
-                if (res.ok) {
-                    data = await res.json();
-                    ok = true;
-                } else if (res.status === 401) {
-                    break; // token expired/invalid — fall through to device auth
-                } else {
-                    transient = true;
+                const res = await fetch(BACKEND_URL + endpoint, opts);
+                return await res.json();
+            } catch (e) {
+                return { error: 'Network error' };
+            }
+        }
+
+        async function initApp() {
+            // Automatically log in as guest in the background without pop-ups
+            if (!sessionToken) {
+                const res = await apiRequest('/auth/device', 'POST', { deviceId });
+                if (res.success) {
+                    sessionToken = res.token;
+                    localStorage.setItem('rgx_token', sessionToken);
                 }
-            } catch (e) { transient = true; }
-            if (!ok && transient) await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
-        }
-        if (ok && data) {
-            if (!data.isGuest) {
-                loggedInUser = data.username;
-                localStorage.setItem('rgx_logged_in_user', loggedInUser);
             }
-            currentUser = data.username;
-            persistSession(SESSION_TOKEN, data.username);
-            return;
-        }
-        if (transient) {
-            console.warn('[RGX] /auth/me transient failure; preserving session');
-            return;
-        }
-        // Token expired/invalid — clear and continue to device auth
-        persistSession(null, null);
-    }
-
-    // Always ensure *some* valid session exists before returning.
-    // (Previously this function returned early when loggedInUser was set
-    //  but SESSION_TOKEN was null — leaving Play with no token → 401.)
-    let deviceId = localStorage.getItem('rgx_device_id');
-    if (!deviceId || !/^dev_[0-9a-f]{32}$/.test(deviceId)) {
-        const bytes = crypto.getRandomValues(new Uint8Array(16));
-        deviceId = 'dev_' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-        localStorage.setItem('rgx_device_id', deviceId);
-    }
-    try {
-        const res = await _originalFetch(`${CF_BACKEND_URL}/auth/device`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ deviceId })
-        });
-        if (res.ok) {
-            const d = await res.json();
-            persistSession(d.token, d.username);
-            if (d.guest && loggedInUser) {
-                loggedInUser = null;
-                localStorage.removeItem('rgx_logged_in_user');
-                setTimeout(() => showNotification(
-                    "Session Expired",
-                    "Your login session expired. You're playing as guest — open Account → Login to restore your profile.",
-                    "warning"
-                ), 800);
+            
+            // Fetch profile info
+            const me = await apiRequest('/auth/me');
+            if (me.username) {
+                updateUserUI(me);
             }
-        } else {
-            const err = await res.text();
-            console.error('Device auth failed:', err);
-            showNotification("Auth Error", "Device auth failed: " + err, "danger");
+            loadGames();
         }
-    } catch (e) {
-        console.error('Device auth error', e);
-        showNotification("Network Error", "Could not reach RayGamix backend. Check your connection.", "danger");
-    }
-}
 
-// ============================================================
-// OTHER STATE
-// ============================================================
-let userTokens = 100;
-let userColors = { head: 0xffdbac, torso: 0x00b7ff, larm: 0xffdbac, rarm: 0xffdbac, lleg: 0x0000ff, rleg: 0x0000ff };
-let activeFacePngData = HOSTED_FACE_ASSETS.happy;
-let friendsList = [];
-let directChatMessages = [];
-let currentAppTheme = localStorage.getItem('rgx_app_theme') || 'dark';
-let avatarStyle = localStorage.getItem('rgx_avatar_style') || 'blocky';
-let userWarnings = parseFloat(localStorage.getItem('rgx_warnings') || '0');
-let banUntil = parseInt(localStorage.getItem('rgx_ban_until') || '0');
+        function updateUserUI(user) {
+            document.getElementById('sidebar-username').textContent = user.username;
+            document.getElementById('sidebar-tokens').textContent = `🪙 ${user.tokens} Tokens`;
+            document.getElementById('sidebar-avatar-initial').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('profile-username').value = user.username;
+            if (user.avatar) {
+                document.getElementById('avatar-head').value = '#' + (user.avatar.headColor || 0xffdbac).toString(16).padStart(6, '0');
+                document.getElementById('avatar-torso').value = '#' + (user.avatar.torsoColor || 0x00b7ff).toString(16).padStart(6, '0');
+                document.getElementById('avatar-legs').value = '#' + (user.avatar.legsColor || 0x0033aa).toString(16).padStart(6, '0');
+            }
+        }
 
-let avatarScene, avatarCamera, avatarRenderer, sidebarRig;
-let shopScene, shopCamera, shopRenderer, shopRig;
-let studioObjects = [], selectedMesh = null, studioInitialized = false;
-let scene, camera, renderer, orbit, transform;
-let gamesList = [];
-let selectedGameForModal = null;
-let devKeyBuffer = "";
-let doWarmedUp = false;
+        async function loadGames() {
+            const games = await apiRequest('/games');
+            const grid = document.getElementById('games-grid');
+            if (!Array.isArray(games)) return;
+            grid.innerHTML = '';
+            games.forEach(g => {
+                grid.innerHTML += `
+                    <div class="game-card">
+                        <img class="game-thumb" src="${g.image_url || 'https://placehold.co/400x200/0a131c/00b7ff?text='+encodeURIComponent(g.title)}" alt="thumbnail">
+                        <div class="game-details">
+                            <div class="game-title">${g.title}</div>
+                            <div class="game-creator">By ${g.creator} • 👁️ ${g.visits || 1}</div>
+                            <button class="btn" style="margin-top:8px" onclick="playGame('${g.id}')">▶ Play World</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-// === OPTIMIZATION: demand-based studio rendering flag ===
-let studioRenderDirty = true;
+        function playGame(id) {
+            window.location.href = `${BACKEND_URL}/launcher?id=${id}&token=${sessionToken}`;
+        }
 
-function createRoundedBoxGeometry(width, height, depth, radius, segments) {
-    radius = (radius === undefined) ? 0.12 : radius;
-    segments = segments || 4;
-    const geo = new THREE.BoxGeometry(width, height, depth, segments, segments, segments);
-    const pos = geo.attributes.position;
-    const halfW = width / 2 - radius, halfH = height / 2 - radius, halfD = depth / 2 - radius;
-    const v = new THREE.Vector3();
-    for (let i = 0; i < pos.count; i++) {
-        v.fromBufferAttribute(pos, i);
-        const x = Math.max(-halfW, Math.min(halfW, v.x));
-        const y = Math.max(-halfH, Math.min(halfH, v.y));
-        const z = Math.max(-halfD, Math.min(halfD, v.z));
-        v.sub(new THREE.Vector3(x, y, z)).normalize().multiplyScalar(radius).add(new THREE.Vector3(x, y, z));
-        pos.setXYZ(i, v.x, v.y, v.z);
-    }
-    geo.computeVertexNormals();
-    return geo;
-}
+        async function publishGame() {
+            const title = document.getElementById('studio-title').value;
+            const description = document.getElementById('studio-desc').value;
+            const rgx_data = document.getElementById('studio-markup').value;
+            const res = await apiRequest('/games', 'POST', { title, description, rgx_data });
+            if (res.success) {
+                alert('World published successfully!');
+                switchTab('games', document.querySelector('.nav-btn'));
+                loadGames();
+            } else {
+                alert(res.error || 'Failed to publish');
+            }
+        }
 
-function createAvatarRig(colors) {
-    const group = new THREE.Group();
-    const createMat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, metalness: 0.1 });
-    const skinHex = colors.head || 0xffdbac;
-    const head = new THREE.Mesh(createRoundedBoxGeometry(1.2, 1.2, 1.2, 0.14, 6), createMat(skinHex));
-    head.position.y = 4.8; head.castShadow = true;
-    const faceTex = new THREE.TextureLoader().load(activeFacePngData); faceTex.transparent = true;
-    const facePlane = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, depthWrite: false, roughness: 0.4, color: skinHex }));
-    facePlane.position.set(0, 0, 0.61); head.add(facePlane);
-    const torso = new THREE.Mesh(createRoundedBoxGeometry(1.8, 2.2, 1.0, 0.12, 6), createMat(colors.torso));
-    torso.position.y = 3.1; torso.castShadow = true;
-    function buildPivotedLimb(color, x, y, isLeg) {
-        const limbGroup = new THREE.Group(); limbGroup.position.set(x, y, 0);
-        const width = isLeg ? 0.8 : 0.7, height = 2.0, depth = isLeg ? 0.8 : 0.7;
-        const mesh = new THREE.Mesh(createRoundedBoxGeometry(width, height, depth, 0.1, 6), createMat(color));
-        mesh.position.set(0, -height / 2, 0); mesh.castShadow = true;
-        limbGroup.add(mesh); return limbGroup;
-    }
-    const lArm = buildPivotedLimb(colors.larm, -1.4, 4.1, false);
-    const rArm = buildPivotedLimb(colors.rarm, 1.4, 4.1, false);
-    const lLeg = buildPivotedLimb(colors.lleg, -0.5, 2.0, true);
-    const rLeg = buildPivotedLimb(colors.rleg, 0.5, 2.0, true);
-    group.add(head, torso, lArm, rArm, lLeg, rLeg);
-    return { group, head, facePlane, torso, lArm, rArm, lLeg, rLeg };
-}
+        async function saveAvatarSettings() {
+            const headColor = parseInt(document.getElementById('avatar-head').value.replace('#',''), 16);
+            const torsoColor = parseInt(document.getElementById('avatar-torso').value.replace('#',''), 16);
+            const legsColor = parseInt(document.getElementById('avatar-legs').value.replace('#',''), 16);
+            await apiRequest('/user/save', 'POST', { avatar: { headColor, torsoColor, legsColor } });
+        }
 
-function updateFaceTextureOnRigs() {
-    const tex = new THREE.TextureLoader().load(activeFacePngData); tex.transparent = true;
-    const applyTex = (rig) => {
-        if (!rig || !rig.facePlane) return;
-        rig.facePlane.material.map = tex; rig.facePlane.material.color.setHex(userColors.head);
-        rig.facePlane.material.needsUpdate = true; rig.head.material.color.setHex(userColors.head);
-    };
-    applyTex(sidebarRig); applyTex(shopRig);
-}
+        async function claimDailyTokens() {
+            const res = await apiRequest('/claim', 'POST');
+            if (res.success) {
+                document.getElementById('sidebar-tokens').textContent = `🪙 ${res.tokens} Tokens`;
+                alert('Claimed 100 Daily Tokens!');
+            }
+        }
 
-async function loadUserData(user) {
-    if (user) currentUser = user;
-    try {
-        const res = await fetchWithToken(`${CF_BACKEND_URL}/auth/me`);
-        if (res.ok) {
-            const data = await res.json();
-
-            if (loggedInUser && data.isGuest) {
-                console.warn('[RGX] Backend returned guest for a logged-in user — session mismatch.');
-                showNotification(
-                    "Session Warning",
-                    "Your session could not be refreshed. Re-open Account → Login if your profile looks wrong.",
-                    "warning"
-                );
+        async function handleRegisterOrLogin() {
+            const username = document.getElementById('profile-username').value.trim();
+            const password = document.getElementById('profile-password').value.trim();
+            if (!username) {
+                alert('Please enter a username');
                 return;
             }
-
-            userTokens = data.tokens !== undefined ? data.tokens : 100;
-            if (data.avatar) {
-                userColors.head = data.avatar.headColor || 0xffdbac;
-                userColors.torso = data.avatar.torsoColor || 0x00b7ff;
-                userColors.legs = data.avatar.legsColor || 0x0000ff;
-                userColors.larm = userColors.head; userColors.rarm = userColors.head;
-                userColors.lleg = userColors.legs; userColors.rleg = userColors.legs;
-                activeFacePngData = data.avatar.facePng || HOSTED_FACE_ASSETS.happy;
+            let res = await apiRequest('/auth/register', 'POST', { username, password: password || 'defaultpass', deviceId });
+            if (!res.success) {
+                // Try login if registration failed due to existing user
+                res = await apiRequest('/auth/login', 'POST', { username, password: password || 'defaultpass', deviceId });
             }
-            friendsList = Array.isArray(data.friends) ? data.friends : [];
-
-            if (!data.isGuest) {
-                loggedInUser = data.username;
-                localStorage.setItem('rgx_logged_in_user', loggedInUser);
+            if (res.success) {
+                sessionToken = res.token;
+                localStorage.setItem('rgx_token', sessionToken);
+                alert('Successfully registered/signed in as ' + username);
+                initApp();
+            } else {
+                alert(res.error || 'Authentication failed');
             }
-            currentUser = data.username;
-            persistSession(SESSION_TOKEN, data.username);
-        }
-    } catch (e) { /* keep current state */ }
-    document.getElementById('uTokenDisp').innerText = userTokens;
-    updateFaceTextureOnRigs();
-}
-
-async function saveUserData() {
-    const payload = {
-        tokens: userTokens,
-        avatar: {
-            headColor: userColors.head,
-            torsoColor: userColors.torso,
-            legsColor: userColors.lleg,
-            facePng: activeFacePngData
-        },
-        friends: friendsList
-    };
-    try {
-        await fetchWithToken(`${CF_BACKEND_URL}/user/save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    } catch (e) {}
-}
-
-function syncUserAccountUI() {
-    document.getElementById('uDisp').innerText = currentUser;
-    if (loggedInUser) {
-        document.getElementById('uRankBadge').innerText = "VERIFIED MEMBER";
-        document.getElementById('btnAccountText').innerText = "👤 " + loggedInUser;
-        document.getElementById('btnLogoutBtn').style.display = "inline-block";
-    } else {
-        document.getElementById('uRankBadge').innerText = "GUEST";
-        document.getElementById('btnAccountText').innerText = "👤 Account";
-        document.getElementById('btnLogoutBtn').style.display = "none";
-    }
-}
-
-function showNotification(title, message, type) {
-    type = type || "info";
-    const container = document.getElementById('notification-toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    toast.innerHTML = `<div><strong>${title}</strong><br><span style="color:var(--subtext); font-size:12px;">${message}</span></div>`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 3500);
-}
-
-async function fetchRealGames() {
-    try { const res = await fetch(`${CF_BACKEND_URL}/games`); gamesList = res.ok ? await res.json() : []; } catch (e) { gamesList = []; }
-    renderAppContent();
-}
-
-function renderAppContent() {
-    const grid = document.getElementById('gameGrid');
-    if (!grid) return;
-    const C = '\x3C';
-    const q = (document.getElementById('gSearch')?.value || '').toLowerCase().trim();
-    const filtered = gamesList.filter(g => (g.title || '').toLowerCase().includes(q) || (g.creator || '').toLowerCase().includes(q));
-    grid.innerHTML = filtered.map(g => {
-        const id = g.id;
-        const img = g.image_url || '';
-        const title = g.title || 'RayGamix World';
-        const creator = g.creator || 'Builder';
-        return C + 'div class="card" onclick="openGameDetailModal(\'' + id + '\')">' +
-            C + 'span class="card-type-tag">.RGX FORMAT' + C + '/span>' +
-            C + 'div style="height:120px; background:url(\'' + img + '\') center/cover no-repeat #081018; border-radius:8px; margin-bottom:10px; border:1px solid var(--card-border);">' + C + '/div>' +
-            C + 'h3 style="margin:0 0 4px 0; font-size:16px; color:var(--text);">' + title + C + '/h3>' +
-            C + 'span style="font-size:12px; color:var(--muted); font-weight:bold; margin-bottom:6px;">By ' + creator + C + '/span>' +
-            C + 'div class="card-actions" onclick="event.stopPropagation()">' +
-                C + 'button class="btn" onclick="playGame(\'' + id + '\')">Play Game' + C + '/button>' +
-            C + '/div>' +
-        C + '/div>';
-    }).join('');
-}
-
-function openGameDetailModal(gameId) {
-    const g = gamesList.find(x => x.id.toString() === gameId.toString());
-    if (!g) return;
-    selectedGameForModal = g;
-    document.getElementById('detailImgBox').innerHTML = g.image_url ? `<img src="${g.image_url}">` : `[img]`;
-    document.getElementById('detailGameTitle').innerText = g.title || "Game Name";
-    document.getElementById('detailGameCreator').innerText = "Made by " + (g.creator || "Builder");
-    document.getElementById('detailGameDesc').innerText = g.description || "Description";
-    document.getElementById('detailVisits').innerText = g.visits || 142;
-    document.getElementById('detailLikeCount').innerText = g.likes || 12;
-    document.getElementById('detailPlayBtn').onclick = () => { playGame(g.id); };
-    document.getElementById('game-detail-panel').style.display = 'flex';
-}
-
-function likeCurrentGame() {
-    if (!selectedGameForModal) return;
-    selectedGameForModal.likes = (selectedGameForModal.likes || 0) + 1;
-    document.getElementById('detailLikeCount').innerText = selectedGameForModal.likes;
-    showNotification("Liked!", `You liked "${selectedGameForModal.title}"`, "success");
-}
-function toggleFavoriteCurrentGame() {
-    if (!selectedGameForModal) return;
-    showNotification("Favorite Saved", `Added "${selectedGameForModal.title}" to favorites!`, "success");
-}
-function openReportModal() { document.getElementById('report-panel').style.display = 'flex'; }
-function submitReportForm() {
-    const target = document.getElementById('repTarget').value.trim();
-    if (!target) return showNotification("Report Error", "Target name required.", "warning");
-    showNotification("Report Submitted", "Thank you. Moderation team will review this case.", "success");
-    document.getElementById('report-panel').style.display = 'none';
-}
-function openTokenRewardsModal() {
-    document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
-    document.getElementById('tokens-panel').style.display = 'flex';
-}
-
-async function claimWeeklyTokens() {
-    try {
-        const res = await fetchWithToken(`${CF_BACKEND_URL}/claim`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
-        });
-        if (res.ok) {
-            const data = await res.json();
-            userTokens = data.tokens;
-            saveUserData();
-            document.getElementById('uTokenDisp').innerText = userTokens;
-            document.getElementById('tokenModalDisp').innerText = userTokens + ' 🪙';
-            showNotification("Tokens Claimed", "Claimed +100 Weekly Tokens!", "success");
-            const frame = document.getElementById('game-frame');
-            if (frame && frame.contentWindow) frame.contentWindow.postMessage({ type: 'tokensUpdate', tokens: userTokens }, '*');
-        }
-    } catch (e) {}
-}
-
-function openShop() { document.getElementById('shop-panel').style.display = 'flex'; initShopAvatarScene(); }
-function openFriendsModal() { document.getElementById('friends-panel').style.display = 'flex'; renderFriendsListUI(); }
-function sendFriendRequestBtn() {
-    const val = document.getElementById('addFriendInput').value.trim();
-    if (!val) return;
-    if (!friendsList.includes(val)) friendsList.push(val);
-    saveUserData(); renderFriendsListUI();
-    document.getElementById('addFriendInput').value = '';
-    showNotification("Friend Added", `Added ${val} to your friends list!`, "success");
-}
-function renderFriendsListUI() {
-    const cont = document.getElementById('friendsListContainer');
-    const sel = document.getElementById('dmRecipientSelect');
-    if (!cont) return;
-    const C = '\x3C';
-    if (friendsList.length === 0) {
-        cont.innerHTML = C + 'div style="color:var(--muted); font-size:12px;">No friends added yet. Enter a username above!' + C + '/div>';
-    } else {
-        cont.innerHTML = friendsList.map(f => C + 'div style="background:var(--bg); border:1px solid var(--card-border); padding:8px 12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">' +
-            C + 'span style="font-weight:bold; font-size:13px; color:var(--text);">👤 ' + f + C + '/span>' +
-            C + 'button class="btn" style="width:auto; padding:4px 10px; font-size:11px;" onclick="openDirectChatWithUser(\'' + f + '\')">💬 Chat' + C + '/button>' +
-        C + '/div>').join('');
-    }
-    if (sel) sel.innerHTML = C + 'option value="">-- Select Friend / Recipient --' + C + '/option>' + friendsList.map(f => C + 'option value="' + f + '">' + f + C + '/option>').join('');
-}
-function openDirectChatModal() { document.getElementById('dm-panel').style.display = 'flex'; renderFriendsListUI(); }
-function openDirectChatWithUser(username) {
-    document.getElementById('dm-panel').style.display = 'flex';
-    renderFriendsListUI();
-    document.getElementById('dmRecipientSelect').value = username;
-    loadDirectChatHistory();
-}
-function loadDirectChatHistory() {
-    const recipient = document.getElementById('dmRecipientSelect').value;
-    const cont = document.getElementById('dmChatMessagesContainer');
-    const C = '\x3C';
-    if (!recipient) {
-        cont.innerHTML = C + 'div style="color:var(--muted); text-align:center; margin-top:80px;">Select a user above to start chatting...' + C + '/div>';
-        return;
-    }
-    const filtered = directChatMessages.filter(m => (m.from === currentUser && m.to === recipient) || (m.from === recipient && m.to === currentUser));
-    if (filtered.length === 0) {
-        cont.innerHTML = C + 'div style="color:var(--muted); text-align:center; margin-top:80px;">No messages with ' + recipient + ' yet.' + C + '/div>';
-    } else {
-        cont.innerHTML = filtered.map(m => C + 'div style="align-self: ' + (m.from === currentUser ? 'flex-end' : 'flex-start') + '; background: ' + (m.from === currentUser ? 'rgba(0,183,255,0.2)' : 'var(--card)') + '; border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 8px; max-width: 80%;">' +
-            C + 'div style="font-size:10px; color:var(--muted); font-weight:bold;">' + m.from + C + '/div>' +
-            C + 'div style="font-size:13px; color:var(--text);">' + m.text + C + '/div>' +
-        C + '/div>').join('');
-        cont.scrollTop = cont.scrollHeight;
-    }
-}
-function sendDirectMessage() {
-    const recipient = document.getElementById('dmRecipientSelect').value;
-    const input = document.getElementById('dmInputMessage');
-    const text = input.value.trim();
-    if (!recipient || !text) return;
-    directChatMessages.push({ from: currentUser, to: recipient, text: text, time: Date.now() });
-    input.value = '';
-    loadDirectChatHistory();
-}
-function openSettingsModal() { document.getElementById('settings-panel').style.display = 'flex'; }
-function setAppTheme(theme) {
-    currentAppTheme = theme;
-    localStorage.setItem('rgx_app_theme', theme);
-    if (theme === 'light') document.body.classList.add('light-theme');
-    else document.body.classList.remove('light-theme');
-    showNotification("Theme Updated", `Switched to ${theme} theme.`, "info");
-}
-function selectUiSetting(mode) {
-    if (mode === 'phone') {
-        document.body.classList.add('forced-phone-ui');
-        document.body.classList.remove('forced-desktop-ui');
-    } else {
-        document.body.classList.add('forced-desktop-ui');
-        document.body.classList.remove('forced-phone-ui');
-    }
-    showNotification("Interface Scale", `Layout set to ${mode} mode.`, "info");
-}
-function resetDeviceGuestAccount() {
-    persistSession(null, null);
-    localStorage.removeItem('rgx_device_id');
-    loggedInUser = null;
-    localStorage.removeItem('rgx_logged_in_user');
-    ensureDeviceIdentity().then(() => {
-        loadUserData(currentUser);
-        syncUserAccountUI();
-        showNotification("Guest Account Reset", `Assigned fresh guest identity: ${currentUser}`, "warning");
-        document.getElementById('settings-panel').style.display = 'none';
-    });
-}
-function openAuth() { document.getElementById('auth-panel').style.display = 'flex'; }
-
-async function handleAuthAction(action) {
-    const u = document.getElementById('authUsername').value.trim();
-    const p = document.getElementById('authPassword').value;
-    if (!u) return showNotification("Auth Error", "Please enter a valid username.", "warning");
-    if (!p) return showNotification("Auth Error", "Please enter a password.", "warning");
-
-    const endpoint = action === 'register' ? '/auth/register' : '/auth/login';
-    try {
-        const res = await _originalFetch(`${CF_BACKEND_URL}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-            showNotification("Auth Failed", data.error || "Invalid credentials.", "danger");
-            return;
         }
 
-        loggedInUser = data.username;
-        localStorage.setItem('rgx_logged_in_user', loggedInUser);
-        persistSession(data.token, data.username);
-
-        await loadUserData(data.username);
-        syncUserAccountUI();
-        document.getElementById('auth-panel').style.display = 'none';
-        document.getElementById('authUsername').value = '';
-        document.getElementById('authPassword').value = '';
-        showNotification("Welcome", `Signed in as ${u}!`, "success");
-    } catch (e) {
-        showNotification("Auth Error", e.message, "danger");
-    }
-}
-
-function handleGuestMode() {
-    loggedInUser = null;
-    localStorage.removeItem('rgx_logged_in_user');
-    persistSession(null, null);
-    ensureDeviceIdentity().then(() => {
-        loadUserData(currentUser);
-        syncUserAccountUI();
-        document.getElementById('auth-panel').style.display = 'none';
-        showNotification("Guest Mode Active", `Continuing as ${currentUser}`, "info");
-    });
-}
-
-async function handleLogout() {
-    loggedInUser = null;
-    localStorage.removeItem('rgx_logged_in_user');
-    persistSession(null, null);
-
-    let deviceId = localStorage.getItem('rgx_device_id');
-    if (!deviceId || !/^dev_[0-9a-f]{32}$/.test(deviceId)) {
-        const bytes = crypto.getRandomValues(new Uint8Array(16));
-        deviceId = 'dev_' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-        localStorage.setItem('rgx_device_id', deviceId);
-    }
-    try {
-        const res = await _originalFetch(`${CF_BACKEND_URL}/auth/device`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ deviceId })
-        });
-        if (res.ok) {
-            const d = await res.json();
-            persistSession(d.token, d.username);
-        }
-    } catch (e) {}
-
-    await loadUserData(currentUser);
-    syncUserAccountUI();
-    showNotification("Logged Out", `Switched back to Guest identity ${currentUser}`, "info");
-}
-
-function changeAvatarFacePreset(face) {
-    if (HOSTED_FACE_ASSETS[face]) {
-        activeFacePngData = HOSTED_FACE_ASSETS[face];
-        updateFaceTextureOnRigs();
-    }
-}
-function importCustomFacePNG(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-        activeFacePngData = evt.target.result;
-        updateFaceTextureOnRigs();
-        showNotification("Custom Face Uploaded", "Applied custom face PNG!", "success");
-    };
-    reader.readAsDataURL(file);
-}
-function importAvatarAccessoryFile(e) {
-    const file = e.target.files[0]; if (!file) return;
-    showNotification("3D Accessory Loaded", `Equipped ${file.name}!`, "success");
-}
-function updateCustomizerColors() {
-    userColors.head = parseInt(document.getElementById('shop-col-head').value.replace('#',''), 16);
-    userColors.larm = userColors.head; userColors.rarm = userColors.head;
-    userColors.torso = parseInt(document.getElementById('shop-col-torso').value.replace('#',''), 16);
-    userColors.lleg = parseInt(document.getElementById('shop-col-legs').value.replace('#',''), 16);
-    userColors.rleg = userColors.lleg;
-    const updateRigMats = (r) => {
-        if (!r) return;
-        r.head.material.color.setHex(userColors.head);
-        r.torso.material.color.setHex(userColors.torso);
-        r.lArm.children[0].material.color.setHex(userColors.larm);
-        r.rArm.children[0].material.color.setHex(userColors.rarm);
-        r.lLeg.children[0].material.color.setHex(userColors.lleg);
-        r.rLeg.children[0].material.color.setHex(userColors.rleg);
-    };
-    updateRigMats(sidebarRig); updateRigMats(shopRig);
-}
-function saveAvatarCustomizationAndClose() {
-    saveUserData();
-    document.getElementById('shop-panel').style.display = 'none';
-    showNotification("Avatar Saved", "Your customization has been saved!", "success");
-}
-function submitBanAppeal() {
-    const input = document.getElementById('appealSecretInput');
-    const txt = input.value.trim(); if (!txt) return;
-    const chat = document.getElementById('appealAgentChatBox');
-    chat.innerHTML += `<div style="color:var(--text); font-weight:bold;">You: ${txt}</div>`;
-    if (txt === "!!4PP3@7-K3Y.25.GIT.RGXAPPEAL!!" || txt === "StoicalRaybod9") {
-        userWarnings = 0; banUntil = 0;
-        localStorage.setItem('rgx_warnings', '0');
-        localStorage.removeItem('rgx_ban_until');
-        chat.innerHTML += `<div style="color:var(--green); font-weight:bold;">Agent: ✅ Appeal Key Accepted!</div>`;
-        setTimeout(() => { document.getElementById('warning-panel').style.display = 'none'; }, 2000);
-    } else {
-        chat.innerHTML += `<div style="color:var(--muted);">Agent: Your appeal has been logged for review.</div>`;
-    }
-    input.value = ''; chat.scrollTop = chat.scrollHeight;
-}
-
-function showGameLoader(subtitle) {
-    const loader = document.getElementById('game-loader');
-    const sub = document.getElementById('loader-sub');
-    if (sub) sub.textContent = subtitle || 'Fetching engine and assets';
-    if (loader) loader.style.display = 'flex';
-    document.getElementById('game-player').style.display = 'flex';
-}
-function hideGameLoader() {
-    const loader = document.getElementById('game-loader');
-    if (!loader) return;
-    setTimeout(function () {
-        loader.style.opacity = '0';
-        loader.style.transition = 'opacity 0.4s';
-        setTimeout(function () {
-            loader.style.display = 'none';
-            loader.style.opacity = '1';
-            loader.style.transition = '';
-        }, 450);
-    }, 250);
-}
-
-function warmupDO() {
-    if (doWarmedUp) return;
-    doWarmedUp = true;
-    fetchWithToken(`${CF_BACKEND_URL}/mp-warmup?gameId=1&serverId=global_v2`)
-        .then(function (r) { return r.text(); })
-        .then(function (t) { console.log('[RGX] warmup:', t); })
-        .catch(function (e) { console.log('[RGX] warmup failed:', e.message); });
-}
-
-async function playGame(gameId) {
-    const g = gamesList.find(x => x.id.toString() === gameId.toString());
-    if (!g) { showNotification("Error", "Game not found.", "danger"); return; }
-
-    // Ensure we have a valid session BEFORE requesting the launcher.
-    if (!SESSION_TOKEN) {
-        await ensureDeviceIdentity();
-        if (!SESSION_TOKEN) {
-            showNotification("Session Error", "Could not establish a session. Please refresh the page.", "danger");
-            return;
-        }
-    }
-
-    document.getElementById('player-title').innerText = g.title || "RayGamix World";
-    showGameLoader('Fetching world data...');
-    try {
-        const res = await fetchWithToken(`${CF_BACKEND_URL}/launcher`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: gameId,
-                rgx_data: g.rgx_data,
-                title: g.title,
-                serverId: "global",
-                avatarStyle: avatarStyle
-            })
-        });
-        if (!res.ok) {
-            const errBody = await res.text();
-            throw new Error('Engine load failed (' + res.status + '): ' + errBody.slice(0, 160));
-        }
-        document.getElementById('loader-sub').textContent = 'Rendering world...';
-        const html = await res.text();
-        const frame = document.getElementById('game-frame');
-        frame.srcdoc = html;
-        hideGameLoader();
-        setTimeout(() => {
-            if (frame.contentWindow) frame.contentWindow.postMessage({ type: 'tokensUpdate', tokens: userTokens }, '*');
-        }, 1000);
-    } catch (e) {
-        try {
-            const fallbackUrl = `${CF_BACKEND_URL}/launcher?id=${gameId}&token=${encodeURIComponent(SESSION_TOKEN || '')}`;
-            const frame = document.getElementById('game-frame');
-            frame.src = fallbackUrl;
-            hideGameLoader();
-        } catch (err) {
-            hideGameLoader();
-            showNotification("Play Error", e.message, "danger");
-        }
-    }
-}
-function closeGame() {
-    document.getElementById('game-player').style.display = 'none';
-    const f = document.getElementById('game-frame');
-    f.src = 'about:blank';
-    f.srcdoc = '';
-}
-
-function openStudio() {
-    document.getElementById('studio-panel').style.display = 'flex';
-    // OPTIMIZATION: force a redraw when reopening a demand-based scene
-    studioRenderDirty = true;
-    if (!studioInitialized) {
-        // Defer one frame so the viewport has real dimensions before we build the camera
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                initStudio();
-                studioInitialized = true;
-            });
-        });
-    }
-}
-function closeStudio() {
-    document.getElementById('studio-panel').style.display = 'none';
-    // No need to stop the loop explicitly — animateStudio() checks panel visibility.
-}
-
-function initStudio() {
-    const cont = document.getElementById('studio-viewport');
-
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(ENGINE_CAMERA.skyColor);
-    scene.fog = new THREE.FogExp2(ENGINE_CAMERA.skyColor, ENGINE_CAMERA.fogDensity);
-
-    const vw = Math.max(1, cont.clientWidth);
-    const vh = Math.max(1, cont.clientHeight);
-
-    camera = new THREE.PerspectiveCamera(
-        ENGINE_CAMERA.fov,
-        vw / vh,
-        ENGINE_CAMERA.near,
-        ENGINE_CAMERA.far
-    );
-
-    // OPTIMIZATION: request high-performance GPU + stable pixel ratio
-    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
-    renderer.setSize(vw, vh, false);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = ENGINE_CAMERA.toneMappingExposure;
-    // NOTE: Studio scene currently has NO shadow-casting objects, so we keep shadows OFF
-    // (matches original behavior; the game engine handles its own shadows).
-    cont.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, ENGINE_CAMERA.ambientIntensity));
-
-    const sun = new THREE.DirectionalLight(0xffffff, ENGINE_CAMERA.sunIntensity);
-    sun.position.set(50, 100, 50);
-    scene.add(sun);
-
-    const fillLight = new THREE.DirectionalLight(ENGINE_CAMERA.fillColor, ENGINE_CAMERA.fillIntensity);
-    fillLight.position.set(-50, 30, -50);
-    scene.add(fillLight);
-
-    const grid = new THREE.GridHelper(500, 50, 0x00b7ff, 0x142536);
-    grid.position.y = -2.01;
-    scene.add(grid);
-
-    const REST_DIST  = ENGINE_CAMERA.restDistance;
-    const REST_PITCH = ENGINE_CAMERA.restPitch;
-    const REST_YAW   = ENGINE_CAMERA.restYaw;
-    const restTarget = new THREE.Vector3(0, ENGINE_CAMERA.targetOffsetY, 0);
-    camera.position.set(
-        Math.sin(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST,
-        ENGINE_CAMERA.eyeOffsetY + Math.sin(REST_PITCH) * REST_DIST,
-        Math.cos(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST
-    );
-    camera.lookAt(restTarget);
-
-    orbit = new THREE.OrbitControls(camera, renderer.domElement);
-    orbit.target.copy(restTarget);
-    orbit.minDistance = ENGINE_CAMERA.minDistance;
-    orbit.maxDistance = ENGINE_CAMERA.maxDistance;
-    orbit.maxPolarAngle = Math.PI * 0.5;
-    orbit.update();
-    // OPTIMIZATION: mark scene dirty whenever the orbit changes
-    orbit.addEventListener('change', () => { studioRenderDirty = true; });
-
-    transform = new THREE.TransformControls(camera, renderer.domElement);
-    transform.addEventListener('dragging-changed', (e) => {
-        orbit.enabled = !e.value;
-        studioRenderDirty = true;
-    });
-
-    transform.addEventListener('objectChange', () => {
-        studioRenderDirty = true;
-        if (!selectedMesh) return;
-
-        selectedMesh.userData.posArr = [
-            selectedMesh.position.x,
-            selectedMesh.position.y,
-            selectedMesh.position.z
-        ];
-
-        selectedMesh.userData.rotArr = [
-            THREE.MathUtils.radToDeg(selectedMesh.rotation.x),
-            THREE.MathUtils.radToDeg(selectedMesh.rotation.y),
-            THREE.MathUtils.radToDeg(selectedMesh.rotation.z)
-        ];
-
-        const s = selectedMesh.scale;
-        if (Math.abs(s.x - 1) > 0.0001 || Math.abs(s.y - 1) > 0.0001 || Math.abs(s.z - 1) > 0.0001) {
-            selectedMesh.userData.scaleArr = [
-                Math.max(0.05, selectedMesh.userData.scaleArr[0] * s.x),
-                Math.max(0.05, selectedMesh.userData.scaleArr[1] * s.y),
-                Math.max(0.05, selectedMesh.userData.scaleArr[2] * s.z)
-            ];
-            rebuildPartMesh(selectedMesh);
+        function resetGuestSession() {
+            localStorage.removeItem('rgx_token');
+            localStorage.removeItem('rgx_device');
+            location.reload();
         }
 
-        syncPropertiesToInputs();
-    });
-    scene.add(transform);
-
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    cont.addEventListener('pointerdown', (e) => {
-        if (transform.dragging) return;
-        const rect = cont.getBoundingClientRect();
-        mouse.x = ((e.clientX - rect.left) / cont.clientWidth) * 2 - 1;
-        mouse.y = -((e.clientY - rect.top) / cont.clientHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(studioObjects, false);
-        if (intersects.length > 0) selectStudioObject(intersects[0].object);
-        else selectStudioObject(null);
-    });
-
-    const _resizeObs = new ResizeObserver(() => {
-        const w = cont.clientWidth, h = cont.clientHeight;
-        if (!w || !h) return;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
-        renderer.setSize(w, h, false);
-        studioRenderDirty = true;
-    });
-    _resizeObs.observe(cont);
-
-    createStudioObject('cube', {
-        name: "Baseplate",
-        pos: [0, -1, 0],
-        scale: [200, 2, 200],
-        color: 0x111a24,
-        materialType: 'Obsidian'
-    });
-
-    // OPTIMIZATION: demand-based rendering — only draw when something changed.
-    // This also skips rendering entirely when the studio panel is closed.
-    function animateStudio() {
-        requestAnimationFrame(animateStudio);
-        const panel = document.getElementById('studio-panel');
-        if (!panel || panel.style.display === 'none') return;
-        if (orbit) orbit.update();
-        if (studioRenderDirty && renderer && scene && camera) {
-            renderer.render(scene, camera);
-            studioRenderDirty = false;
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            btn.classList.add('active');
+            document.getElementById('current-page-title').textContent = btn.textContent.trim().substring(2);
         }
-    }
-    animateStudio();
-}
 
-function resetStudioCameraToGameplay() {
-    if (!camera || !orbit) return;
-    const REST_DIST = ENGINE_CAMERA.restDistance;
-    const REST_PITCH = ENGINE_CAMERA.restPitch;
-    const REST_YAW = ENGINE_CAMERA.restYaw;
-    camera.position.set(
-        Math.sin(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST,
-        ENGINE_CAMERA.eyeOffsetY + Math.sin(REST_PITCH) * REST_DIST,
-        Math.cos(REST_YAW) * Math.cos(REST_PITCH) * REST_DIST
-    );
-    orbit.target.set(0, ENGINE_CAMERA.targetOffsetY, 0);
-    orbit.update();
-    studioRenderDirty = true;
-}
-
-function setTransformMode(mode) {
-    ['select','translate','scale','rotate'].forEach(m => document.getElementById(`tool-${m}`).classList.remove('tool-active'));
-    document.getElementById(`tool-${mode}`).classList.add('tool-active');
-    if (mode === 'select') transform.detach();
-    else { transform.setMode(mode); if (selectedMesh) transform.attach(selectedMesh); }
-    studioRenderDirty = true;
-}
-
-// ============================================================
-// SHARED PART FACTORY — must match backend exactly
-// ============================================================
-function buildPartMaterial(colorHex, matType) {
-    const m = String(matType || 'Plastic');
-    switch (m) {
-        case 'Glass':
-            return new THREE.MeshPhysicalMaterial({
-                color: colorHex, transparent: true, opacity: 0.55,
-                transmission: 0.5, roughness: 0.1, metalness: 0.0
-            });
-        case 'Neon':
-            return new THREE.MeshStandardMaterial({
-                color: colorHex, emissive: colorHex, emissiveIntensity: 0.85,
-                roughness: 0.35
-            });
-        case 'Lava':
-            return new THREE.MeshStandardMaterial({
-                color: colorHex || 0xff2200, emissive: 0xff1100,
-                emissiveIntensity: 0.9, roughness: 0.6
-            });
-        case 'Obsidian':
-            return new THREE.MeshStandardMaterial({
-                color: colorHex || 0x11161d, roughness: 0.18, metalness: 0.85
-            });
-        case 'Water':
-            return new THREE.MeshStandardMaterial({
-                color: colorHex || 0x0099ff, transparent: true, opacity: 0.55,
-                roughness: 0.1, metalness: 0.0
-            });
-        default:
-            return new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.5 });
-    }
-}
-function buildPartGeometry(type, scaleArr) {
-    const sx = scaleArr[0], sy = scaleArr[1], sz = scaleArr[2];
-    switch (String(type || 'cube').toLowerCase()) {
-        case 'sphere':   return new THREE.SphereGeometry(sx / 2, 20, 20);
-        case 'cylinder': return new THREE.CylinderGeometry(sx / 2, sx / 2, sy, 20);
-        case 'wedge':    return new THREE.ConeGeometry(sx / 2, sy, 4);
-        default:         return new THREE.BoxGeometry(sx, sy, sz);
-    }
-}
-function makeSignSprite(text) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512; canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.fillRect(0, 0, 512, 256);
-    ctx.strokeStyle = '#00b7ff'; ctx.lineWidth = 6;
-    ctx.strokeRect(6, 6, 500, 244);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 40px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const words = String(text || '').split(/\s+/);
-    const lines = []; let cur = '';
-    for (let i = 0; i < words.length; i++) {
-        const w = words[i];
-        if ((cur + ' ' + w).trim().length > 20) { lines.push(cur); cur = w; }
-        else cur = (cur + ' ' + w).trim();
-    }
-    if (cur) lines.push(cur);
-    const maxLines = Math.min(lines.length, 5);
-    for (let i = 0; i < maxLines; i++) {
-        ctx.fillText(lines[i], 256, 128 + (i - (maxLines - 1) / 2) * 48);
-    }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.needsUpdate = true;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
-}
-
-function addSelectedPart() {
-    const type = document.getElementById('addPartType').value;
-    const opts = { pos: [0, 4, 0] };
-    if (type === 'water') { opts.color = 0x0099ff; opts.scale = [20, 6, 20]; opts.materialType = 'Water'; }
-    else if (type === 'lava') { opts.color = 0xff2200; opts.scale = [20, 2, 20]; opts.materialType = 'Lava'; }
-    else if (type === 'spawn') { opts.color = 0x00b7ff; opts.scale = [6, 1, 6]; opts.materialType = 'Neon'; }
-    else if (type === 'checkpoint') { opts.color = 0x00e676; opts.scale = [8, 1, 8]; opts.materialType = 'Neon'; }
-    else if (type === 'ladder') { opts.color = 0xffaa00; opts.scale = [2, 12, 1]; }
-    else if (type === 'sign') { opts.color = 0xffffff; opts.scale = [6, 3, 1]; opts.textValue = "Signboard Text"; }
-    createStudioObject(type, opts);
-}
-
-function createStudioObject(type, override) {
-    override = override || {};
-    const scaleArr = override.scale || [4, 4, 4];
-    const rotArr   = override.rot   || [0, 0, 0];
-    const matColor = override.color || 0x00b7ff;
-    const matType  = override.materialType || 'Plastic';
-
-    const geo  = buildPartGeometry(type, scaleArr);
-    const mat  = buildPartMaterial(matColor, matType);
-    const mesh = new THREE.Mesh(geo, mat);
-    // Frustum culling is ON by default — the studio only draws what the camera sees.
-    mesh.frustumCulled = true;
-
-    mesh.userData = {
-        id: THREE.MathUtils.generateUUID(),
-        type: type,
-        name: override.name || (type + "_" + Math.floor(Math.random() * 1000)),
-        materialType: matType,
-        textValue: override.textValue || "",
-        scaleArr: [scaleArr[0], scaleArr[1], scaleArr[2]],
-        rotArr: [rotArr[0], rotArr[1], rotArr[2]],
-        posArr: override.pos ? [override.pos[0], override.pos[1], override.pos[2]] : [0, 0, 0]
-    };
-
-    mesh.scale.set(1, 1, 1);
-    mesh.position.set(mesh.userData.posArr[0], mesh.userData.posArr[1], mesh.userData.posArr[2]);
-    mesh.rotation.set(
-        THREE.MathUtils.degToRad(rotArr[0]),
-        THREE.MathUtils.degToRad(rotArr[1]),
-        THREE.MathUtils.degToRad(rotArr[2])
-    );
-
-    scene.add(mesh);
-    mesh.updateMatrixWorld(true);
-    studioObjects.push(mesh);
-
-    if (type === 'sign' && mesh.userData.textValue) {
-        refreshSignSprite(mesh);
-    }
-
-    selectStudioObject(mesh);
-    studioRenderDirty = true;
-}
-
-function refreshSignSprite(mesh) {
-    if (!mesh) return;
-    if (mesh.userData.signSprite) {
-        scene.remove(mesh.userData.signSprite);
-        if (mesh.userData.signSprite.material.map) mesh.userData.signSprite.material.map.dispose();
-        mesh.userData.signSprite.material.dispose();
-        mesh.userData.signSprite = null;
-    }
-    if (mesh.userData.type !== 'sign') return;
-    const s = mesh.userData.scaleArr;
-    const sp = makeSignSprite(mesh.userData.textValue);
-    sp.position.set(mesh.position.x, mesh.position.y + s[1] / 2 + 2, mesh.position.z);
-    sp.scale.set(Math.max(6, s[0]), Math.max(3, s[1] / 2), 1);
-    mesh.userData.signSprite = sp;
-    scene.add(sp);
-}
-
-function rebuildPartMesh(mesh) {
-    if (!mesh) return;
-    const newGeo = buildPartGeometry(mesh.userData.type, mesh.userData.scaleArr);
-    mesh.geometry.dispose();
-    mesh.geometry = newGeo;
-    mesh.scale.set(1, 1, 1);
-    refreshSignSprite(mesh);
-    studioRenderDirty = true;
-}
-
-function selectStudioObject(mesh) {
-    selectedMesh = mesh;
-    if (mesh) {
-        if (!document.getElementById('tool-select').classList.contains('tool-active')) transform.attach(mesh);
-        document.getElementById('prop-empty').style.display = 'none';
-        document.getElementById('prop-content').style.display = 'block';
-        syncPropertiesToInputs();
-    } else {
-        transform.detach();
-        document.getElementById('prop-empty').style.display = 'block';
-        document.getElementById('prop-content').style.display = 'none';
-    }
-    studioRenderDirty = true;
-}
-
-function syncPropertiesToInputs() {
-    if (!selectedMesh) return;
-    const u = selectedMesh.userData;
-    document.getElementById('prop-name').value = u.name;
-    document.getElementById('prop-color').value = '#' + selectedMesh.material.color.getHexString();
-    document.getElementById('prop-material').value = u.materialType || 'Plastic';
-    if (u.type === 'sign') {
-        document.getElementById('row-text-val').style.display = 'flex';
-        document.getElementById('prop-text-val').value = u.textValue || '';
-    } else {
-        document.getElementById('row-text-val').style.display = 'none';
-    }
-    document.getElementById('prop-pos-x').value = u.posArr[0].toFixed(2);
-    document.getElementById('prop-pos-y').value = u.posArr[1].toFixed(2);
-    document.getElementById('prop-pos-z').value = u.posArr[2].toFixed(2);
-    document.getElementById('prop-scale-x').value = u.scaleArr[0].toFixed(2);
-    document.getElementById('prop-scale-y').value = u.scaleArr[1].toFixed(2);
-    document.getElementById('prop-scale-z').value = u.scaleArr[2].toFixed(2);
-    document.getElementById('prop-rot-x').value = u.rotArr[0].toFixed(0);
-    document.getElementById('prop-rot-y').value = u.rotArr[1].toFixed(0);
-    document.getElementById('prop-rot-z').value = u.rotArr[2].toFixed(0);
-}
-
-function applyPropertyChanges() {
-    if (!selectedMesh) return;
-
-    selectedMesh.userData.name = document.getElementById('prop-name').value;
-    const colHex = parseInt(document.getElementById('prop-color').value.replace('#',''), 16);
-    selectedMesh.userData.materialType = document.getElementById('prop-material').value;
-    if (selectedMesh.userData.type === 'sign') {
-        selectedMesh.userData.textValue = document.getElementById('prop-text-val').value;
-    }
-
-    selectedMesh.material.dispose();
-    selectedMesh.material = buildPartMaterial(colHex, selectedMesh.userData.materialType);
-
-    selectedMesh.userData.posArr = [
-        parseFloat(document.getElementById('prop-pos-x').value) || 0,
-        parseFloat(document.getElementById('prop-pos-y').value) || 0,
-        parseFloat(document.getElementById('prop-pos-z').value) || 0
-    ];
-    selectedMesh.position.set(
-        selectedMesh.userData.posArr[0],
-        selectedMesh.userData.posArr[1],
-        selectedMesh.userData.posArr[2]
-    );
-
-    selectedMesh.userData.rotArr = [
-        parseFloat(document.getElementById('prop-rot-x').value) || 0,
-        parseFloat(document.getElementById('prop-rot-y').value) || 0,
-        parseFloat(document.getElementById('prop-rot-z').value) || 0
-    ];
-    selectedMesh.rotation.set(
-        THREE.MathUtils.degToRad(selectedMesh.userData.rotArr[0]),
-        THREE.MathUtils.degToRad(selectedMesh.userData.rotArr[1]),
-        THREE.MathUtils.degToRad(selectedMesh.userData.rotArr[2])
-    );
-
-    selectedMesh.userData.scaleArr = [
-        parseFloat(document.getElementById('prop-scale-x').value) || 1,
-        parseFloat(document.getElementById('prop-scale-y').value) || 1,
-        parseFloat(document.getElementById('prop-scale-z').value) || 1
-    ];
-    rebuildPartMesh(selectedMesh);
-    studioRenderDirty = true;
-}
-
-function deleteSelectedObject() {
-    if (!selectedMesh) return;
-    transform.detach();
-    if (selectedMesh.userData.signSprite) scene.remove(selectedMesh.userData.signSprite);
-    scene.remove(selectedMesh);
-    studioObjects = studioObjects.filter(o => o !== selectedMesh);
-    selectedMesh = null;
-    document.getElementById('prop-empty').style.display = 'block';
-    document.getElementById('prop-content').style.display = 'none';
-    studioRenderDirty = true;
-}
-
-function xmlEscape(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;');
-}
-function safeNum(n) {
-    const v = Number(n);
-    return isFinite(v) ? v : 0;
-}
-
-function serializeStudioWorldToRGX() {
-    const C = '\x3C';
-    let xml = C + 'world>\n';
-    studioObjects.forEach(obj => {
-        const p = obj.position;
-        const s = obj.userData.scaleArr;
-        const r = obj.userData.rotArr;
-        const c = obj.material.color.getHexString();
-        const matType = xmlEscape(obj.userData.materialType || 'Plastic');
-        const type    = xmlEscape(obj.userData.type || 'cube');
-        const name    = xmlEscape(obj.userData.name || ('part_' + Math.random().toString(36).slice(2, 8)));
-        const signTxt = xmlEscape(obj.userData.textValue || '');
-        xml += '  ' + C + 'part type="' + type +
-            '" name="' + name +
-            '" color="' + c +
-            '" material="' + matType +
-            '" pos="' + safeNum(p.x).toFixed(2) + ',' + safeNum(p.y).toFixed(2) + ',' + safeNum(p.z).toFixed(2) +
-            '" scale="' + safeNum(s[0]).toFixed(2) + ',' + safeNum(s[1]).toFixed(2) + ',' + safeNum(s[2]).toFixed(2) +
-            '" rot="' + safeNum(r[0]).toFixed(0) + ',' + safeNum(r[1]).toFixed(0) + ',' + safeNum(r[2]).toFixed(0) +
-            '" text="' + signTxt + '"/>\n';
-    });
-    xml += C + '/world>';
-    return xml;
-}
-
-function exportRGXFile() {
-    const xml = serializeStudioWorldToRGX();
-    const blob = new Blob([xml], {type: "text/xml"});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = (document.getElementById('gameTitle').value.trim() || "world") + ".rgx";
-    a.click();
-}
-
-function importRGXWorldFile(event) {
-    const file = event.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const xml = e.target.result;
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(xml, "text/xml");
-            const parts = doc.getElementsByTagName("part");
-            studioObjects.forEach(obj => {
-                if (obj.userData && obj.userData.signSprite) scene.remove(obj.userData.signSprite);
-                scene.remove(obj);
-            });
-            studioObjects = []; selectedMesh = null; transform.detach();
-            document.getElementById('prop-empty').style.display = 'block';
-            document.getElementById('prop-content').style.display = 'none';
-            for (let i = 0; i < parts.length; i++) {
-                const p = parts[i];
-                const type = p.getAttribute("type") || "cube";
-                const color = p.getAttribute("color") ? parseInt(p.getAttribute("color"), 16) : 0x00b7ff;
-                const pos = (p.getAttribute("pos") || "0,0,0").split(',').map(Number);
-                const scale = (p.getAttribute("scale") || "4,4,4").split(',').map(Number);
-                const matType = p.getAttribute("material") || "Plastic";
-                const name = p.getAttribute("name") || (type + "_" + i);
-                const text = p.getAttribute("text") || "";
-                const rot = (p.getAttribute("rot") || "0,0,0").split(',').map(Number);
-                createStudioObject(type, { name, pos, scale, color, materialType: matType, textValue: text, rot });
-            }
-            studioRenderDirty = true;
-            showNotification("RGX Imported", `Loaded ${parts.length} objects from ${file.name}`, "success");
-        } catch(err) {
-            showNotification("Import Error", "Failed to parse RGX file: " + err.message, "danger");
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-}
-
-function testCurrentStudioGame() {
-    const title = document.getElementById('gameTitle').value.trim() || "Studio Test World";
-    const xml = serializeStudioWorldToRGX();
-    const testId = "test_" + Date.now();
-    playGameWithData(xml, testId, title);
-}
-
-async function playGameWithData(rgxCode, gameId, title) {
-    // Ensure we have a valid session BEFORE requesting the launcher.
-    if (!SESSION_TOKEN) {
-        await ensureDeviceIdentity();
-        if (!SESSION_TOKEN) {
-            showNotification("Session Error", "Could not establish a session. Please refresh the page.", "danger");
-            return;
-        }
-    }
-
-    document.getElementById('player-title').innerText = title;
-    showGameLoader('Loading test world...');
-    try {
-        const res = await fetchWithToken(`${CF_BACKEND_URL}/launcher`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: gameId,
-                title: title,
-                rgx_data: rgxCode,
-                serverId: "global",
-                avatarStyle: avatarStyle
-            })
-        });
-        if (res.ok) {
-            const html = await res.text();
-            const frame = document.getElementById('game-frame');
-            frame.srcdoc = html;
-            hideGameLoader();
-            setTimeout(() => {
-                if (frame.contentWindow) frame.contentWindow.postMessage({ type: 'tokensUpdate', tokens: userTokens }, '*');
-            }, 1000);
-        } else {
-            hideGameLoader();
-            const err = await res.text();
-            showNotification("Test Error", "Server: " + err, "danger");
-        }
-    } catch(e) {
-        hideGameLoader();
-        showNotification("Engine Error", "Failed to launch game engine.", "danger");
-    }
-}
-
-async function confirmPublishGame() {
-    if (!SESSION_TOKEN) {
-        await ensureDeviceIdentity();
-        if (!SESSION_TOKEN) {
-            showNotification("Session Error", "Could not establish a session. Please refresh the page.", "danger");
-            return;
-        }
-    }
-
-    const title = document.getElementById('gameTitle').value.trim() || "Untitled World";
-    const xml = serializeStudioWorldToRGX();
-    const partCount = (xml.match(new RegExp('\x3Cpart', 'g')) || []).length;
-    if (partCount <= 1) {
-        showNotification("Publish Error", "Your world is empty!", "warning");
-        return;
-    }
-    try {
-        const res = await fetchWithToken(`${CF_BACKEND_URL}/games`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title: title,
-                rgx_data: xml,
-                description: `Custom RGX 3D world created in RayGamix Studio by ${currentUser}`
-            })
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const newGame = data.game;
-            await fetchRealGames();
-            closeStudio();
-            showNotification("Game Published!", `"${title}" is now live on RayGamix Hub!`, "success");
-            if (newGame) openGameDetailModal(newGame.id.toString());
-        } else {
-            const err = await res.text();
-            showNotification("Publish Error", `Server responded: ${err}`, "danger");
-        }
-    } catch(e) {
-        showNotification("Publish Error", "Failed to publish RGX game.", "danger");
-    }
-}
-
-function initSidebarAvatarScene() {
-    const cont = document.getElementById('avatarCanvas'); if (!cont) return;
-    avatarScene = new THREE.Scene();
-    avatarCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-    avatarRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    // OPTIMIZATION: cap pixel ratio on HiDPI screens for the small sidebar preview
-    avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-    avatarRenderer.setSize(cont.clientWidth, cont.clientHeight);
-    cont.appendChild(avatarRenderer.domElement);
-    avatarScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const dl = new THREE.DirectionalLight(0xffffff, 1.0);
-    dl.position.set(5, 10, 5);
-    avatarScene.add(dl);
-    sidebarRig = createAvatarRig(userColors);
-    avatarScene.add(sidebarRig.group);
-    avatarCamera.position.set(0, 3.2, 9.5);
-    avatarCamera.lookAt(0, 3.0, 0);
-    // OPTIMIZATION: throttle to ~30 Hz — this is a tiny preview, no need for 60 fps
-    let _lastSidebarTick = 0;
-    function animLoop(now) {
-        requestAnimationFrame(animLoop);
-        if (now - _lastSidebarTick < 33) return;
-        _lastSidebarTick = now;
-        if (sidebarRig) sidebarRig.group.rotation.y += 0.016;
-        avatarRenderer.render(avatarScene, avatarCamera);
-    }
-    requestAnimationFrame(animLoop);
-}
-
-function initShopAvatarScene() {
-    if (shopRenderer) return;
-    const cont = document.getElementById('shopAvatarCanvas'); if (!cont) return;
-    shopScene = new THREE.Scene();
-    shopCamera = new THREE.PerspectiveCamera(45, cont.clientWidth / (cont.clientHeight || 1), 0.1, 1000);
-    shopRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    shopRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-    shopRenderer.setSize(cont.clientWidth, cont.clientHeight);
-    cont.appendChild(shopRenderer.domElement);
-    shopScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const dl = new THREE.DirectionalLight(0xffffff, 1.0);
-    dl.position.set(5, 10, 5);
-    shopScene.add(dl);
-    shopRig = createAvatarRig(userColors);
-    shopScene.add(shopRig.group);
-    shopCamera.position.set(0, 3.2, 9.5);
-    shopCamera.lookAt(0, 3.0, 0);
-    // OPTIMIZATION: skip rendering when the shop panel is hidden (offsetParent === null)
-    function shopAnimLoop() {
-        requestAnimationFrame(shopAnimLoop);
-        if (shopRenderer.domElement.offsetParent === null) return;
-        if (shopRig) shopRig.group.rotation.y += 0.01;
-        shopRenderer.render(shopScene, shopCamera);
-    }
-    shopAnimLoop();
-}
-
-document.addEventListener('keydown', (e) => {
-    if (e.key && e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
-        devKeyBuffer += e.key.toLowerCase();
-        if (devKeyBuffer.length > 20) devKeyBuffer = devKeyBuffer.slice(-20);
-        if (devKeyBuffer.endsWith("iamadev") || devKeyBuffer.endsWith("iamadeveloper")) {
-            devKeyBuffer = "";
-            const cont = document.getElementById('devLinksList');
-            const C = '\x3C';
-            if (cont) cont.innerHTML = gamesList.map(g => C + 'div style="background:var(--bg); border:1px solid var(--card-border); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">' +
-                C + 'div>' + C + 'strong>' + g.title + C + '/strong>' + C + 'br>' +
-                C + 'span style="font-size:11px; color:var(--accent);">' + CF_BACKEND_URL + '/launcher?id=' + g.id + C + '/span>' + C + '/div>' +
-                C + 'button class="btn" style="width:auto; padding:6px 12px; font-size:11px;" onclick="navigator.clipboard.writeText(\'' + CF_BACKEND_URL + '/launcher?id=' + g.id + '\')">📋 Copy Route' + C + '/button>' +
-            C + '/div>').join('');
-            document.getElementById('dev-links-panel').style.display = 'flex';
-        }
-    }
-});
-
-window.onload = async () => {
-    if (currentAppTheme === 'light') document.body.classList.add('light-theme');
-    await ensureDeviceIdentity();
-    await loadUserData(currentUser);
-    syncUserAccountUI();
-    initSidebarAvatarScene();
-    fetchRealGames();
-    warmupDO();
-
-    const styleSelect = document.getElementById('avatar-style-select');
-    if (styleSelect) {
-        styleSelect.value = avatarStyle;
-        styleSelect.addEventListener('change', (e) => {
-            avatarStyle = e.target.value;
-            localStorage.setItem('rgx_avatar_style', avatarStyle);
-        });
-    }
-};
-</script>
+        window.onload = initApp;
+    </script>
 </body>
 </html>
