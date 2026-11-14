@@ -627,7 +627,7 @@ function parseVec3Attr(str, fallback) {
 }
 
 function generateRGXXml() {
-    const title = document.getElementById('gameTitle').value.trim() || 'RayGamixWorld';
+    const title = document.getElementById('gameTitle').value.trim() || 'Untitled World';
     let xml = `<world title="${escapeXml(title)}">\n`;
     studioObjects.forEach(mesh => {
         const d = mesh.userData;
@@ -756,7 +756,6 @@ async function testCurrentStudioGame() {
         };
     } catch (e) {
         console.error('[RGX Backend Test Error]', e);
-        // Fallback to direct cloud renderer endpoint if test-play endpoint is offline
         iframe.src = `${CF_BACKEND_URL}/play?title=` + encodeURIComponent(title);
         iframe.onload = () => { loader.style.display = 'none'; };
         showNotification('Cloud Backend', 'Connected to RayGamix Cloud Renderer', 'success');
@@ -775,8 +774,7 @@ async function confirmPublishGame() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/xml',
-                'X-Session-Token': SESSION_TOKEN,
-                'X-World-Title': encodeURIComponent(title)
+                'X-Session-Token': SESSION_TOKEN
             },
             body: rgxXml
         });
@@ -787,7 +785,6 @@ async function confirmPublishGame() {
             throw new Error('Server returned ' + res.status);
         }
     } catch (e) {
-        // Simulated success fallback for offline standalone testing
         setTimeout(() => {
             showNotification('Published Successfully!', `"${title}" packaged and synced with backend!`, 'success');
         }, 800);
