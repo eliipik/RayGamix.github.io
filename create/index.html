@@ -3,103 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RayGamix Studio v12.5 - Cloud Backend Connected</title>
+    <title>RayGamix Studio v12.5</title>
     <style>
-        @font-face { font-family: 'RayGamix Neue'; src: url('https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+        @font-face { font-family: 'RayGamix Neue'; src: url('https://raygamix.com/RayGamix%20Neue/RayGamix_Neue_regular.ttf') format('truetype'); }
         :root { --bg:#03070b; --panel:#0a131c; --card:#111a24; --muted:#7d96b0; --accent:#00b7ff; --glass:rgba(255,255,255,0.05); --gold:#ffc107; --red:#ff4444; --green:#00e676; --card-border:#162438; --accent-glow:rgba(0,183,255,0.4); --text:#ffffff; --subtext:#cbd5e1; }
         * { box-sizing: border-box; font-family: 'RayGamix Neue', system-ui, -apple-system, sans-serif !important; }
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: #000; color: var(--text); overflow: hidden; touch-action: manipulation; }
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: #000; color: var(--text); overflow: hidden; }
 
-        .btn { background: var(--accent); color: #000; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.15s; text-align: center; box-sizing: border-box; text-transform: uppercase; font-size: 12px; letter-spacing: 0.4px; user-select: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
-        .btn:hover { filter: brightness(1.18); transform: translateY(-1px); box-shadow: 0 5px 15px var(--accent-glow); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-alt { background: var(--glass); border: 1px solid var(--card-border); color: var(--text); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 8px 13px; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.15s; text-transform: uppercase; font-size: 11.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .btn:hover { filter: brightness(1.18); }
+        .btn-alt { background: var(--glass); border: 1px solid var(--card-border); color: var(--text); padding: 7px 11px; border-radius: 6px; cursor: pointer; font-size: 11.5px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
         .btn-alt:hover { background: var(--card); border-color: var(--accent); }
-        .btn-tool { background: var(--card); color: var(--text); border: 1px solid var(--card-border); padding: 7px 11px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.15s; white-space: nowrap; }
-        .btn-tool:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+        .btn-tool { background: var(--card); color: var(--text); border: 1px solid var(--card-border); padding: 7px 11px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap; }
         .tool-active { background: var(--accent) !important; color: #000 !important; border-color: var(--accent) !important; }
 
-        .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; overflow: hidden; }
-        .studio-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; background: #071018; border-bottom: 1px solid #142536; gap: 10px; flex-wrap: wrap; }
-        .studio-header-actions { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
-        .studio-toolbar { background: #0a1520; padding: 9px 18px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap; }
+        .studio-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #020406; }
+        .studio-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #071018; border-bottom: 1px solid #142536; gap: 8px; flex-wrap: wrap; }
+        .studio-toolbar { background: #0a1520; padding: 8px 16px; display: flex; gap: 8px; border-bottom: 1px solid #142536; align-items: center; flex-wrap: wrap; }
         .studio-body { display: flex; flex: 1; min-height: 0; width: 100%; overflow: hidden; }
-        .studio-viewport { flex: 1; min-width: 0; background: #071018; position: relative; overflow: hidden; cursor: crosshair; min-height: 200px; }
+        .studio-viewport { flex: 1; min-width: 0; background: #071018; position: relative; overflow: hidden; cursor: crosshair; }
         .studio-viewport canvas { display: block; width: 100% !important; height: 100% !important; }
         .studio-sidebar { width: 370px; flex-shrink: 0; background: #071018; border-left: 1px solid #142536; display: flex; flex-direction: column; overflow: hidden; }
 
-        .prop-section { padding: 14px; border-bottom: 1px solid #142536; overflow-y: auto; flex: 1; }
+        .prop-section { padding: 14px; overflow-y: auto; flex: 1; }
         .prop-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; font-size: 12px; color: var(--muted); font-weight: bold; gap: 8px; }
-        .prop-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--card-border); color: var(--text); padding: 7px 9px; font-size: 12px; border-radius: 6px; box-sizing: border-box; transition: 0.2s; }
-        .prop-input:focus { border-color: var(--accent); outline: none; }
-        .prop-vec3 { display: flex; gap: 5px; flex: 1; min-width: 0; }
+        .prop-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--card-border); color: var(--text); padding: 7px 9px; font-size: 12px; border-radius: 6px; }
+        .prop-vec3 { display: flex; gap: 5px; flex: 1; }
         .prop-vec3 input { width: 33.3%; min-width: 0; background: var(--bg); border: 1px solid var(--card-border); color: var(--text); padding: 6px 4px; font-size: 12px; text-align: center; border-radius: 4px; }
+        .script-textarea { width: 100%; min-height: 140px; resize: vertical; background: #020509; border: 1px solid #1c3147; color: #7dd3fc; border-radius: 6px; padding: 8px; font-size: 11.5px; font-family: monospace !important; }
 
-        .script-box-wrap { margin-top: 12px; padding-top: 12px; border-top: 1px solid #142536; }
-        .script-textarea { width: 100%; min-height: 150px; resize: vertical; background: #020509; border: 1px solid #1c3147; color: #7dd3fc; border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
-        .script-textarea:focus { border-color: var(--accent); outline: none; }
-        .script-meta { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 5px; }
-
+        #viewport-status { position: absolute; top: 12px; left: 12px; background: rgba(7,16,24,0.88); border: 1px solid #1c3147; color: #7dd3fc; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; pointer-events: none; z-index: 20; }
         #notification-toast-container { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast-notification { pointer-events: auto; background: var(--panel); border: 1px solid var(--accent); color: var(--text); padding: 14px 18px; border-radius: 10px; font-weight: bold; box-shadow: 0 5px 20px var(--accent-glow); width: 360px; max-width: 90vw; animation: toastIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275); display: flex; align-items: center; gap: 12px; font-size: 13px; line-height: 1.4; }
-        .toast-notification.toast-success { border-color: var(--green); box-shadow: 0 5px 20px rgba(0,230,118,0.3); }
-        .toast-notification.toast-warning { border-color: var(--gold); box-shadow: 0 5px 20px rgba(255,193,7,0.3); }
-        .toast-notification.toast-danger { border-color: var(--red); box-shadow: 0 5px 20px rgba(255,68,68,0.3); }
-        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-notification { pointer-events: auto; background: var(--panel); border: 1px solid var(--accent); color: var(--text); padding: 12px 16px; border-radius: 10px; font-weight: bold; width: 340px; font-size: 12.5px; }
+        .toast-success { border-color: var(--green); }
+        .toast-warning { border-color: var(--gold); }
+        .toast-danger { border-color: var(--red); }
 
-        /* Cloud Backend Player Overlay */
         #game-player { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; }
-        .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10001; pointer-events: none; }
-        .player-header * { pointer-events: auto; }
-        #game-frame { width: 100%; height: 100%; border: none; background: #000; position: absolute; inset: 0; z-index: 10000; }
-        #game-loader { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #0a131c 0%, #000 100%); z-index: 10002; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 20px; pointer-events: none; }
-        #game-loader .spinner { width: 70px; height: 70px; border-radius: 50%; border: 4px solid rgba(0,183,255,0.15); border-top-color: #00b7ff; animation: rgxspin 0.9s linear infinite; box-shadow: 0 0 30px rgba(0,183,255,0.4); }
-        #game-loader .loader-text { color: #00b7ff; font-weight: 900; font-size: 18px; letter-spacing: 1px; text-shadow: 0 0 12px rgba(0,183,255,0.6); }
-        #game-loader .loader-sub { color: #7d96b0; font-size: 12px; font-weight: bold; margin-top: 6px; }
-        @keyframes rgxspin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 900px) {
-            .studio-body { flex-direction: column; }
-            .studio-sidebar { width: 100%; max-height: 44vh; border-left: none; border-top: 1px solid #142536; }
-        }
+        .player-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10001; }
+        #game-frame { width: 100%; height: 100%; border: none; position: absolute; inset: 0; z-index: 10000; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
 </head>
 <body>
-
     <div id="notification-toast-container"></div>
 
-    <!-- CLOUD BACKEND GAME PLAYER OVERLAY -->
     <div id="game-player">
         <div class="player-header">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <h3 id="playerGameTitle" style="color:var(--accent); margin:0; font-size:16px;">RayGamix Cloud World</h3>
-                <span id="playerBackendBadge" style="background:rgba(0,183,255,0.2); border:1px solid var(--accent); color:var(--accent); font-size:10px; font-weight:900; padding:3px 8px; border-radius:4px;">BACKEND TEST</span>
-            </div>
-            <button class="btn" style="background:var(--red); color:#fff; padding:8px 18px;" onclick="closeGamePlayer()">✕ EXIT BACKEND PLAYER</button>
-        </div>
-        <div id="game-loader">
-            <div class="spinner"></div>
-            <div class="loader-text">CONNECTING TO RAYGAMIX CLOUD BACKEND...</div>
-            <div class="loader-sub">Sending .RGX &amp; RGXScript v2 to server</div>
+            <h3 id="playerGameTitle" style="color:var(--accent); margin:0; font-size:16px;">RayGamix Cloud World</h3>
+            <button class="btn" style="background:var(--red); color:#fff;" onclick="closeGamePlayer()">✕ EXIT PLAYER</button>
         </div>
         <iframe id="game-frame" src="about:blank"></iframe>
     </div>
 
     <div class="studio-layout" id="studio-panel">
         <div class="studio-header">
-            <h2 style="color:var(--accent); margin:0; font-weight:900; font-size:18px; display:flex; align-items:center; gap:8px; white-space:nowrap;">⚡ RAYGAMIX STUDIO v12.5</h2>
-            <div class="studio-header-actions">
-                <input type="text" id="gameTitle" class="prop-input" value="Untitled World" placeholder="ENTER WORLD NAME..." style="width: 165px; font-size: 12px; padding: 7px 10px; border-radius: 7px; font-weight:bold;">
-                <button class="btn-alt" style="padding: 7px 11px; font-size: 11px;" onclick="document.getElementById('rgxWorldImportInput').click()">📥 IMPORT .RGX</button>
-                <button class="btn-alt" style="padding: 7px 11px; font-size: 11px;" onclick="exportRGXFile()">📤 EXPORT .RGX</button>
+            <h2 style="color:var(--accent); margin:0; font-weight:900; font-size:17px;">⚡ RAYGAMIX STUDIO v12.5</h2>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                <input type="text" id="gameTitle" class="prop-input" value="Untitled World" style="width:150px; font-weight:bold;">
+                <button class="btn-alt" onclick="document.getElementById('rgxWorldImportInput').click()">📥 IMPORT .RGX</button>
+                <button class="btn-alt" onclick="exportRGXFile()">📤 EXPORT .RGX</button>
                 <input type="file" id="rgxWorldImportInput" accept=".rgx,.xml" style="display:none;" onchange="importRGXWorldFile(event)">
-                <button class="btn-alt" style="padding: 7px 11px; font-size:11px;" onclick="resetStudioCameraToGameplay()">🎯 Match Gameplay Camera</button>
-                <button class="btn" style="background:linear-gradient(135deg, #00e5ff, #0088ff); color:#000; padding: 7px 13px; font-size:11px;" onclick="testCurrentStudioGame()">🌐 TEST VIA BACKEND</button>
-                <button class="btn" id="btnPublish" style="background:linear-gradient(135deg, #cc66ff, #8800ff); color:#fff; padding: 7px 13px; font-size:11px;" onclick="confirmPublishGame()">🚀 PUBLISH .RGX</button>
-                <button class="btn" style="background:var(--red); color:#fff; padding: 7px 11px; font-size:11px;" onclick="clearWorldPrompt()">🗑️ CLEAR</button>
+                <button class="btn-alt" onclick="resetStudioCameraToGameplay()">🎯 Match Gameplay Camera</button>
+                <button class="btn" style="background:linear-gradient(135deg,#00e5ff,#0088ff);" onclick="testCurrentStudioGame()">🌐 TEST VIA BACKEND</button>
+                <button class="btn" id="btnPublish" style="background:linear-gradient(135deg,#cc66ff,#8800ff); color:#fff;" onclick="confirmPublishGame()">🚀 PUBLISH .RGX</button>
+                <button class="btn" style="background:var(--red); color:#fff;" onclick="clearWorldPrompt()">🗑️ CLEAR</button>
             </div>
         </div>
         <div class="studio-toolbar">
@@ -107,8 +77,7 @@
             <button id="tool-translate" class="btn-tool" onclick="setTransformMode('translate')">☩ Move</button>
             <button id="tool-scale" class="btn-tool" onclick="setTransformMode('scale')">⤡ Scale</button>
             <button id="tool-rotate" class="btn-tool" onclick="setTransformMode('rotate')">↻ Rotate</button>
-            <div style="width: 1px; height: 20px; background: #333; margin: 0 4px;"></div>
-            <select id="addPartType" class="prop-input" style="width: auto; min-width: 155px; padding: 6px 8px; font-weight:bold;">
+            <select id="addPartType" class="prop-input" style="width:auto; min-width:150px; font-weight:bold;">
                 <option value="cube">🧱 Block / Cube</option>
                 <option value="sphere">⚽ Sphere</option>
                 <option value="cylinder">🥫 Cylinder</option>
@@ -121,57 +90,41 @@
                 <option value="sign">🪧 Signboard</option>
                 <option value="npc">🧑 NPC</option>
             </select>
-            <button class="btn" style="padding: 6px 14px;" onclick="addSelectedPart()">➕ Insert Part</button>
-            <button class="btn-alt" style="padding: 6px 12px; font-size: 12px;" onclick="duplicateSelectedObject()">📋 Duplicate</button>
+            <button class="btn" onclick="addSelectedPart()">➕ INSERT PART</button>
+            <button class="btn-alt" onclick="duplicateSelectedObject()">📋 Duplicate</button>
         </div>
         <div class="studio-body">
-            <div id="studio-viewport" class="studio-viewport"></div>
+            <div id="studio-viewport" class="studio-viewport">
+                <div id="viewport-status">Booting Studio...</div>
+            </div>
             <div class="studio-sidebar">
-                <div style="background: #050a12; padding: 11px 14px; font-size: 12.5px; font-weight: 800; color: #fff; border-bottom: 1px solid #162438; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <div style="background:#050a12; padding:11px 14px; font-size:12px; font-weight:800; border-bottom:1px solid #162438; display:flex; justify-content:space-between;">
                     <span>OBJECT PROPERTIES</span>
-                    <span id="objCountLabel" style="color:var(--accent); white-space:nowrap;">0 / 500 Parts</span>
+                    <span id="objCountLabel" style="color:var(--accent);">0 / 500 Parts</span>
                 </div>
-                <div class="prop-section" id="studioPropertiesPanel">
+                <div class="prop-section">
                     <div id="prop-empty" style="color:var(--muted); text-align:center; margin-top:30px; font-weight:bold;">Click an object in 3D viewport to edit properties</div>
                     <div id="prop-content" style="display:none;">
-                        <div class="prop-row"><span style="width:74px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:74px;">Type</span><input type="text" id="prop-type" class="prop-input" disabled style="opacity:0.6;"></div>
-                        <div class="prop-row"><span style="width:74px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px; border:none; cursor:pointer;" onchange="applyPropertyChanges()"></div>
-                        <div class="prop-row"><span style="width:74px;">Material</span>
+                        <div class="prop-row"><span style="width:70px;">Name</span><input type="text" id="prop-name" class="prop-input" onchange="applyPropertyChanges()"></div>
+                        <div class="prop-row"><span style="width:70px;">Type</span><input type="text" id="prop-type" class="prop-input" disabled></div>
+                        <div class="prop-row"><span style="width:70px;">Color</span><input type="color" id="prop-color" class="prop-input" style="padding:0; height:28px;" onchange="applyPropertyChanges()"></div>
+                        <div class="prop-row"><span style="width:70px;">Material</span>
                             <select id="prop-material" class="prop-input" onchange="applyPropertyChanges()">
-                                <option value="Plastic">Plastic</option>
-                                <option value="Glass">Glass</option>
-                                <option value="Neon">Neon</option>
-                                <option value="Obsidian">Obsidian</option>
-                                <option value="Water">Water</option>
-                                <option value="Lava">Lava</option>
-                                <option value="Metal">Metal</option>
-                                <option value="Wood">Wood</option>
-                                <option value="Concrete">Concrete</option>
-                                <option value="Ice">Ice</option>
-                                <option value="Hologram">Hologram</option>
-                                <option value="Carpet">Carpet</option>
-                                <option value="Brick">Brick</option>
+                                <option value="Plastic">Plastic</option><option value="Glass">Glass</option><option value="Neon">Neon</option>
+                                <option value="Obsidian">Obsidian</option><option value="Water">Water</option><option value="Lava">Lava</option>
+                                <option value="Metal">Metal</option><option value="Wood">Wood</option><option value="Concrete">Concrete</option>
+                                <option value="Ice">Ice</option><option value="Hologram">Hologram</option><option value="Carpet">Carpet</option><option value="Brick">Brick</option>
                             </select>
                         </div>
-                        <div class="prop-row" id="row-text-val" style="display:none;"><span style="width:74px;">Sign Text</span><input type="text" id="prop-text-val" class="prop-input" maxlength="256" placeholder="Sign text..." onchange="applyPropertyChanges()"></div>
+                        <div class="prop-row" id="row-text-val" style="display:none;"><span style="width:70px;">Sign Text</span><input type="text" id="prop-text-val" class="prop-input" maxlength="256" onchange="applyPropertyChanges()"></div>
                         <div class="prop-row"><span style="width:42px;">Pos</span><div class="prop-vec3"><input type="number" id="prop-pos-x" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-y" step="0.5" onchange="applyPropertyChanges()"><input type="number" id="prop-pos-z" step="0.5" onchange="applyPropertyChanges()"></div></div>
                         <div class="prop-row"><span style="width:42px;">Scale</span><div class="prop-vec3"><input type="number" id="prop-scale-x" step="0.5" min="0.05" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-y" step="0.5" min="0.05" onchange="applyPropertyChanges()"><input type="number" id="prop-scale-z" step="0.5" min="0.05" onchange="applyPropertyChanges()"></div></div>
                         <div class="prop-row"><span style="width:42px;">Rot</span><div class="prop-vec3"><input type="number" id="prop-rot-x" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-y" step="15" onchange="applyPropertyChanges()"><input type="number" id="prop-rot-z" step="15" onchange="applyPropertyChanges()"></div></div>
-
-                        <div class="script-box-wrap">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <span style="font-size:11px; font-weight:900; color:var(--accent);">RGXSCRIPT v2 (THIS OBJECT)</span>
-                                <button type="button" class="btn-alt" style="padding:3px 8px; font-size:10px;" onclick="runSelectedObjectScriptNow()">▶ Run Now</button>
-                            </div>
-                            <textarea id="prop-script" class="script-textarea" placeholder="# RGXScript v2&#10;on start:&#10;  set this.color = &quot;#00e676&quot;&#10;&#10;when player-clicks:&#10;  screen.showText(&quot;bold font24px clrwhite bgblack center&quot;, &quot;Clicked!&quot;)" oninput="onScriptInputChange()"></textarea>
-                            <div class="script-meta">
-                                <span id="scriptByteCount">0 / 16384 bytes</span>
-                                <span id="scriptStatusLabel" style="color:var(--green);">Ready</span>
-                            </div>
+                        <div style="margin-top:10px; border-top:1px solid #142536; padding-top:10px;">
+                            <div style="font-size:11px; font-weight:900; color:var(--accent); margin-bottom:6px;">RGXSCRIPT v2 (THIS OBJECT)</div>
+                            <textarea id="prop-script" class="script-textarea" onchange="applyPropertyChanges()"></textarea>
                         </div>
-
-                        <button class="btn-alt" style="border-color:var(--red); color:var(--red); margin-top:16px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
+                        <button class="btn-alt" style="border-color:var(--red); color:var(--red); margin-top:14px;" onclick="deleteSelectedObject()">🗑️ Delete Object</button>
                     </div>
                 </div>
             </div>
@@ -181,138 +134,82 @@
 <script>
 const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
 let SESSION_TOKEN = localStorage.getItem('rgx_session_token') || 'dev_guest_token';
-
 const MAX_OBJECTS_PER_WORLD = 500;
-const MAX_SCRIPT_BYTES = 16384;
-
-const ALLOWED_TYPES = new Set([
-    'cube', 'sphere', 'cylinder', 'wedge', 'ladder', 'water', 'lava',
-    'spawn', 'checkpoint', 'sign', 'npc'
-]);
-
-const ALLOWED_MATERIALS = new Set([
-    'Plastic', 'Glass', 'Neon', 'Obsidian', 'Water', 'Lava',
-    'Metal', 'Wood', 'Concrete', 'Ice', 'Hologram', 'Carpet', 'Brick'
-]);
-
-const ALLOWED_ACTIONS = new Set([
-    'hideSelf', 'closeScreen', 'teleportToSpawn', 'giveToken',
-    'emitChat', 'shakeCamera', 'playSound', 'openSettings'
-]);
-
-const ENGINE_CAMERA = {
-    fov: 60,
-    near: 0.1,
-    far: 600,
-    restDistance: 40,
-    restPitch: 0.3,
-    restYaw: 0,
-    eyeOffsetY: 4,
-    targetOffsetY: 2,
-    minDistance: 6,
-    maxDistance: 80,
-    maxPitch: 1.5,
-    minPitch: -0.8,
-    ambientIntensity: 0.55,
-    sunIntensity: 1.2,
-    fillColor: 0x00b7ff,
-    fillIntensity: 0.35,
-    skyColor: 0x87ceeb,
-    fogDensity: 0.0045,
-    toneMappingExposure: 1.1,
-    pixelRatioCap: 1.5
-};
+const ALLOWED_TYPES = new Set(['cube','sphere','cylinder','wedge','ladder','water','lava','spawn','checkpoint','sign','npc']);
+const ALLOWED_MATERIALS = new Set(['Plastic','Glass','Neon','Obsidian','Water','Lava','Metal','Wood','Concrete','Ice','Hologram','Carpet','Brick']);
 
 let studioObjects = [];
 let selectedMesh = null;
 let scene, camera, renderer, orbit, transform;
-let raycaster = new THREE.Raycaster();
-let mouse = new THREE.Vector2();
+let raycaster = null, mouse = null;
 let studioRenderDirty = true;
 let currentMode = 'select';
-let activeTestBlobUrl = null;
-let runtimeScreenOverlay = null;
-let runtimeScreenHandles = new Map();
-let activeTimers = [];
+let studioInitialized = false;
 
-function showNotification(title, message, type = "info") {
-    const container = document.getElementById('notification-toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    toast.innerHTML = `<div><strong>${escapeHtml(title)}</strong><br><span style="color:var(--subtext); font-size:12px;">${escapeHtml(message)}</span></div>`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 4000);
+function setStatus(msg) {
+    const el = document.getElementById('viewport-status');
+    if (el) el.textContent = msg;
 }
 
-function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, c => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
+window.onerror = function(msg, src, line) {
+    setStatus('JS Error (line ' + line + '): ' + msg);
+};
+
+function showNotification(title, message, type = "info") {
+    const c = document.getElementById('notification-toast-container');
+    if (!c) return;
+    const t = document.createElement('div');
+    t.className = 'toast-notification toast-' + type;
+    t.textContent = title + ': ' + message;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
 }
 
 function normalizeHexColor(c) {
-    if (!c) return '#00b7ff';
-    c = String(c).trim();
+    c = String(c || '').trim();
     if (/^#[0-9a-fA-F]{6}$/.test(c)) return c;
     if (/^[0-9a-fA-F]{6}$/.test(c)) return '#' + c;
     return '#00b7ff';
 }
 
-function byteLengthUtf8(str) {
-    return new TextEncoder().encode(String(str || '')).length;
-}
-
-// ============================================================
-// STUDIO 3D ENGINE INIT
-// ============================================================
-function initStudio() {
+function initStudioWhenReady() {
     const container = document.getElementById('studio-viewport');
-    if (!container || typeof THREE === 'undefined') {
-        showNotification('3D Engine Error', 'Three.js failed to load.', 'danger');
+    if (!container) return;
+
+    if (typeof THREE === 'undefined') {
+        setStatus('ERROR: THREE.js did not load (check internet / CSP / js tags).');
         return;
     }
 
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    if (w < 10 || h < 10) {
+        setStatus('Waiting for visible viewport size (' + w + 'x' + h + ')...');
+        setTimeout(initStudioWhenReady, 150);
+        return;
+    }
+
+    if (studioInitialized) return;
+    studioInitialized = true;
+
     try {
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(ENGINE_CAMERA.skyColor);
-        scene.fog = new THREE.FogExp2(ENGINE_CAMERA.skyColor, ENGINE_CAMERA.fogDensity);
+        scene.background = new THREE.Color(0x87ceeb);
+        scene.fog = new THREE.FogExp2(0x87ceeb, 0.0045);
 
-        const w = Math.max(1, container.clientWidth);
-        const h = Math.max(1, container.clientHeight);
-        camera = new THREE.PerspectiveCamera(ENGINE_CAMERA.fov, w / h, ENGINE_CAMERA.near, ENGINE_CAMERA.far);
-
-        renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'default' });
+        camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 600);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(w, h);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ENGINE_CAMERA.pixelRatioCap));
-        try {
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            if (THREE.ACESFilmicToneMapping !== undefined) {
-                renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                renderer.toneMappingExposure = ENGINE_CAMERA.toneMappingExposure;
-            }
-        } catch (_) {}
-
-        container.innerHTML = '';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
         container.appendChild(renderer.domElement);
 
-        const ambient = new THREE.AmbientLight(0xffffff, ENGINE_CAMERA.ambientIntensity);
-        scene.add(ambient);
-
-        const sun = new THREE.DirectionalLight(0xffffff, ENGINE_CAMERA.sunIntensity);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const sun = new THREE.DirectionalLight(0xffffff, 1.1);
         sun.position.set(50, 100, 50);
-        sun.castShadow = true;
-        sun.shadow.mapSize.width = 1024;
-        sun.shadow.mapSize.height = 1024;
-        const d = 100;
-        sun.shadow.camera.left = -d; sun.shadow.camera.right = d;
-        sun.shadow.camera.top = d; sun.shadow.camera.bottom = -d;
         scene.add(sun);
-
-        const fill = new THREE.DirectionalLight(ENGINE_CAMERA.fillColor, ENGINE_CAMERA.fillIntensity);
-        fill.position.set(-40, 30, -40);
-        scene.add(fill);
 
         const grid = new THREE.GridHelper(200, 100, 0x00b7ff, 0x1e293b);
         grid.position.y = 0.01;
@@ -321,331 +218,112 @@ function initStudio() {
         if (typeof THREE.OrbitControls === 'function') {
             orbit = new THREE.OrbitControls(camera, renderer.domElement);
             orbit.enableDamping = true;
-            orbit.dampingFactor = 0.08;
             orbit.addEventListener('change', () => { studioRenderDirty = true; });
         }
 
         if (typeof THREE.TransformControls === 'function') {
-            try {
-                transform = new THREE.TransformControls(camera, renderer.domElement);
-                transform.addEventListener('dragging-changed', (event) => {
-                    if (orbit) orbit.enabled = !event.value;
-                    studioRenderDirty = true;
-                });
-                transform.addEventListener('change', () => {
-                    if (selectedMesh) {
-                        selectedMesh.userData.pos = [selectedMesh.position.x, selectedMesh.position.y, selectedMesh.position.z];
-                        selectedMesh.userData.scale = [selectedMesh.scale.x, selectedMesh.scale.y, selectedMesh.scale.z];
-                        selectedMesh.userData.rot = [
-                            THREE.MathUtils.radToDeg(selectedMesh.rotation.x),
-                            THREE.MathUtils.radToDeg(selectedMesh.rotation.y),
-                            THREE.MathUtils.radToDeg(selectedMesh.rotation.z)
-                        ];
-                        syncPropertiesPanelFromMesh(selectedMesh);
-                    }
-                    studioRenderDirty = true;
-                });
-                scene.add(transform);
-            } catch (_) {
-                transform = null;
-            }
+            transform = new THREE.TransformControls(camera, renderer.domElement);
+            transform.addEventListener('dragging-changed', e => { if (orbit) orbit.enabled = !e.value; });
+            transform.addEventListener('change', () => { if (selectedMesh) syncPropertiesPanelFromMesh(selectedMesh); studioRenderDirty = true; });
+            scene.add(transform);
         }
 
         resetStudioCameraToGameplay();
-        buildDefaultStarterWorld();
-        updateObjectCount();
+
+        createStudioPart('cube', { name: 'Baseplate', color: '#111a24', material: 'Obsidian', pos: [0, -1, 0], scale: [200, 2, 200] });
+        createStudioPart('cube', { name: 'cube_703', color: '#00b7ff', material: 'Plastic', pos: [0, 4, 0], scale: [4, 4, 4], js: 'on start:\n  set this.color = "#00e676"' });
 
         window.addEventListener('resize', onWindowResize);
         renderer.domElement.addEventListener('pointerdown', onViewportPointerDown);
-        window.addEventListener('keydown', onStudioKeyDown);
-
-        studioRenderDirty = true;
+        setStatus('3D Viewport Active • WebGL Ready');
         animateStudio();
     } catch (err) {
-        console.error('[RGX Studio Init Error]', err);
-        showNotification('Studio Viewport Error', err.message || 'Failed to initialize 3D viewport', 'danger');
+        setStatus('3D Init Error: ' + err.message);
     }
-}
-
-function buildDefaultStarterWorld() {
-    createStudioPart('cube', {
-        name: 'Baseplate',
-        color: '#111a24',
-        material: 'Obsidian',
-        pos: [0, -1.0, 0],
-        scale: [200, 2, 200],
-        rot: [0, 0, 0],
-        script: ''
-    });
-    createStudioPart('cube', {
-        name: 'cube_703',
-        color: '#00b7ff',
-        material: 'Plastic',
-        pos: [0, 4.0, 0],
-        scale: [4, 4, 4],
-        rot: [0, 0, 0],
-        script: 'on start:\n  set this.color = "#00e676"\n\nwhen player-clicks:\n  screen.showText("bold font24px clrwhite bgblack center", "Clicked cube_703!")'
-    });
 }
 
 function resetStudioCameraToGameplay() {
     if (!camera) return;
-    const dist = ENGINE_CAMERA.restDistance;
-    const pitch = ENGINE_CAMERA.restPitch;
-    const yaw = ENGINE_CAMERA.restYaw;
-    camera.position.set(
-        Math.sin(yaw) * Math.cos(pitch) * dist,
-        Math.sin(pitch) * dist + ENGINE_CAMERA.eyeOffsetY,
-        Math.cos(yaw) * Math.cos(pitch) * dist
-    );
-    if (orbit) {
-        orbit.target.set(0, ENGINE_CAMERA.targetOffsetY, 0);
-        orbit.update();
-    } else {
-        camera.lookAt(0, ENGINE_CAMERA.targetOffsetY, 0);
-    }
+    camera.position.set(0, 15.8, 38.2);
+    if (orbit) { orbit.target.set(0, 2, 0); orbit.update(); }
+    else camera.lookAt(0, 2, 0);
     studioRenderDirty = true;
 }
 
-// ============================================================
-// PART CREATION & MATERIALS
-// ============================================================
 function createMaterialFromPreset(preset, hexColor) {
     const col = new THREE.Color(normalizeHexColor(hexColor));
-    switch (preset) {
-        case 'Glass':
-            return new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: 0.45, roughness: 0.12, metalness: 0.1 });
-        case 'Neon':
-            return new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.85, roughness: 0.2 });
-        case 'Obsidian':
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.15, metalness: 0.85 });
-        case 'Water':
-            return new THREE.MeshStandardMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6, roughness: 0.1 });
-        case 'Lava':
-            return new THREE.MeshStandardMaterial({ color: 0xff3300, emissive: 0xff4500, emissiveIntensity: 0.95, roughness: 0.4 });
-        case 'Metal':
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.28, metalness: 0.8 });
-        case 'Wood':
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.78, metalness: 0.05 });
-        case 'Concrete':
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.9, metalness: 0.0 });
-        case 'Ice':
-            return new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: 0.72, roughness: 0.12, metalness: 0.05 });
-        case 'Hologram':
-            return new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.6, transparent: true, opacity: 0.55, roughness: 0.2 });
-        case 'Carpet':
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.95, metalness: 0.0 });
-        case 'Brick':
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.82, metalness: 0.05 });
-        case 'Plastic':
-        default:
-            return new THREE.MeshStandardMaterial({ color: col, roughness: 0.45, metalness: 0.05 });
-    }
-}
-
-function createGeometryForType(type) {
-    switch (type) {
-        case 'sphere':
-            return new THREE.SphereGeometry(0.5, 24, 24);
-        case 'cylinder':
-            return new THREE.CylinderGeometry(0.5, 0.5, 1, 24);
-        case 'wedge': {
-            try {
-                if (typeof THREE.Shape === 'function' && typeof THREE.ExtrudeGeometry === 'function') {
-                    const shape = new THREE.Shape();
-                    shape.moveTo(-0.5, -0.5);
-                    shape.lineTo(0.5, -0.5);
-                    shape.lineTo(-0.5, 0.5);
-                    shape.closePath();
-                    const geo = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
-                    geo.translate(0, 0, -0.5);
-                    return geo;
-                }
-            } catch (_) {}
-            return new THREE.BoxGeometry(1, 1, 1);
-        }
-        case 'npc':
-            return new THREE.BoxGeometry(1, 2, 1);
-        case 'cube':
-        case 'ladder':
-        case 'water':
-        case 'lava':
-        case 'spawn':
-        case 'checkpoint':
-        case 'sign':
-        default:
-            return new THREE.BoxGeometry(1, 1, 1);
-    }
-}
-
-function updateSignTexture(mesh, text) {
-    if (!mesh || mesh.userData.type !== 'sign') return;
-    try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = mesh.userData.color || '#1e293b';
-        ctx.fillRect(0, 0, 512, 256);
-        ctx.strokeStyle = '#00b7ff';
-        ctx.lineWidth = 12;
-        ctx.strokeRect(6, 6, 500, 244);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 42px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(text || 'RAYGAMIX SIGN').slice(0, 256), 256, 128);
-        const tex = new THREE.CanvasTexture(canvas);
-        if (mesh.material.map) mesh.material.map.dispose();
-        mesh.material.map = tex;
-        mesh.material.needsUpdate = true;
-    } catch (_) {}
+    if (preset === 'Neon') return new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.85 });
+    if (preset === 'Glass') return new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: 0.45 });
+    if (preset === 'Water') return new THREE.MeshStandardMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6 });
+    if (preset === 'Lava') return new THREE.MeshStandardMaterial({ color: 0xff3300, emissive: 0xff4500, emissiveIntensity: 0.95 });
+    return new THREE.MeshStandardMaterial({ color: col, roughness: 0.45 });
 }
 
 function createStudioPart(type, opts = {}) {
-    if (!scene) return null;
-    if (studioObjects.length >= MAX_OBJECTS_PER_WORLD) {
-        showNotification('World Limit Reached', `Max ${MAX_OBJECTS_PER_WORLD} objects per world allowed.`, 'danger');
-        return null;
-    }
-
+    if (!scene || studioObjects.length >= MAX_OBJECTS_PER_WORLD) return null;
     const safeType = ALLOWED_TYPES.has(type) ? type : 'cube';
-    const defaults = {
-        cube: { color: '#00b7ff', material: 'Plastic', scale: [4, 4, 4] },
-        sphere: { color: '#ff4444', material: 'Plastic', scale: [4, 4, 4] },
-        cylinder: { color: '#ffc107', material: 'Plastic', scale: [3, 5, 3] },
-        wedge: { color: '#a855f7', material: 'Plastic', scale: [4, 4, 4] },
-        ladder: { color: '#d97706', material: 'Plastic', scale: [2, 8, 0.4] },
-        water: { color: '#00aaff', material: 'Water', scale: [12, 4, 12] },
-        lava: { color: '#ff3300', material: 'Lava', scale: [10, 1, 10] },
-        spawn: { color: '#00e676', material: 'Neon', scale: [6, 0.5, 6] },
-        checkpoint: { color: '#ffeb3b', material: 'Neon', scale: [1, 6, 1] },
-        sign: { color: '#1e293b', material: 'Plastic', scale: [5, 3, 0.4] },
-        npc: { color: '#38bdf8', material: 'Plastic', scale: [1.5, 2.2, 1.5] }
-    };
-
-    const def = defaults[safeType] || defaults.cube;
-    const color = normalizeHexColor(opts.color || def.color);
-    const materialPreset = ALLOWED_MATERIALS.has(opts.material) ? opts.material : def.material;
-    const rawScale = opts.scale || def.scale;
-    const scale = [
-        Math.max(0.05, Number(rawScale[0]) || def.scale[0]),
-        Math.max(0.05, Number(rawScale[1]) || def.scale[1]),
-        Math.max(0.05, Number(rawScale[2]) || def.scale[2])
-    ];
+    const geo = safeType === 'sphere' ? new THREE.SphereGeometry(0.5, 24, 24)
+              : safeType === 'cylinder' ? new THREE.CylinderGeometry(0.5, 0.5, 1, 24)
+              : new THREE.BoxGeometry(1, 1, 1);
+    const color = normalizeHexColor(opts.color || '#00b7ff');
+    const material = ALLOWED_MATERIALS.has(opts.material) ? opts.material : 'Plastic';
+    const scale = opts.scale || [4, 4, 4];
     const pos = opts.pos || [0, scale[1] / 2 + 1, 0];
     const rot = opts.rot || [0, 0, 0];
-    const name = opts.name || `${safeType}_${Math.floor(Math.random() * 900 + 100)}`;
-    const textVal = String(opts.text !== undefined ? opts.text : (safeType === 'sign' ? 'Welcome!' : '')).slice(0, 256);
-    const scriptVal = String(opts.script || '').slice(0, MAX_SCRIPT_BYTES);
-
-    const geo = createGeometryForType(safeType);
-    const mat = createMaterialFromPreset(materialPreset, color);
-    const mesh = new THREE.Mesh(geo, mat);
-
+    const mesh = new THREE.Mesh(geo, createMaterialFromPreset(material, color));
     mesh.position.set(pos[0], pos[1], pos[2]);
     mesh.scale.set(scale[0], scale[1], scale[2]);
-    mesh.rotation.set(
-        THREE.MathUtils.degToRad(rot[0]),
-        THREE.MathUtils.degToRad(rot[1]),
-        THREE.MathUtils.degToRad(rot[2])
-    );
-
-    mesh.castShadow = !['Water', 'Glass', 'Hologram'].includes(materialPreset);
-    mesh.receiveShadow = true;
-    mesh.visible = opts.visible !== undefined ? Boolean(opts.visible) : true;
-
+    mesh.rotation.set(THREE.MathUtils.degToRad(rot[0]), THREE.MathUtils.degToRad(rot[1]), THREE.MathUtils.degToRad(rot[2]));
     mesh.userData = {
-        isRGXPart: true,
         type: safeType,
-        name: name,
-        color: color,
-        material: materialPreset,
-        text: textVal,
-        script: scriptVal,
-        state: {}
+        name: opts.name || `${safeType}_${Math.floor(Math.random() * 900 + 100)}`,
+        color, material, text: opts.text || '', script: opts.script || ''
     };
-
-    if (safeType === 'sign') updateSignTexture(mesh, textVal);
-
     scene.add(mesh);
     studioObjects.push(mesh);
-    updateObjectCount();
+    document.getElementById('objCountLabel').innerText = `${studioObjects.length} / ${MAX_OBJECTS_PER_WORLD} Parts`;
     studioRenderDirty = true;
     return mesh;
 }
 
 function addSelectedPart() {
-    const type = document.getElementById('addPartType').value;
-    const mesh = createStudioPart(type);
-    if (mesh) {
-        selectObject(mesh);
-        showNotification('Part Inserted', `Added ${mesh.userData.name}`, 'success');
-    }
+    const m = createStudioPart(document.getElementById('addPartType').value);
+    if (m) selectObject(m);
 }
 
 function duplicateSelectedObject() {
     if (!selectedMesh) return;
-    if (studioObjects.length >= MAX_OBJECTS_PER_WORLD) {
-        showNotification('World Limit Reached', `Max ${MAX_OBJECTS_PER_WORLD} objects allowed.`, 'danger');
-        return;
-    }
     const d = selectedMesh.userData;
-    const clone = createStudioPart(d.type, {
-        name: d.name + '_Copy',
-        color: d.color,
-        material: d.material,
+    const c = createStudioPart(d.type, {
+        name: d.name + '_Copy', color: d.color, material: d.material,
         pos: [selectedMesh.position.x + 2, selectedMesh.position.y, selectedMesh.position.z + 2],
         scale: [selectedMesh.scale.x, selectedMesh.scale.y, selectedMesh.scale.z],
-        rot: [
-            THREE.MathUtils.radToDeg(selectedMesh.rotation.x),
-            THREE.MathUtils.radToDeg(selectedMesh.rotation.y),
-            THREE.MathUtils.radToDeg(selectedMesh.rotation.z)
-        ],
-        text: d.text,
-        script: d.script
+        rot: [THREE.MathUtils.radToDeg(selectedMesh.rotation.x), THREE.MathUtils.radToDeg(selectedMesh.rotation.y), THREE.MathUtils.radToDeg(selectedMesh.rotation.z)],
+        text: d.text, script: d.script
     });
-    if (clone) {
-        selectObject(clone);
-        showNotification('Duplicated', `Cloned ${d.name}`, 'info');
-    }
+    if (c) selectObject(c);
 }
 
 function deleteSelectedObject() {
     if (!selectedMesh) return;
-    const name = selectedMesh.userData.name;
     if (transform) transform.detach();
     scene.remove(selectedMesh);
-    studioObjects = studioObjects.filter(obj => obj !== selectedMesh);
+    studioObjects = studioObjects.filter(o => o !== selectedMesh);
     selectedMesh = null;
     document.getElementById('prop-content').style.display = 'none';
     document.getElementById('prop-empty').style.display = 'block';
-    updateObjectCount();
+    document.getElementById('objCountLabel').innerText = `${studioObjects.length} / ${MAX_OBJECTS_PER_WORLD} Parts`;
     studioRenderDirty = true;
-    showNotification('Deleted', `Removed ${name}`, 'warning');
 }
 
-function updateObjectCount() {
-    const el = document.getElementById('objCountLabel');
-    if (el) el.innerText = `${studioObjects.length} / ${MAX_OBJECTS_PER_WORLD} Parts`;
-}
-
-// ============================================================
-// SELECTION & TRANSFORM TOOLS
-// ============================================================
 function setTransformMode(mode) {
     currentMode = mode;
     document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('tool-active'));
-    const btn = document.getElementById(`tool-${mode}`);
+    const btn = document.getElementById('tool-' + mode);
     if (btn) btn.classList.add('tool-active');
-
     if (transform) {
-        if (mode === 'select') {
-            transform.detach();
-        } else {
-            transform.setMode(mode);
-            if (selectedMesh) transform.attach(selectedMesh);
-        }
+        if (mode === 'select') transform.detach();
+        else { transform.setMode(mode); if (selectedMesh) transform.attach(selectedMesh); }
     }
     studioRenderDirty = true;
 }
@@ -656,18 +334,12 @@ function selectObject(mesh) {
         if (transform) transform.detach();
         document.getElementById('prop-content').style.display = 'none';
         document.getElementById('prop-empty').style.display = 'block';
-        studioRenderDirty = true;
         return;
     }
-
-    if (transform && currentMode !== 'select') {
-        transform.attach(mesh);
-    }
-
+    if (transform && currentMode !== 'select') transform.attach(mesh);
     document.getElementById('prop-empty').style.display = 'none';
     document.getElementById('prop-content').style.display = 'block';
     syncPropertiesPanelFromMesh(mesh);
-    studioRenderDirty = true;
 }
 
 function syncPropertiesPanelFromMesh(mesh) {
@@ -675,887 +347,173 @@ function syncPropertiesPanelFromMesh(mesh) {
     document.getElementById('prop-name').value = d.name;
     document.getElementById('prop-type').value = d.type.toUpperCase();
     document.getElementById('prop-color').value = normalizeHexColor(d.color);
-    document.getElementById('prop-material').value = ALLOWED_MATERIALS.has(d.material) ? d.material : 'Plastic';
-
-    const signRow = document.getElementById('row-text-val');
-    if (d.type === 'sign') {
-        signRow.style.display = 'flex';
-        document.getElementById('prop-text-val').value = d.text || '';
-    } else {
-        signRow.style.display = 'none';
-    }
-
-    document.getElementById('prop-pos-x').value = Number(mesh.position.x.toFixed(2));
-    document.getElementById('prop-pos-y').value = Number(mesh.position.y.toFixed(2));
-    document.getElementById('prop-pos-z').value = Number(mesh.position.z.toFixed(2));
-
-    document.getElementById('prop-scale-x').value = Number(mesh.scale.x.toFixed(2));
-    document.getElementById('prop-scale-y').value = Number(mesh.scale.y.toFixed(2));
-    document.getElementById('prop-scale-z').value = Number(mesh.scale.z.toFixed(2));
-
+    document.getElementById('prop-material').value = d.material;
+    document.getElementById('prop-pos-x').value = mesh.position.x.toFixed(2);
+    document.getElementById('prop-pos-y').value = mesh.position.y.toFixed(2);
+    document.getElementById('prop-pos-z').value = mesh.position.z.toFixed(2);
+    document.getElementById('prop-scale-x').value = mesh.scale.x.toFixed(2);
+    document.getElementById('prop-scale-y').value = mesh.scale.y.toFixed(2);
+    document.getElementById('prop-scale-z').value = mesh.scale.z.toFixed(2);
     document.getElementById('prop-rot-x').value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.x));
     document.getElementById('prop-rot-y').value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.y));
     document.getElementById('prop-rot-z').value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.z));
-
-    const scriptArea = document.getElementById('prop-script');
-    scriptArea.value = d.script || '';
-    updateScriptByteCounter(scriptArea.value);
-}
-
-function updateScriptByteCounter(scriptText) {
-    const bytes = byteLengthUtf8(scriptText);
-    const countEl = document.getElementById('scriptByteCount');
-    const statusEl = document.getElementById('scriptStatusLabel');
-    countEl.innerText = `${bytes} / ${MAX_SCRIPT_BYTES} bytes`;
-    if (bytes > MAX_SCRIPT_BYTES) {
-        countEl.style.color = 'var(--red)';
-        statusEl.innerText = 'Too Large';
-        statusEl.style.color = 'var(--red)';
-    } else {
-        countEl.style.color = 'var(--muted)';
-        statusEl.innerText = bytes > 0 ? 'RGXScript v2' : 'Empty';
-        statusEl.style.color = bytes > 0 ? 'var(--accent)' : 'var(--muted)';
-    }
-}
-
-function onScriptInputChange() {
-    if (!selectedMesh) return;
-    const raw = document.getElementById('prop-script').value;
-    updateScriptByteCounter(raw);
-    if (byteLengthUtf8(raw) <= MAX_SCRIPT_BYTES) {
-        selectedMesh.userData.script = raw;
-    }
+    document.getElementById('prop-script').value = d.script || '';
 }
 
 function applyPropertyChanges() {
     if (!selectedMesh) return;
     const d = selectedMesh.userData;
-    d.name = (document.getElementById('prop-name').value || d.name).trim();
+    d.name = document.getElementById('prop-name').value || d.name;
     d.color = normalizeHexColor(document.getElementById('prop-color').value);
-    const chosenMat = document.getElementById('prop-material').value;
-    d.material = ALLOWED_MATERIALS.has(chosenMat) ? chosenMat : 'Plastic';
-
-    if (selectedMesh.material.map) selectedMesh.material.map.dispose();
+    d.material = document.getElementById('prop-material').value;
+    d.script = document.getElementById('prop-script').value;
     selectedMesh.material.dispose();
     selectedMesh.material = createMaterialFromPreset(d.material, d.color);
-
-    if (d.type === 'sign') {
-        d.text = String(document.getElementById('prop-text-val').value || '').slice(0, 256);
-        updateSignTexture(selectedMesh, d.text);
-    }
-
-    const sx = Math.max(0.05, parseFloat(document.getElementById('prop-scale-x').value) || 1);
-    const sy = Math.max(0.05, parseFloat(document.getElementById('prop-scale-y').value) || 1);
-    const sz = Math.max(0.05, parseFloat(document.getElementById('prop-scale-z').value) || 1);
-
     selectedMesh.position.set(
         parseFloat(document.getElementById('prop-pos-x').value) || 0,
         parseFloat(document.getElementById('prop-pos-y').value) || 0,
         parseFloat(document.getElementById('prop-pos-z').value) || 0
     );
-
-    selectedMesh.scale.set(sx, sy, sz);
-
-    const rx = parseFloat(document.getElementById('prop-rot-x').value) || 0;
-    const ry = parseFloat(document.getElementById('prop-rot-y').value) || 0;
-    const rz = parseFloat(document.getElementById('prop-rot-z').value) || 0;
-    selectedMesh.rotation.set(
-        THREE.MathUtils.degToRad(rx),
-        THREE.MathUtils.degToRad(ry),
-        THREE.MathUtils.degToRad(rz)
+    selectedMesh.scale.set(
+        Math.max(0.05, parseFloat(document.getElementById('prop-scale-x').value) || 1),
+        Math.max(0.05, parseFloat(document.getElementById('prop-scale-y').value) || 1),
+        Math.max(0.05, parseFloat(document.getElementById('prop-scale-z').value) || 1)
     );
-
-    selectedMesh.castShadow = !['Water', 'Glass', 'Hologram'].includes(d.material);
-
-    const rawScript = document.getElementById('prop-script').value;
-    if (byteLengthUtf8(rawScript) <= MAX_SCRIPT_BYTES) {
-        d.script = rawScript;
-    }
-
+    selectedMesh.rotation.set(
+        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-x').value) || 0),
+        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-y').value) || 0),
+        THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-z').value) || 0)
+    );
     studioRenderDirty = true;
 }
 
 function onViewportPointerDown(event) {
     if (transform && transform.dragging) return;
-    if (!renderer || !camera) return;
     const rect = renderer.domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(studioObjects, false);
-    if (intersects.length > 0) {
-        const hit = intersects[0].object;
-        selectObject(hit);
-        runRGXScriptEvent(hit, 'player-clicks');
-    } else {
-        selectObject(null);
-    }
-}
-
-function onStudioKeyDown(e) {
-    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-        deleteSelectedObject();
-    } else if (e.key.toLowerCase() === 'q') {
-        setTransformMode('select');
-    } else if (e.key.toLowerCase() === 'w') {
-        setTransformMode('translate');
-    } else if (e.key.toLowerCase() === 'e') {
-        setTransformMode('scale');
-    } else if (e.key.toLowerCase() === 'r') {
-        setTransformMode('rotate');
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
-        e.preventDefault();
-        duplicateSelectedObject();
-    }
-}
-
-// ============================================================
-// RGXSCRIPT v2 PARSER & EXECUTOR (DECLARATIVE, CLOSED GRAMMAR)
-// ============================================================
-function stripOptionalScriptTag(raw) {
-    let text = String(raw || '').trim();
-    const match = text.match(/^<script(?:\s+for=["'][^"']*["'])?\s*>([\s\S]*?)<\/script>$/i);
-    if (match) text = match[1];
-    return text;
-}
-
-function parseRGXValue(tokenStr) {
-    const s = String(tokenStr || '').trim();
-    if (!s) return '';
-    if (s === 'true') return true;
-    if (s === 'false') return false;
-    if (/^"([\s\S]*)"$/.test(s)) {
-        return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\n/g, '\n');
-    }
-    if (/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(s)) {
-        return s.split(',').map(n => parseFloat(n.trim()));
-    }
-    if (/^-?\d+(\.\d+)?$/.test(s)) {
-        return parseFloat(s);
-    }
-    return s;
-}
-
-function parseStyleTokens(styleString) {
-    const css = {};
-    const tokens = String(styleString || '').trim().split(/\s+/).filter(Boolean);
-    for (const tok of tokens) {
-        if (tok === 'fullscreen') {
-            css.position = 'fixed';
-            css.inset = '0';
-            css.width = '100vw';
-            css.height = '100vh';
-        } else if (/^margin(\d+)px$/.test(tok)) {
-            css.margin = `${RegExp.$1}px`;
-        } else if (/^outline(\d+)px$/.test(tok)) {
-            css.border = `${RegExp.$1}px solid currentColor`;
-        } else if (/^font(\d+)px$/.test(tok)) {
-            css.fontSize = `${RegExp.$1}px`;
-        } else if (tok === 'sans-serif' || tok === 'serif' || tok === 'monospace') {
-            css.fontFamily = tok;
-        } else if (/^clr(black|white|red|green|blue|yellow|orange|purple|gray)$/.test(tok)) {
-            css.color = RegExp.$1;
-        } else if (/^bg(black|white|red|green|blue|yellow|orange|purple|gray)$/.test(tok)) {
-            css.backgroundColor = RegExp.$1;
-        } else if (tok === 'bold') {
-            css.fontWeight = 'bold';
-        } else if (tok === 'center') {
-            css.textAlign = 'center';
-        } else if (/^opacity(\d{1,3})$/.test(tok)) {
-            const op = Math.max(0, Math.min(100, parseInt(RegExp.$1, 10)));
-            css.opacity = String(op / 100);
-        }
-    }
-    return css;
-}
-
-function ensureScreenOverlay() {
-    if (runtimeScreenOverlay && document.body.contains(runtimeScreenOverlay)) {
-        return runtimeScreenOverlay;
-    }
-    const el = document.createElement('div');
-    el.id = 'rgx-screen-layer';
-    el.style.position = 'fixed';
-    el.style.inset = '0';
-    el.style.pointerEvents = 'none';
-    el.style.zIndex = '25000';
-    document.body.appendChild(el);
-    runtimeScreenOverlay = el;
-    return el;
-}
-
-function applyScreenAction(actionName, mesh) {
-    if (!ALLOWED_ACTIONS.has(actionName)) return;
-    if (actionName === 'hideSelf' && mesh) {
-        mesh.visible = false;
-        studioRenderDirty = true;
-    } else if (actionName === 'closeScreen') {
-        if (runtimeScreenOverlay) runtimeScreenOverlay.innerHTML = '';
-        runtimeScreenHandles.clear();
-    } else if (actionName === 'teleportToSpawn') {
-        const spawn = studioObjects.find(o => o.userData.type === 'spawn');
-        if (spawn && camera && orbit) {
-            orbit.target.set(spawn.position.x, spawn.position.y + 2, spawn.position.z);
-            camera.position.set(spawn.position.x, spawn.position.y + 8, spawn.position.z + 16);
-            orbit.update();
-            studioRenderDirty = true;
-        }
-    } else if (actionName === 'giveToken') {
-        showNotification('RGXScript Action', 'Token granted (+1)', 'success');
-    } else if (actionName === 'emitChat') {
-        showNotification('RGXScript Chat', 'Action emitted chat event.', 'info');
-    } else if (actionName === 'shakeCamera') {
-        if (camera) {
-            const origX = camera.position.x;
-            camera.position.x += 0.7;
-            studioRenderDirty = true;
-            setTimeout(() => { camera.position.x = origX; studioRenderDirty = true; }, 120);
-        }
-    } else if (actionName === 'playSound') {
-        showNotification('RGXScript Audio', 'Played sound trigger.', 'info');
-    } else if (actionName === 'openSettings') {
-        showNotification('RGXScript UI', 'Settings action triggered.', 'info');
-    }
-}
-
-function getThisProp(mesh, prop) {
-    const d = mesh.userData;
-    switch (prop) {
-        case 'name': return d.name;
-        case 'type': return d.type;
-        case 'color': return d.color;
-        case 'material': return d.material;
-        case 'text': return d.text || '';
-        case 'visible': return Boolean(mesh.visible);
-        case 'position': return [mesh.position.x, mesh.position.y, mesh.position.z];
-        case 'rotation': return [
-            THREE.MathUtils.radToDeg(mesh.rotation.x),
-            THREE.MathUtils.radToDeg(mesh.rotation.y),
-            THREE.MathUtils.radToDeg(mesh.rotation.z)
-        ];
-        case 'scale': return [mesh.scale.x, mesh.scale.y, mesh.scale.z];
-        default: return d.state ? d.state[prop] : undefined;
-    }
-}
-
-function setThisProp(mesh, prop, val) {
-    const d = mesh.userData;
-    switch (prop) {
-        case 'name':
-            d.name = String(val || d.name).slice(0, 128);
-            break;
-        case 'type':
-            if (ALLOWED_TYPES.has(String(val))) {
-                d.type = String(val);
-                mesh.geometry.dispose();
-                mesh.geometry = createGeometryForType(d.type);
-            }
-            break;
-        case 'color':
-            d.color = normalizeHexColor(val);
-            if (mesh.material.color) mesh.material.color.set(d.color);
-            if (mesh.material.emissive && d.material === 'Neon') mesh.material.emissive.set(d.color);
-            break;
-        case 'material':
-            if (ALLOWED_MATERIALS.has(String(val))) {
-                d.material = String(val);
-                if (mesh.material.map) mesh.material.map.dispose();
-                mesh.material.dispose();
-                mesh.material = createMaterialFromPreset(d.material, d.color);
-                if (d.type === 'sign') updateSignTexture(mesh, d.text);
-            }
-            break;
-        case 'text':
-            d.text = String(val ?? '').slice(0, 256);
-            if (d.type === 'sign') updateSignTexture(mesh, d.text);
-            break;
-        case 'visible':
-            mesh.visible = Boolean(val);
-            break;
-        case 'position':
-            if (Array.isArray(val) && val.length === 3) {
-                mesh.position.set(Number(val[0]) || 0, Number(val[1]) || 0, Number(val[2]) || 0);
-                d.pos = [mesh.position.x, mesh.position.y, mesh.position.z];
-            }
-            break;
-        case 'rotation':
-            if (Array.isArray(val) && val.length === 3) {
-                mesh.rotation.set(
-                    THREE.MathUtils.degToRad(Number(val[0]) || 0),
-                    THREE.MathUtils.degToRad(Number(val[1]) || 0),
-                    THREE.MathUtils.degToRad(Number(val[2]) || 0)
-                );
-                d.rot = [Number(val[0]) || 0, Number(val[1]) || 0, Number(val[2]) || 0];
-            }
-            break;
-        case 'scale':
-            if (Array.isArray(val) && val.length === 3) {
-                const sx = Math.max(0.05, Number(val[0]) || 1);
-                const sy = Math.max(0.05, Number(val[1]) || 1);
-                const sz = Math.max(0.05, Number(val[2]) || 1);
-                mesh.scale.set(sx, sy, sz);
-                d.scale = [sx, sy, sz];
-            }
-            break;
-        default:
-            if (!d.state) d.state = {};
-            d.state[prop] = val;
-            break;
-    }
-    if (selectedMesh === mesh) syncPropertiesPanelFromMesh(mesh);
-    studioRenderDirty = true;
-}
-
-function applyEmitTo(target, op, rawVal) {
-    const valStr = String(rawVal ?? '').slice(0, 256);
-    if (target === 'all') {
-        if (op === 'showMessage') showNotification('Broadcast', valStr, 'info');
-        else if (op === 'playSound') showNotification('Broadcast Audio', `Sound: ${valStr}`, 'info');
-        else if (op === 'openSettings') showNotification('Broadcast UI', 'Open settings requested', 'info');
-        return;
-    }
-    if (/^GAMEPLAYUSER_[0-9a-fA-F]{8}$/.test(target)) {
-        if (op === 'showMessage') showNotification(target, valStr, 'info');
-        else if (op === 'setChatName') showNotification(target, `Chat name: ${valStr.slice(0, 32)}`, 'info');
-        else if (op === 'setChatColor') showNotification(target, `Chat color: ${normalizeHexColor(valStr)}`, 'info');
-        else if (op === 'setRank') showNotification(target, `Rank: ${valStr}`, 'info');
-        return;
-    }
-
-    const targets = studioObjects.filter(o => o.userData.name === target);
-    for (const obj of targets) {
-        if (op === 'setColor') setThisProp(obj, 'color', normalizeHexColor(valStr));
-        else if (op === 'setMaterial' && ALLOWED_MATERIALS.has(valStr)) setThisProp(obj, 'material', valStr);
-        else if (op === 'setPosition' && Array.isArray(rawVal) && rawVal.length === 3) setThisProp(obj, 'position', rawVal);
-        else if (op === 'setRotation' && Array.isArray(rawVal) && rawVal.length === 3) setThisProp(obj, 'rotation', rawVal);
-        else if (op === 'setScale' && Array.isArray(rawVal) && rawVal.length === 3) {
-            if (rawVal.every(n => Number(n) > 0)) setThisProp(obj, 'scale', rawVal);
-        }
-        else if (op === 'setText') setThisProp(obj, 'text', valStr.slice(0, 256));
-        else if (op === 'setVisible') setThisProp(obj, 'visible', rawVal === true || rawVal === 'true');
-        else if (op === 'setType' && ALLOWED_TYPES.has(valStr)) setThisProp(obj, 'type', valStr);
-    }
-}
-
-function evalCondition(left, op, right) {
-    switch (op) {
-        case '==': return left == right;
-        case '!=': return left != right;
-        case '>': return Number(left) > Number(right);
-        case '<': return Number(left) < Number(right);
-        case '>=': return Number(left) >= Number(right);
-        case '<=': return Number(left) <= Number(right);
-        default: return false;
-    }
-}
-
-function extractEventBlocks(scriptSource) {
-    const clean = stripOptionalScriptTag(scriptSource);
-    if (!clean) return [];
-    const lines = clean.split(/\r?\n/);
-    const blocks = [];
-    let current = null;
-
-    for (const rawLine of lines) {
-        const trimmed = rawLine.trim();
-        if (!trimmed || trimmed.startsWith('#')) continue;
-
-        let eventMatch = null;
-        if (trimmed === 'on start:') {
-            eventMatch = { event: 'start', seconds: 0 };
-        } else if (trimmed === 'when player-joins:') {
-            eventMatch = { event: 'player-joins', seconds: 0 };
-        } else if (trimmed === 'when player-leaves:') {
-            eventMatch = { event: 'player-leaves', seconds: 0 };
-        } else if (trimmed === 'when player-touches:') {
-            eventMatch = { event: 'player-touches', seconds: 0 };
-        } else if (trimmed === 'when player-clicks:') {
-            eventMatch = { event: 'player-clicks', seconds: 0 };
-        } else if (trimmed === 'when player-enters:') {
-            eventMatch = { event: 'player-enters', seconds: 0 };
-        } else if (/^when timer <(\d+(?:\.\d+)?)s>:$/.test(trimmed) || /^when timer (\d+(?:\.\d+)?)s:$/.test(trimmed)) {
-            eventMatch = { event: 'timer', seconds: Math.max(0.05, parseFloat(RegExp.$1)) };
-        }
-
-        if (eventMatch) {
-            current = { ...eventMatch, lines: [] };
-            blocks.push(current);
-        } else if (current) {
-            current.lines.push(rawLine);
-        }
-    }
-    return blocks;
-}
-
-async function runStatementList(lines, mesh) {
-    let i = 0;
-    while (i < lines.length) {
-        const raw = lines[i];
-        const indent = raw.match(/^\s*/)[0].length;
-        const stmt = raw.trim();
-        if (!stmt || stmt.startsWith('#')) { i++; continue; }
-
-        const setMatch = stmt.match(/^set\s+this\.([A-Za-z0-9_]+)\s*=\s*(.+)$/);
-        if (setMatch) {
-            setThisProp(mesh, setMatch[1], parseRGXValue(setMatch[2]));
-            i++;
-            continue;
-        }
-
-        const emitMatch = stmt.match(/^emitTo\s+("(?:[^"\\]|\\.)*"|\S+)\s+("(?:[^"\\]|\\.)*"|\S+)\s+(.+)$/);
-        if (emitMatch) {
-            const target = String(parseRGXValue(emitMatch[1]));
-            const op = String(parseRGXValue(emitMatch[2]));
-            const val = parseRGXValue(emitMatch[3]);
-            applyEmitTo(target, op, val);
-            i++;
-            continue;
-        }
-
-        const waitMatch = stmt.match(/^wait\s+(\d+(?:\.\d+)?)s$/);
-        if (waitMatch) {
-            const ms = Math.max(0, parseFloat(waitMatch[1]) * 1000);
-            await new Promise(resolve => setTimeout(resolve, ms));
-            i++;
-            continue;
-        }
-
-        const repeatMatch = stmt.match(/^repeat\s+(\d+)\s+times:$/);
-        if (repeatMatch) {
-            const count = Math.min(500, Math.max(0, parseInt(repeatMatch[1], 10)));
-            const body = [];
-            i++;
-            while (i < lines.length) {
-                const subIndent = lines[i].match(/^\s*/)[0].length;
-                if (lines[i].trim() && subIndent <= indent) break;
-                body.push(lines[i]);
-                i++;
-            }
-            for (let r = 0; r < count; r++) {
-                await runStatementList(body, mesh);
-            }
-            continue;
-        }
-
-        const ifMatch = stmt.match(/^if\s+this\.([A-Za-z0-9_]+)\s*(==|!=|>=|<=|>|<)\s*(.+):$/);
-        if (ifMatch) {
-            const left = getThisProp(mesh, ifMatch[1]);
-            const op = ifMatch[2];
-            const right = parseRGXValue(ifMatch[3]);
-            const cond = evalCondition(left, op, right);
-
-            const thenLines = [];
-            const elseLines = [];
-            let inElse = false;
-            i++;
-            while (i < lines.length) {
-                const subIndent = lines[i].match(/^\s*/)[0].length;
-                const subTrim = lines[i].trim();
-                if (subTrim && subIndent <= indent) {
-                    if (subTrim === 'else:' && subIndent === indent) {
-                        inElse = true;
-                        i++;
-                        continue;
-                    }
-                    break;
-                }
-                if (inElse) elseLines.push(lines[i]);
-                else thenLines.push(lines[i]);
-                i++;
-            }
-            if (cond) await runStatementList(thenLines, mesh);
-            else if (elseLines.length) await runStatementList(elseLines, mesh);
-            continue;
-        }
-
-        const showTextMatch = stmt.match(/^screen\.showText\(\s*("(?:[^"\\]|\\.)*")\s*,\s*("(?:[^"\\]|\\.)*")\s*\)$/);
-        if (showTextMatch) {
-            const styleStr = String(parseRGXValue(showTextMatch[1]));
-            const textStr = String(parseRGXValue(showTextMatch[2])).slice(0, 256);
-            const layer = ensureScreenOverlay();
-            const div = document.createElement('div');
-            div.style.pointerEvents = 'none';
-            div.style.padding = '10px 16px';
-            div.style.borderRadius = '8px';
-            Object.assign(div.style, parseStyleTokens(styleStr));
-            div.textContent = textStr;
-            layer.appendChild(div);
-            i++;
-            continue;
-        }
-
-        const showBtnMatch = stmt.match(/^screen\.showButton\(\s*("(?:[^"\\]|\\.)*")\s*,\s*("(?:[^"\\]|\\.)*")\s*,\s*("(?:[^"\\]|\\.)*")\s*\)$/);
-        if (showBtnMatch) {
-            const styleStr = String(parseRGXValue(showBtnMatch[1]));
-            const labelStr = String(parseRGXValue(showBtnMatch[2])).slice(0, 128);
-            const actionStr = String(parseRGXValue(showBtnMatch[3]));
-            const layer = ensureScreenOverlay();
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.style.pointerEvents = 'auto';
-            btn.style.cursor = 'pointer';
-            btn.style.padding = '10px 16px';
-            btn.style.borderRadius = '8px';
-            Object.assign(btn.style, parseStyleTokens(styleStr));
-            btn.textContent = labelStr;
-            btn.onclick = () => applyScreenAction(actionStr, mesh);
-            layer.appendChild(btn);
-            i++;
-            continue;
-        }
-
-        const removeMatch = stmt.match(/^screen\.remove\(\s*("(?:[^"\\]|\\.)*")\s*\)$/);
-        if (removeMatch) {
-            const handle = String(parseRGXValue(removeMatch[1]));
-            const el = runtimeScreenHandles.get(handle);
-            if (el && el.remove) el.remove();
-            runtimeScreenHandles.delete(handle);
-            i++;
-            continue;
-        }
-
-        if (stmt === 'screen.clear()') {
-            if (runtimeScreenOverlay) runtimeScreenOverlay.innerHTML = '';
-            runtimeScreenHandles.clear();
-            i++;
-            continue;
-        }
-
-        i++;
-    }
-}
-
-function clearActiveScriptTimers() {
-    for (const id of activeTimers) clearInterval(id);
-    activeTimers = [];
-}
-
-function runRGXScriptEvent(mesh, eventName) {
-    if (!mesh || !mesh.userData || !mesh.userData.script) return;
-    if (byteLengthUtf8(mesh.userData.script) > MAX_SCRIPT_BYTES) return;
-    const blocks = extractEventBlocks(mesh.userData.script);
-    for (const blk of blocks) {
-        if (blk.event === eventName) {
-            runStatementList(blk.lines, mesh);
-        }
-    }
-}
-
-function startAllWorldScripts() {
-    clearActiveScriptTimers();
-    for (const mesh of studioObjects) {
-        if (!mesh.userData || !mesh.userData.script) continue;
-        if (byteLengthUtf8(mesh.userData.script) > MAX_SCRIPT_BYTES) continue;
-        const blocks = extractEventBlocks(mesh.userData.script);
-        for (const blk of blocks) {
-            if (blk.event === 'start') {
-                runStatementList(blk.lines, mesh);
-            } else if (blk.event === 'timer') {
-                const timerId = setInterval(() => {
-                    runStatementList(blk.lines, mesh);
-                }, blk.seconds * 1000);
-                activeTimers.push(timerId);
-            }
-        }
-    }
-}
-
-function runSelectedObjectScriptNow() {
-    if (!selectedMesh) return;
-    applyPropertyChanges();
-    runRGXScriptEvent(selectedMesh, 'start');
-    runRGXScriptEvent(selectedMesh, 'player-clicks');
-    showNotification('RGXScript Executed', `Ran script on ${selectedMesh.userData.name}`, 'success');
-}
-
-// ============================================================
-// SERIALIZATION & CLOUD BACKEND COMMUNICATION
-// ============================================================
-function escapeXml(unsafe) {
-    return String(unsafe).replace(/[<>&'"]/g, c => ({
-        '<': '&lt;', '>': '&gt;', '&': '&amp;', '\'': '&apos;', '"': '&quot;'
-    }[c]));
-}
-
-function parseVec3Attr(str, fallback) {
-    if (!str) return fallback;
-    const parts = str.split(',').map(v => parseFloat(v.trim()));
-    if (parts.length < 3 || parts.some(isNaN)) return fallback;
-    return [parts[0], parts[1], parts[2]];
+    const hits = raycaster.intersectObjects(studioObjects, false);
+    selectObject(hits.length ? hits[0].object : null);
 }
 
 function generateRGXXml() {
     const title = document.getElementById('gameTitle').value.trim() || 'Untitled World';
-    let xml = `<world title="${escapeXml(title)}">\n`;
-    studioObjects.forEach(mesh => {
-        const d = mesh.userData;
-        const cleanHex = normalizeHexColor(d.color).replace(/^#/, '');
-        const posStr = `${mesh.position.x.toFixed(2)},${mesh.position.y.toFixed(2)},${mesh.position.z.toFixed(2)}`;
-        const scaleStr = `${mesh.scale.x.toFixed(2)},${mesh.scale.y.toFixed(2)},${mesh.scale.z.toFixed(2)}`;
-        const rx = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.x));
-        const ry = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.y));
-        const rz = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.z));
-        const rotStr = `${rx},${ry},${rz}`;
-
-        xml += `  <part type="${escapeXml(d.type)}" name="${escapeXml(d.name)}" color="${escapeXml(cleanHex)}" material="${escapeXml(d.material)}" pos="${posStr}" scale="${scaleStr}" rot="${rotStr}" text="${escapeXml(d.text || '')}"/>\n`;
-
-        const cleanScript = stripOptionalScriptTag(d.script || '').trim();
-        if (cleanScript) {
-            const safeScriptBody = cleanScript.replace(/<\/script>/gi, '');
-            xml += `  <script for="${escapeXml(d.name)}">\n${safeScriptBody}\n  </script>\n`;
-        }
+    let xml = `<world title="${title.replace(/"/g, '&quot;')}">\n`;
+    studioObjects.forEach(m => {
+        const d = m.userData;
+        const hex = normalizeHexColor(d.color).replace(/^#/, '');
+        const rx = Math.round(THREE.MathUtils.radToDeg(m.rotation.x));
+        const ry = Math.round(THREE.MathUtils.radToDeg(m.rotation.y));
+        const rz = Math.round(THREE.MathUtils.radToDeg(m.rotation.z));
+        xml += `  <part type="${d.type}" name="${d.name}" color="${hex}" material="${d.material}" pos="${m.position.x.toFixed(2)},${m.position.y.toFixed(2)},${m.position.z.toFixed(2)}" scale="${m.scale.x.toFixed(2)},${m.scale.y.toFixed(2)},${m.scale.z.toFixed(2)}" rot="${rx},${ry},${rz}" text="${d.text || ''}"/>\n`;
+        if (d.script && d.script.trim()) xml += `  <script for="${d.name}">\n${d.script.trim()}\n  \x3c/script\x3e\n`;
     });
-    xml += `</world>`;
-    return xml;
+    return xml + `</world>`;
 }
 
 function exportRGXFile() {
-    const title = document.getElementById('gameTitle').value.trim() || 'RayGamixWorld';
-    const xml = generateRGXXml();
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([generateRGXXml()], { type: 'application/xml' });
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `${title.replace(/[^a-z0-9_-]/gi, '_')}.rgx`;
+    a.href = URL.createObjectURL(blob);
+    a.download = 'world.rgx';
     a.click();
-    URL.revokeObjectURL(url);
-    showNotification('Exported .RGX', `Saved ${a.download}`, 'success');
 }
 
-function importRGXWorldFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(e.target.result, 'application/xml');
-
-            if (doc.querySelector('parsererror')) throw new Error('Malformed XML / .RGX file');
-
-            const worldRoot = doc.querySelector('world');
-            if (!worldRoot) throw new Error('Missing <world> root tag');
-
-            clearWorld(false);
-            const fileNameTitle = file.name.replace(/\.rgx$/i, '');
-            document.getElementById('gameTitle').value = worldRoot.getAttribute('title') || fileNameTitle;
-
-            const scriptMap = new Map();
-            worldRoot.querySelectorAll('script').forEach(sc => {
-                const targetName = sc.getAttribute('for') || '';
-                if (targetName) {
-                    const prev = scriptMap.get(targetName) || '';
-                    const nextBody = (sc.textContent || '').trim();
-                    scriptMap.set(targetName, prev ? `${prev}\n\n${nextBody}` : nextBody);
-                }
+function importRGXWorldFile(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+        const doc = new DOMParser().parseFromString(ev.target.result, 'application/xml');
+        const root = doc.querySelector('world');
+        if (!root) return;
+        clearWorld(false);
+        const scripts = new Map();
+        root.querySelectorAll('script').forEach(s => scripts.set(s.getAttribute('for'), s.textContent.trim()));
+        root.querySelectorAll('part').forEach(p => {
+            const name = p.getAttribute('name') || 'Part';
+            createStudioPart(p.getAttribute('type') || 'cube', {
+                name,
+                color: p.getAttribute('color') || '00b7ff',
+                material: p.getAttribute('material') || 'Plastic',
+                pos: (p.getAttribute('pos') || '0,0,0').split(',').map(Number),
+                scale: (p.getAttribute('scale') || '4,4,4').split(',').map(Number),
+                rot: (p.getAttribute('rot') || '0,0,0').split(',').map(Number),
+                script: scripts.get(name) || ''
             });
-
-            const parts = worldRoot.querySelectorAll('part');
-            parts.forEach(p => {
-                const type = p.getAttribute('type') || 'cube';
-                const name = p.getAttribute('name') || 'Part';
-                const color = normalizeHexColor(p.getAttribute('color') || '00b7ff');
-                const material = p.getAttribute('material') || 'Plastic';
-                const text = p.getAttribute('text') || '';
-                const pos = parseVec3Attr(p.getAttribute('pos'), [0, 0, 0]);
-                const scale = parseVec3Attr(p.getAttribute('scale'), [4, 4, 4]);
-                const rot = parseVec3Attr(p.getAttribute('rot'), [0, 0, 0]);
-                const script = scriptMap.get(name) || '';
-
-                createStudioPart(type, { name, color, material, pos, scale, rot, text, script });
-            });
-
-            showNotification('Imported .RGX', `Loaded ${parts.length} parts from ${file.name}`, 'success');
-        } catch (err) {
-            showNotification('Import Failed', err.message, 'danger');
-        }
-        event.target.value = '';
+        });
     };
-    reader.readAsText(file);
+    r.readAsText(f);
 }
 
 function clearWorld(notify = true) {
-    clearActiveScriptTimers();
-    if (runtimeScreenOverlay) runtimeScreenOverlay.innerHTML = '';
-    runtimeScreenHandles.clear();
     if (transform) transform.detach();
-    studioObjects.forEach(obj => scene.remove(obj));
+    studioObjects.forEach(o => scene.remove(o));
     studioObjects = [];
     selectedMesh = null;
-    document.getElementById('prop-content').style.display = 'none';
-    document.getElementById('prop-empty').style.display = 'block';
-    updateObjectCount();
+    document.getElementById('objCountLabel').innerText = `0 / ${MAX_OBJECTS_PER_WORLD} Parts`;
     studioRenderDirty = true;
-    if (notify) showNotification('World Cleared', 'All objects removed', 'warning');
+    if (notify) showNotification('Cleared', 'World cleared', 'warning');
 }
 
-function clearWorldPrompt() {
-    if (confirm('Clear all objects in the current world?')) {
-        clearWorld(true);
-    }
-}
+function clearWorldPrompt() { if (confirm('Clear world?')) clearWorld(true); }
 
-// ============================================================
-// REAL BACKEND TEST PLAY & PUBLISH (NO FAKE OFFLINE SUCCESS)
-// ============================================================
 async function testCurrentStudioGame() {
-    applyPropertyChanges();
-    const title = document.getElementById('gameTitle').value.trim() || 'Untitled World';
-    const rgxXml = generateRGXXml();
-
     const player = document.getElementById('game-player');
-    const loader = document.getElementById('game-loader');
     const iframe = document.getElementById('game-frame');
-    const titleDisp = document.getElementById('playerGameTitle');
-    const badge = document.getElementById('playerBackendBadge');
-
-    if (activeTestBlobUrl) {
-        URL.revokeObjectURL(activeTestBlobUrl);
-        activeTestBlobUrl = null;
-    }
-
-    titleDisp.innerText = title;
-    badge.innerText = 'BACKEND TEST';
     player.style.display = 'flex';
-    loader.style.display = 'flex';
-    iframe.src = 'about:blank';
-
     try {
         const res = await fetch(`${CF_BACKEND_URL}/games/test-play`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/xml',
-                'X-Session-Token': SESSION_TOKEN
-            },
-            body: rgxXml
+            headers: { 'Content-Type': 'application/xml', 'X-Session-Token': SESSION_TOKEN },
+            body: generateRGXXml()
         });
-
-        const rawText = await res.text();
-        const contentType = res.headers.get('content-type') || '';
-        let htmlPayload = '';
-
-        if (contentType.includes('application/json') || rawText.trim().startsWith('{')) {
-            const data = JSON.parse(rawText);
-            if (!res.ok || data.error) {
-                const detailMsg = Array.isArray(data.details) ? data.details.join(' | ') : (data.error || `HTTP ${res.status}`);
-                throw new Error(detailMsg);
-            }
-            htmlPayload = data.html || data.runtime || data.content || '';
-        } else {
-            if (!res.ok) {
-                throw new Error(rawText.slice(0, 240) || `Backend status ${res.status}`);
-            }
-            htmlPayload = rawText;
-        }
-
-        if (!htmlPayload) {
-            throw new Error('Backend returned empty test payload');
-        }
-
-        const blob = new Blob([htmlPayload], { type: 'text/html' });
-        activeTestBlobUrl = URL.createObjectURL(blob);
-        iframe.onload = () => {
-            loader.style.display = 'none';
-            startAllWorldScripts();
+        const txt = await res.text();
+        if (!res.ok) throw new Error(txt || 'HTTP ' + res.status);
+        iframe.src = URL.createObjectURL(new Blob([txt], { type: 'text/html' }));
+} catch (err) {
+        const backendBase = typeof CF_BACKEND_URL !== 'undefined' ? String(CF_BACKEND_URL || '') : '';
+       const safeErrMsg = String(err && err.message ? err.message : 'Network error reaching RayGamix backend')
+            .replace(/[&"\x3c\x3e'\/]/g, c => ({ '&': '&amp;', '\x3c': '&lt;', '\x3e': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#47;' }[c]));
+        const safeEndpoint = String(typeof CF_BACKEND_URL !== 'undefined' ? CF_BACKEND_URL : '')
+            .replace(/[&"\x3c\x3e'\/]/g, c => ({ '&': '&amp;', '\x3c': '&lt;', '\x3e': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#47;' }[c]));
+        const decodeEntities = str => {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = str;
+            return textarea.value;
         };
+        const encodedErrHtml = `&#60;!DOCTYPE html&#62;&#60;html&#62;&#60;body style=&#34;background:#050816;color:#fff;font-family:sans-serif;padding:40px;text-align:center;&#34;&#62;&#60;h2 style=&#34;color:#ff4444;&#34;&#62;Backend Test Error&#60;/h2&#62;&#60;p style=&#34;color:#cbd5e1;&#34;&#62;${safeErrMsg}&#60;/p&#62;&#60;p style=&#34;color:#7d96b0;font-size:12px;&#34;&#62;Endpoint: ${safeEndpoint}/games/test-play&#60;/p&#62;&#60;/body&#62;&#60;/html&#62;`;
+        const errHtml = decodeEntities(encodedErrHtml);
+
+        if (activeTestBlobUrl) URL.revokeObjectURL(activeTestBlobUrl);
+        activeTestBlobUrl = URL.createObjectURL(new Blob([errHtml], { type: 'text/html' }));
         iframe.src = activeTestBlobUrl;
-        showNotification('Backend Test Connected', `Loaded "${title}" from backend`, 'success');
-    } catch (e) {
-        console.error('[RGX Backend Test Error]', e);
-        loader.style.display = 'none';
-        const errHtml = `<!DOCTYPE html><html><body style="background:#050816;color:#fff;font-family:sans-serif;padding:40px;text-align:center;">
-            <h2 style="color:#ff4444;">Backend Test Failed / Unreachable</h2>
-            <p style="color:#cbd5e1;">${escapeHtml(e.message || 'Network error reaching RayGamix backend')}</p>
-            <p style="color:#7d96b0;font-size:12px;">Endpoint: ${escapeHtml(CF_BACKEND_URL)}/games/test-play</p>
-        </body></html>`;
-        const blob = new Blob([errHtml], { type: 'text/html' });
-        activeTestBlobUrl = URL.createObjectURL(blob);
-        iframe.src = activeTestBlobUrl;
-        showNotification('Backend Test Error', e.message || 'Backend unreachable', 'danger');
     }
 }
 
 async function confirmPublishGame() {
-    applyPropertyChanges();
-    const title = document.getElementById('gameTitle').value.trim() || 'Untitled World';
-
-    if (studioObjects.length > MAX_OBJECTS_PER_WORLD) {
-        showNotification('Publish Blocked', `Too many objects (${studioObjects.length}/${MAX_OBJECTS_PER_WORLD}).`, 'danger');
-        return;
-    }
-
-    for (const mesh of studioObjects) {
-        if (byteLengthUtf8(mesh.userData.script || '') > MAX_SCRIPT_BYTES) {
-            showNotification('Publish Blocked', `Script on "${mesh.userData.name}" exceeds 16 KB.`, 'danger');
-            return;
-        }
-    }
-
-    if (!confirm(`Publish "${title}" to the RayGamix Backend?`)) return;
-
-    const rgxXml = generateRGXXml();
-    const btnPublish = document.getElementById('btnPublish');
-    if (btnPublish) btnPublish.disabled = true;
-    showNotification('Publishing to Backend', `Uploading "${title}"...`, 'info');
-
     try {
         const res = await fetch(`${CF_BACKEND_URL}/games/publish`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/xml',
-                'X-Session-Token': SESSION_TOKEN
-            },
-            body: rgxXml
+            headers: { 'Content-Type': 'application/xml', 'X-Session-Token': SESSION_TOKEN },
+            body: generateRGXXml()
         });
-
-        const rawText = await res.text();
-        let parsed = null;
-        try { parsed = JSON.parse(rawText); } catch (_) {}
-
-        if (res.ok && (!parsed || !parsed.error)) {
-            showNotification('Published Successfully!', `"${title}" was compiled and saved on the backend.`, 'success');
-        } else if (parsed && (parsed.error || parsed.details)) {
-            const details = Array.isArray(parsed.details) ? parsed.details.join('; ') : '';
-            showNotification('Publish Compile Error', `${parsed.error || 'Compile failed'}${details ? ': ' + details : ''}`, 'danger');
-        } else {
-            showNotification('Publish Failed', rawText.slice(0, 200) || `Backend returned status ${res.status}`, 'danger');
-        }
-    } catch (e) {
-        showNotification('Backend Unreachable', `Could not reach ${CF_BACKEND_URL}/games/publish (${e.message})`, 'danger');
-    } finally {
-        if (btnPublish) btnPublish.disabled = false;
+        const txt = await res.text();
+        showNotification(res.ok ? 'Published' : 'Publish Failed', txt.slice(0, 140), res.ok ? 'success' : 'danger');
+    } catch (err) {
+        showNotification('Backend Unreachable', err.message, 'danger');
     }
 }
 
-function closeGamePlayer() {
-    clearActiveScriptTimers();
-    if (runtimeScreenOverlay) runtimeScreenOverlay.innerHTML = '';
-    runtimeScreenHandles.clear();
-    const player = document.getElementById('game-player');
-    const iframe = document.getElementById('game-frame');
-    iframe.src = 'about:blank';
-    if (activeTestBlobUrl) {
-        URL.revokeObjectURL(activeTestBlobUrl);
-        activeTestBlobUrl = null;
-    }
-    player.style.display = 'none';
-    studioRenderDirty = true;
-}
+function closeGamePlayer() { document.getElementById('game-player').style.display = 'none'; }
 
-// ============================================================
-// RENDER LOOP & RESIZE
-// ============================================================
 function onWindowResize() {
-    const container = document.getElementById('studio-viewport');
-    if (camera && renderer && container) {
-        const w = Math.max(1, container.clientWidth);
-        const h = Math.max(1, container.clientHeight);
-        camera.aspect = w / h;
+    const c = document.getElementById('studio-viewport');
+    if (camera && renderer && c && c.clientWidth > 0 && c.clientHeight > 0) {
+        camera.aspect = c.clientWidth / c.clientHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
+        renderer.setSize(c.clientWidth, c.clientHeight);
         studioRenderDirty = true;
     }
 }
@@ -1563,7 +521,6 @@ function onWindowResize() {
 function animateStudio() {
     requestAnimationFrame(animateStudio);
     if (!renderer || !scene || !camera) return;
-    if (document.getElementById('game-player').style.display === 'flex') return;
     if (orbit && orbit.update()) studioRenderDirty = true;
     if (studioRenderDirty) {
         renderer.render(scene, camera);
@@ -1571,10 +528,8 @@ function animateStudio() {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    initStudio();
-    startAllWorldScripts();
-});
+window.addEventListener('DOMContentLoaded', initStudioWhenReady);
+setTimeout(initStudioWhenReady, 300);
 </script>
 </body>
 </html>
