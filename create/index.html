@@ -133,7 +133,7 @@
 
 <script>
 const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
-let SESSION_TOKEN = localStorage.getItem('rgx_session_token') || sessionStorage.getItem('rgx_session_token') || 'dev_guest_token';
+let SESSION_TOKEN = localStorage.getItem('rgx_session_token') || 'dev_guest_token';
 const MAX_OBJECTS_PER_WORLD = 500;
 const ALLOWED_TYPES = new Set(['cube','sphere','cylinder','wedge','ladder','water','lava','spawn','checkpoint','sign','npc']);
 const ALLOWED_MATERIALS = new Set(['Plastic','Glass','Neon','Obsidian','Water','Lava','Metal','Wood','Concrete','Ice','Hologram','Carpet','Brick']);
@@ -146,31 +146,220 @@ let studioRenderDirty = true;
 let currentMode = 'select';
 let studioInitialized = false;
 let activeTestBlobUrl = null;
+let rgxScriptTickCounter = 0;
 
 function setStatus(msg) {
-    const el = document.getElementById('viewport-status');
-    if (el) el.textContent = msg;
+    try {
+        const el = document.getElementById('viewport-status');
+        if (el) el.textContent = String(msg || '');
+    } catch (_) {}
 }
 
 window.onerror = function(msg, src, line) {
     setStatus('JS Error (line ' + line + '): ' + msg);
+    return true;
 };
 
+window.addEventListener('unhandledrejection', function(ev) {
+    const reason = ev && ev.reason ? (ev.reason.message || String(ev.reason)) : 'Promise rejected';
+    setStatus('Async Guard: ' + reason);
+});
+
 function showNotification(title, message, type = "info") {
-    const c = document.getElementById('notification-toast-container');
-    if (!c) return;
-    const t = document.createElement('div');
-    t.className = 'toast-notification toast-' + type;
-    t.textContent = title + ': ' + message;
-    c.appendChild(t);
-    setTimeout(() => t.remove(), 4000);
+    try {
+        const c = document.getElementById('notification-toast-container');
+        if (!c) return;
+        const t = document.createElement('div');
+        t.className = 'toast-notification toast-' + type;
+        t.textContent = title + ': ' + message;
+        c.appendChild(t);
+        setTimeout(() => { try { t.remove(); } catch (_) {} }, 4000);
+    } catch (_) {}
 }
 
 function normalizeHexColor(c) {
-    c = String(c || '').trim();
-    if (/^#[0-9a-fA-F]{6}$/.test(c)) return c;
-    if (/^[0-9a-fA-F]{6}$/.test(c)) return '#' + c;
+    try {
+        c = String(c || '').trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(c)) return c;
+        if (/^[0-9a-fA-F]{6}$/.test(c)) return '#' + c;
+    } catch (_) {}
     return '#00b7ff';
+}
+
+function escapeHtmlAttr(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function parseVec3Csv(val, fallback) {
+    const fb = Array.isArray(fallback) ? fallback : [0, 0, 0];
+    if (typeof val !== 'string' || !val.trim()) return fb.slice();
+    const parts = val.split(',').map(n => Number(n.trim()));
+    return [
+        Number.isFinite(parts[0]) ? parts[0] : fb[0],
+        Number.isFinite(parts[1]) ? parts[1] : fb[1],
+        Number.isFinite(parts[2]) ? parts[2] : fb[2]
+    ];
+}
+
+function createGeometryForType(type) {
+    const safeType = ALLOWED_TYPES.has(type) ? type : 'cube';
+    if (safeType === 'sphere') return new THREE.SphereGeometry(0.5, 24, 24);
+    if (safeType === 'cylinder') return new THREE.CylinderGeometry(0.5, 0.5, 1, 24);
+    if (safeType === 'wedge') {
+        const shape = new THREE.Shape();
+        shape.moveTo(-0.5, -0.5);
+        shape.lineTo(0.5, -0.5);
+        shape.lineTo(-0.5, 0.5);
+        shape.closePath();
+        const geo = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
+        geo.translate(0, 0, -0.5);
+        return geo;
+    }
+    return new THREE.BoxGeometry(1, 1, 1);
+}
+
+function createMaterialFromPreset(preset, hexColor) {
+    const safePreset = ALLOWED_MATERIALS.has(preset) ? preset : 'Plastic';
+    const col = new THREE.Color(normalizeHexColor(hexColor));
+    if (safePreset === 'Neon') return new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.85, roughness: 0.25 });
+    if (safePreset === 'Glass' || safePreset === 'Hologram') return new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: safePreset === 'Hologram' ? 0.55 : 0.45, roughness: 0.15 });
+    if (safePreset === 'Water') return new THREE.MeshStandardMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6, roughness: 0.2 });
+    if (safePreset === 'Lava') return new THREE.MeshStandardMaterial({ color: 0xff3300, emissive: 0xff4500, emissiveIntensity: 0.95, roughness: 0.5 });
+    if (safePreset === 'Metal') return new THREE.MeshStandardMaterial({ color: col, metalness: 0.75, roughness: 0.28 });
+    if (safePreset === 'Obsidian') return new THREE.MeshStandardMaterial({ color: col, metalness: 0.2, roughness: 0.2 });
+    return new THREE.MeshStandardMaterial({ color: col, roughness: 0.45 });
+}
+
+function evalRgxExpr(expr, ctx) {
+    const raw = String(expr || '').trim();
+    if (!raw) return '';
+    if (/^["'].*["']$/.test(raw)) return raw.slice(1, -1);
+    if (/^(true|false)$/i.test(raw)) return raw.toLowerCase() === 'true';
+    if (!Number.isNaN(Number(raw)) && raw !== '') return Number(raw);
+    if (raw === 'this.x') return ctx.mesh.position.x;
+    if (raw === 'this.y') return ctx.mesh.position.y;
+    if (raw === 'this.z') return ctx.mesh.position.z;
+    if (raw === 'this.color') return ctx.mesh.userData.color;
+    if (raw === 'this.material') return ctx.mesh.userData.material;
+    if (raw === 'this.name') return ctx.mesh.userData.name;
+    if (Object.prototype.hasOwnProperty.call(ctx.vars, raw)) return ctx.vars[raw];
+    const mathMatch = raw.match(/^([a-zA-Z0-9_."']+)\s*([+\-*/])\s*([a-zA-Z0-9_."']+)$/);
+    if (mathMatch) {
+        const left = Number(evalRgxExpr(mathMatch[1], ctx));
+        const op = mathMatch[2];
+        const right = Number(evalRgxExpr(mathMatch[3], ctx));
+        if (Number.isFinite(left) && Number.isFinite(right)) {
+            if (op === '+') return left + right;
+            if (op === '-') return left - right;
+            if (op === '*') return left * right;
+            if (op === '/') return right === 0 ? 0 : left / right;
+        }
+    }
+    return raw;
+}
+
+function applyRgxCommandToMesh(mesh, propPath, value) {
+    if (!mesh || !mesh.userData) return;
+    const key = String(propPath || '').trim().toLowerCase();
+    if (key === 'this.color' || key === 'color') {
+        const hex = normalizeHexColor(value);
+        mesh.userData.color = hex;
+        if (mesh.material) {
+            mesh.material.dispose();
+            mesh.material = createMaterialFromPreset(mesh.userData.material, hex);
+        }
+        studioRenderDirty = true;
+    } else if (key === 'this.material' || key === 'material') {
+        if (ALLOWED_MATERIALS.has(String(value))) {
+            mesh.userData.material = String(value);
+            if (mesh.material) {
+                mesh.material.dispose();
+                mesh.material = createMaterialFromPreset(mesh.userData.material, mesh.userData.color);
+            }
+            studioRenderDirty = true;
+        }
+    } else if (key === 'this.x' || key === 'x') {
+        const n = Number(value);
+        if (Number.isFinite(n)) { mesh.position.x = n; studioRenderDirty = true; }
+    } else if (key === 'this.y' || key === 'y') {
+        const n = Number(value);
+        if (Number.isFinite(n)) { mesh.position.y = n; studioRenderDirty = true; }
+    } else if (key === 'this.z' || key === 'z') {
+        const n = Number(value);
+        if (Number.isFinite(n)) { mesh.position.z = n; studioRenderDirty = true; }
+    } else if (key === 'this.roty' || key === 'roty') {
+        const n = Number(value);
+        if (Number.isFinite(n)) { mesh.rotation.y = THREE.MathUtils.degToRad(n); studioRenderDirty = true; }
+    } else if (key === 'this.text' || key === 'text') {
+        mesh.userData.text = String(value == null ? '' : value);
+    }
+    if (selectedMesh === mesh) {
+        try { syncPropertiesPanelFromMesh(mesh); } catch (_) {}
+    }
+}
+
+function executeRGXScriptForEvent(mesh, eventName) {
+    if (!mesh || !mesh.userData || !mesh.userData.script) return;
+    const targetEvent = String(eventName || 'start').toLowerCase().replace(/\s+/g, '');
+    const lines = String(mesh.userData.script).split(/\r?\n/);
+    let activeBlock = 'start';
+    const ctx = { mesh, vars: Object.create(null) };
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+
+        const evMatch = line.match(/^on\s+([a-zA-Z0-9_ ]+?)\s*:?$/i);
+        if (evMatch) {
+            activeBlock = evMatch[1].toLowerCase().replace(/\s+/g, '');
+            continue;
+        }
+        if (activeBlock !== targetEvent) continue;
+
+        const setMatch = line.match(/^set\s+([a-zA-Z0-9_.]+)\s*=\s*(.+)$/i);
+        if (setMatch) {
+            const target = setMatch[1].trim();
+            const val = evalRgxExpr(setMatch[2].trim(), ctx);
+            if (target.startsWith('this.')) {
+                applyRgxCommandToMesh(mesh, target, val);
+            } else {
+                ctx.vars[target] = val;
+            }
+            continue;
+        }
+
+        const moveMatch = line.match(/^move\s+(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/i);
+        if (moveMatch) {
+            mesh.position.x += Number(moveMatch[1]);
+            mesh.position.y += Number(moveMatch[2]);
+            mesh.position.z += Number(moveMatch[3]);
+            studioRenderDirty = true;
+            if (selectedMesh === mesh) {
+                try { syncPropertiesPanelFromMesh(mesh); } catch (_) {}
+            }
+            continue;
+        }
+
+        const logMatch = line.match(/^log\s+(.+)$/i);
+        if (logMatch) {
+            const msg = String(evalRgxExpr(logMatch[1].trim(), ctx));
+            showNotification(mesh.userData.name || 'RGXScript', msg, 'info');
+        }
+    }
+}
+
+function runAllRGXScripts(eventName) {
+    for (let i = 0; i < studioObjects.length; i++) {
+        try {
+            executeRGXScriptForEvent(studioObjects[i], eventName);
+        } catch (err) {
+            setStatus('RGXScript Guard: ' + (err && err.message ? err.message : err));
+        }
+    }
 }
 
 function initStudioWhenReady() {
@@ -232,11 +421,12 @@ function initStudioWhenReady() {
         resetStudioCameraToGameplay();
 
         createStudioPart('cube', { name: 'Baseplate', color: '#111a24', material: 'Obsidian', pos: [0, -1, 0], scale: [200, 2, 200] });
-        createStudioPart('cube', { name: 'cube_703', color: '#00b7ff', material: 'Plastic', pos: [0, 4, 0], scale: [4, 4, 4], js: 'on start:\n  set this.color = "#00e676"' });
+        createStudioPart('cube', { name: 'cube_703', color: '#00b7ff', material: 'Plastic', pos: [0, 4, 0], scale: [4, 4, 4], script: 'on start:\n  set this.color = "#00e676"' });
+        runAllRGXScripts('start');
 
         window.addEventListener('resize', onWindowResize);
         renderer.domElement.addEventListener('pointerdown', onViewportPointerDown);
-        setStatus('3D Viewport Active • WebGL Ready');
+        setStatus('3D Viewport Active • WebGL Ready • RGXScript v2 Ready');
         animateStudio();
     } catch (err) {
         setStatus('3D Init Error: ' + err.message);
@@ -251,44 +441,45 @@ function resetStudioCameraToGameplay() {
     studioRenderDirty = true;
 }
 
-function createMaterialFromPreset(preset, hexColor) {
-    const col = new THREE.Color(normalizeHexColor(hexColor));
-    if (preset === 'Neon') return new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.85 });
-    if (preset === 'Glass') return new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: 0.45 });
-    if (preset === 'Water') return new THREE.MeshStandardMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6 });
-    if (preset === 'Lava') return new THREE.MeshStandardMaterial({ color: 0xff3300, emissive: 0xff4500, emissiveIntensity: 0.95 });
-    return new THREE.MeshStandardMaterial({ color: col, roughness: 0.45 });
-}
-
 function createStudioPart(type, opts = {}) {
     if (!scene || studioObjects.length >= MAX_OBJECTS_PER_WORLD) return null;
     const safeType = ALLOWED_TYPES.has(type) ? type : 'cube';
-    const geo = safeType === 'sphere' ? new THREE.SphereGeometry(0.5, 24, 24)
-              : safeType === 'cylinder' ? new THREE.CylinderGeometry(0.5, 0.5, 1, 24)
-              : new THREE.BoxGeometry(1, 1, 1);
+    const geo = createGeometryForType(safeType);
     const color = normalizeHexColor(opts.color || '#00b7ff');
     const material = ALLOWED_MATERIALS.has(opts.material) ? opts.material : 'Plastic';
-    const scale = opts.scale || [4, 4, 4];
-    const pos = opts.pos || [0, scale[1] / 2 + 1, 0];
-    const rot = opts.rot || [0, 0, 0];
+    const scale = Array.isArray(opts.scale) && opts.scale.length === 3 ? opts.scale : [4, 4, 4];
+    const pos = Array.isArray(opts.pos) && opts.pos.length === 3 ? opts.pos : [0, scale[1] / 2 + 1, 0];
+    const rot = Array.isArray(opts.rot) && opts.rot.length === 3 ? opts.rot : [0, 0, 0];
     const mesh = new THREE.Mesh(geo, createMaterialFromPreset(material, color));
-    mesh.position.set(pos[0], pos[1], pos[2]);
-    mesh.scale.set(scale[0], scale[1], scale[2]);
-    mesh.rotation.set(THREE.MathUtils.degToRad(rot[0]), THREE.MathUtils.degToRad(rot[1]), THREE.MathUtils.degToRad(rot[2]));
+    mesh.position.set(Number(pos[0]) || 0, Number(pos[1]) || 0, Number(pos[2]) || 0);
+    mesh.scale.set(Math.max(0.05, Number(scale[0]) || 1), Math.max(0.05, Number(scale[1]) || 1), Math.max(0.05, Number(scale[2]) || 1));
+    mesh.rotation.set(
+        THREE.MathUtils.degToRad(Number(rot[0]) || 0),
+        THREE.MathUtils.degToRad(Number(rot[1]) || 0),
+        THREE.MathUtils.degToRad(Number(rot[2]) || 0)
+    );
     mesh.userData = {
         type: safeType,
-        name: opts.name || `${safeType}_${Math.floor(Math.random() * 900 + 100)}`,
-        color, material, text: opts.text || '', script: opts.script || ''
+        name: String(opts.name || `${safeType}_${Math.floor(Math.random() * 900 + 100)}`),
+        color,
+        material,
+        text: String(opts.text || ''),
+        script: String(opts.script || opts.js || '')
     };
     scene.add(mesh);
     studioObjects.push(mesh);
-    document.getElementById('objCountLabel').innerText = `${studioObjects.length} / ${MAX_OBJECTS_PER_WORLD} Parts`;
+    const countEl = document.getElementById('objCountLabel');
+    if (countEl) countEl.innerText = `${studioObjects.length} / ${MAX_OBJECTS_PER_WORLD} Parts`;
     studioRenderDirty = true;
+    if (mesh.userData.script) {
+        try { executeRGXScriptForEvent(mesh, 'start'); } catch (_) {}
+    }
     return mesh;
 }
 
 function addSelectedPart() {
-    const m = createStudioPart(document.getElementById('addPartType').value);
+    const sel = document.getElementById('addPartType');
+    const m = createStudioPart(sel ? sel.value : 'cube');
     if (m) selectObject(m);
 }
 
@@ -308,7 +499,7 @@ function duplicateSelectedObject() {
 function deleteSelectedObject() {
     if (!selectedMesh) return;
     if (transform) transform.detach();
-    scene.remove(selectedMesh);
+    if (scene) scene.remove(selectedMesh);
     studioObjects = studioObjects.filter(o => o !== selectedMesh);
     selectedMesh = null;
     document.getElementById('prop-content').style.display = 'none';
@@ -337,6 +528,7 @@ function selectObject(mesh) {
         document.getElementById('prop-empty').style.display = 'block';
         return;
     }
+    try { executeRGXScriptForEvent(mesh, 'select'); } catch (_) {}
     if (transform && currentMode !== 'select') transform.attach(mesh);
     document.getElementById('prop-empty').style.display = 'none';
     document.getElementById('prop-content').style.display = 'block';
@@ -349,6 +541,12 @@ function syncPropertiesPanelFromMesh(mesh) {
     document.getElementById('prop-type').value = d.type.toUpperCase();
     document.getElementById('prop-color').value = normalizeHexColor(d.color);
     document.getElementById('prop-material').value = d.material;
+    const textRow = document.getElementById('row-text-val');
+    const textInput = document.getElementById('prop-text-val');
+    if (textRow && textInput) {
+        textRow.style.display = d.type === 'sign' ? 'flex' : 'none';
+        textInput.value = d.text || '';
+    }
     document.getElementById('prop-pos-x').value = mesh.position.x.toFixed(2);
     document.getElementById('prop-pos-y').value = mesh.position.y.toFixed(2);
     document.getElementById('prop-pos-z').value = mesh.position.z.toFixed(2);
@@ -364,12 +562,17 @@ function syncPropertiesPanelFromMesh(mesh) {
 function applyPropertyChanges() {
     if (!selectedMesh) return;
     const d = selectedMesh.userData;
+    const prevScript = d.script;
     d.name = document.getElementById('prop-name').value || d.name;
     d.color = normalizeHexColor(document.getElementById('prop-color').value);
     d.material = document.getElementById('prop-material').value;
+    const textInput = document.getElementById('prop-text-val');
+    if (textInput) d.text = textInput.value || '';
     d.script = document.getElementById('prop-script').value;
-    selectedMesh.material.dispose();
-    selectedMesh.material = createMaterialFromPreset(d.material, d.color);
+    if (selectedMesh.material) {
+        selectedMesh.material.dispose();
+        selectedMesh.material = createMaterialFromPreset(d.material, d.color);
+    }
     selectedMesh.position.set(
         parseFloat(document.getElementById('prop-pos-x').value) || 0,
         parseFloat(document.getElementById('prop-pos-y').value) || 0,
@@ -386,11 +589,16 @@ function applyPropertyChanges() {
         THREE.MathUtils.degToRad(parseFloat(document.getElementById('prop-rot-z').value) || 0)
     );
     studioRenderDirty = true;
+    if (d.script && d.script !== prevScript) {
+        try { executeRGXScriptForEvent(selectedMesh, 'start'); } catch (_) {}
+    }
 }
 
 function onViewportPointerDown(event) {
+    if (!renderer || !camera || !raycaster || !mouse) return;
     if (transform && transform.dragging) return;
     const rect = renderer.domElement.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
@@ -399,60 +607,88 @@ function onViewportPointerDown(event) {
 }
 
 function generateRGXXml() {
-    const title = document.getElementById('gameTitle').value.trim() || 'Untitled World';
-    let xml = `<world title="${title.replace(/"/g, '&quot;')}">\n`;
+    const title = (document.getElementById('gameTitle') && document.getElementById('gameTitle').value.trim()) || 'Untitled World';
+    let xml = `<world title="${escapeHtmlAttr(title)}">\n`;
     studioObjects.forEach(m => {
         const d = m.userData;
         const hex = normalizeHexColor(d.color).replace(/^#/, '');
         const rx = Math.round(THREE.MathUtils.radToDeg(m.rotation.x));
         const ry = Math.round(THREE.MathUtils.radToDeg(m.rotation.y));
         const rz = Math.round(THREE.MathUtils.radToDeg(m.rotation.z));
-        xml += `  <part type="${d.type}" name="${d.name}" color="${hex}" material="${d.material}" pos="${m.position.x.toFixed(2)},${m.position.y.toFixed(2)},${m.position.z.toFixed(2)}" scale="${m.scale.x.toFixed(2)},${m.scale.y.toFixed(2)},${m.scale.z.toFixed(2)}" rot="${rx},${ry},${rz}" text="${d.text || ''}"/>\n`;
-        if (d.script && d.script.trim()) xml += `  <script for="${d.name}">\n${d.script.trim()}\n  \x3c/script\x3e\n`;
+        xml += `  <part type="${escapeHtmlAttr(d.type)}" name="${escapeHtmlAttr(d.name)}" color="${escapeHtmlAttr(hex)}" material="${escapeHtmlAttr(d.material)}" pos="${m.position.x.toFixed(2)},${m.position.y.toFixed(2)},${m.position.z.toFixed(2)}" scale="${m.scale.x.toFixed(2)},${m.scale.y.toFixed(2)},${m.scale.z.toFixed(2)}" rot="${rx},${ry},${rz}" text="${escapeHtmlAttr(d.text || '')}"/>\n`;
+        if (d.script && d.script.trim()) {
+            const safeScript = d.script.trim().replace(/<\/script>/gi, '<\\/script>');
+            xml += `  <script for="${escapeHtmlAttr(d.name)}">\n${safeScript}\n  \x3c/script\x3e\n`;
+        }
     });
     return xml + `</world>`;
 }
 
 function exportRGXFile() {
     const blob = new Blob([generateRGXXml()], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = url;
     a.download = 'world.rgx';
     a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function importRGXWorldFile(e) {
-    const f = e.target.files[0];
+    const f = e && e.target && e.target.files ? e.target.files[0] : null;
     if (!f) return;
     const r = new FileReader();
     r.onload = ev => {
-        const doc = new DOMParser().parseFromString(ev.target.result, 'application/xml');
-        const root = doc.querySelector('world');
-        if (!root) return;
-        clearWorld(false);
-        const scripts = new Map();
-        root.querySelectorAll('script').forEach(s => scripts.set(s.getAttribute('for'), s.textContent.trim()));
-        root.querySelectorAll('part').forEach(p => {
-            const name = p.getAttribute('name') || 'Part';
-            createStudioPart(p.getAttribute('type') || 'cube', {
-                name,
-                color: p.getAttribute('color') || '00b7ff',
-                material: p.getAttribute('material') || 'Plastic',
-                pos: (p.getAttribute('pos') || '0,0,0').split(',').map(Number),
-                scale: (p.getAttribute('scale') || '4,4,4').split(',').map(Number),
-                rot: (p.getAttribute('rot') || '0,0,0').split(',').map(Number),
-                script: scripts.get(name) || ''
+        try {
+            const doc = new DOMParser().parseFromString(ev.target.result, 'application/xml');
+            const root = doc.querySelector('world');
+            if (!root) {
+                showNotification('Import Warning', 'No <world> root tag found in .rgx file.', 'warning');
+                return;
+            }
+            const worldTitle = root.getAttribute('title');
+            if (worldTitle && document.getElementById('gameTitle')) {
+                document.getElementById('gameTitle').value = worldTitle;
+            }
+            clearWorld(false);
+            const scripts = new Map();
+            root.querySelectorAll('script').forEach(s => {
+                const targetName = s.getAttribute('for') || '';
+                if (targetName) scripts.set(targetName, (s.textContent || '').trim());
             });
-        });
+            root.querySelectorAll('part').forEach(p => {
+                const name = p.getAttribute('name') || 'Part';
+                createStudioPart(p.getAttribute('type') || 'cube', {
+                    name,
+                    color: p.getAttribute('color') || '00b7ff',
+                    material: p.getAttribute('material') || 'Plastic',
+                    pos: parseVec3Csv(p.getAttribute('pos'), [0, 0, 0]),
+                    scale: parseVec3Csv(p.getAttribute('scale'), [4, 4, 4]),
+                    rot: parseVec3Csv(p.getAttribute('rot'), [0, 0, 0]),
+                    text: p.getAttribute('text') || '',
+                    script: scripts.get(name) || ''
+                });
+            });
+            runAllRGXScripts('start');
+            showNotification('Imported .RGX', 'Loaded world into Studio.', 'success');
+        } catch (err) {
+            showNotification('Import Error', err.message || 'Invalid XML', 'danger');
+        } finally {
+            try { e.target.value = ''; } catch (_) {}
+        }
     };
     r.readAsText(f);
 }
 
 function clearWorld(notify = true) {
     if (transform) transform.detach();
-    studioObjects.forEach(o => scene.remove(o));
+    studioObjects.forEach(o => { try { if (scene) scene.remove(o); } catch (_) {} });
     studioObjects = [];
     selectedMesh = null;
+    const pc = document.getElementById('prop-content');
+    const pe = document.getElementById('prop-empty');
+    if (pc) pc.style.display = 'none';
+    if (pe) pe.style.display = 'block';
     document.getElementById('objCountLabel').innerText = `0 / ${MAX_OBJECTS_PER_WORLD} Parts`;
     studioRenderDirty = true;
     if (notify) showNotification('Cleared', 'World cleared', 'warning');
@@ -464,16 +700,14 @@ async function testCurrentStudioGame() {
     const player = document.getElementById('game-player');
     const iframe = document.getElementById('game-frame');
     const titleEl = document.getElementById('playerGameTitle');
-    const worldTitle = (document.getElementById('gameTitle')?.value || 'Studio Test World').trim();
-    if (titleEl) titleEl.textContent = worldTitle;
+    if (titleEl && document.getElementById('gameTitle')) {
+        titleEl.textContent = document.getElementById('gameTitle').value || 'RayGamix Cloud World';
+    }
     player.style.display = 'flex';
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/games/test-play?title=${encodeURIComponent(worldTitle)}`, {
+        const res = await fetch(`${CF_BACKEND_URL}/games/test-play`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/xml',
-                'X-Session-Token': SESSION_TOKEN || localStorage.getItem('rgx_session_token') || sessionStorage.getItem('rgx_session_token') || 'dev_guest_token'
-            },
+            headers: { 'Content-Type': 'application/xml', 'X-Session-Token': SESSION_TOKEN },
             body: generateRGXXml()
         });
         const txt = await res.text();
@@ -482,9 +716,10 @@ async function testCurrentStudioGame() {
         activeTestBlobUrl = URL.createObjectURL(new Blob([txt], { type: 'text/html' }));
         iframe.src = activeTestBlobUrl;
     } catch (err) {
+        const backendBase = typeof CF_BACKEND_URL !== 'undefined' ? String(CF_BACKEND_URL || '') : '';
         const safeErrMsg = String(err && err.message ? err.message : 'Network error reaching RayGamix backend')
             .replace(/[&"\x3c\x3e'\/]/g, c => ({ '&': '&amp;', '\x3c': '&lt;', '\x3e': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#47;' }[c]));
-        const safeEndpoint = String(typeof CF_BACKEND_URL !== 'undefined' ? CF_BACKEND_URL : '')
+        const safeEndpoint = String(backendBase)
             .replace(/[&"\x3c\x3e'\/]/g, c => ({ '&': '&amp;', '\x3c': '&lt;', '\x3e': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#47;' }[c]));
         const decodeEntities = str => {
             const textarea = document.createElement('textarea');
@@ -536,11 +771,19 @@ function onWindowResize() {
 
 function animateStudio() {
     requestAnimationFrame(animateStudio);
-    if (!renderer || !scene || !camera) return;
-    if (orbit && orbit.update()) studioRenderDirty = true;
-    if (studioRenderDirty) {
-        renderer.render(scene, camera);
-        studioRenderDirty = false;
+    try {
+        if (!renderer || !scene || !camera) return;
+        rgxScriptTickCounter++;
+        if (rgxScriptTickCounter % 30 === 0) {
+            runAllRGXScripts('tick');
+        }
+        if (orbit && orbit.update()) studioRenderDirty = true;
+        if (studioRenderDirty) {
+            renderer.render(scene, camera);
+            studioRenderDirty = false;
+        }
+    } catch (err) {
+        setStatus('Render Guard: ' + (err && err.message ? err.message : err));
     }
 }
 
