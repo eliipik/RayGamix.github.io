@@ -133,7 +133,7 @@
 
 <script>
 const CF_BACKEND_URL = "https://raygamix-backend.raybod8765.workers.dev";
-let SESSION_TOKEN = localStorage.getItem('rgx_session_token') || 'dev_guest_token';
+let SESSION_TOKEN = localStorage.getItem('rgx_session_token') || sessionStorage.getItem('rgx_session_token') || 'dev_guest_token';
 const MAX_OBJECTS_PER_WORLD = 500;
 const ALLOWED_TYPES = new Set(['cube','sphere','cylinder','wedge','ladder','water','lava','spawn','checkpoint','sign','npc']);
 const ALLOWED_MATERIALS = new Set(['Plastic','Glass','Neon','Obsidian','Water','Lava','Metal','Wood','Concrete','Ice','Hologram','Carpet','Brick']);
@@ -145,6 +145,7 @@ let raycaster = null, mouse = null;
 let studioRenderDirty = true;
 let currentMode = 'select';
 let studioInitialized = false;
+let activeTestBlobUrl = null;
 
 function setStatus(msg) {
     const el = document.getElementById('viewport-status');
@@ -462,19 +463,26 @@ function clearWorldPrompt() { if (confirm('Clear world?')) clearWorld(true); }
 async function testCurrentStudioGame() {
     const player = document.getElementById('game-player');
     const iframe = document.getElementById('game-frame');
+    const titleEl = document.getElementById('playerGameTitle');
+    const worldTitle = (document.getElementById('gameTitle')?.value || 'Studio Test World').trim();
+    if (titleEl) titleEl.textContent = worldTitle;
     player.style.display = 'flex';
     try {
-        const res = await fetch(`${CF_BACKEND_URL}/games/test-play`, {
+        const res = await fetch(`${CF_BACKEND_URL}/games/test-play?title=${encodeURIComponent(worldTitle)}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/xml', 'X-Session-Token': SESSION_TOKEN },
+            headers: {
+                'Content-Type': 'application/xml',
+                'X-Session-Token': SESSION_TOKEN || localStorage.getItem('rgx_session_token') || sessionStorage.getItem('rgx_session_token') || 'dev_guest_token'
+            },
             body: generateRGXXml()
         });
         const txt = await res.text();
         if (!res.ok) throw new Error(txt || 'HTTP ' + res.status);
-        iframe.src = URL.createObjectURL(new Blob([txt], { type: 'text/html' }));
-} catch (err) {
-        const backendBase = typeof CF_BACKEND_URL !== 'undefined' ? String(CF_BACKEND_URL || '') : '';
-       const safeErrMsg = String(err && err.message ? err.message : 'Network error reaching RayGamix backend')
+        if (activeTestBlobUrl) URL.revokeObjectURL(activeTestBlobUrl);
+        activeTestBlobUrl = URL.createObjectURL(new Blob([txt], { type: 'text/html' }));
+        iframe.src = activeTestBlobUrl;
+    } catch (err) {
+        const safeErrMsg = String(err && err.message ? err.message : 'Network error reaching RayGamix backend')
             .replace(/[&"\x3c\x3e'\/]/g, c => ({ '&': '&amp;', '\x3c': '&lt;', '\x3e': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#47;' }[c]));
         const safeEndpoint = String(typeof CF_BACKEND_URL !== 'undefined' ? CF_BACKEND_URL : '')
             .replace(/[&"\x3c\x3e'\/]/g, c => ({ '&': '&amp;', '\x3c': '&lt;', '\x3e': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#47;' }[c]));
@@ -506,7 +514,15 @@ async function confirmPublishGame() {
     }
 }
 
-function closeGamePlayer() { document.getElementById('game-player').style.display = 'none'; }
+function closeGamePlayer() {
+    document.getElementById('game-player').style.display = 'none';
+    const iframe = document.getElementById('game-frame');
+    if (iframe) iframe.src = 'about:blank';
+    if (activeTestBlobUrl) {
+        URL.revokeObjectURL(activeTestBlobUrl);
+        activeTestBlobUrl = null;
+    }
+}
 
 function onWindowResize() {
     const c = document.getElementById('studio-viewport');
